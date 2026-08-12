@@ -753,10 +753,10 @@ execution, that the decision was bound to the relevant execution, and that a
 successor which bypasses the required enforcement path cannot be accepted as
 valid PIC state.
 
-14. Multi-lineage composition — independent lineages may participate in one
-    execution context without being merged.
+14. Composition Collection — independent PIC continuities may participate in
+    one execution context without being merged.
 
-PIC must distinguish composition from authority merging.
+PIC must distinguish Composition Collection from authority merging.
 
 Useful operations may require authority derived from more than one independent
 origin or execution. For example, one lineage may carry permission to read one
@@ -765,27 +765,27 @@ resource.
 
 PIC does not require those lineages to be collapsed into one successor PCA.
 
-Where the applicable composition or Multi-Lineage Execution profile is used, a
-parent execution may carry and coordinate multiple child executions while each
-child preserves its own origin, predecessor chain, Proof of Relationship,
-authority context, and revocation semantics.
+Where the applicable Composition Collection profile is used, an outer execution
+may carry and coordinate multiple composition members while each member
+preserves its own origin, predecessor chain, Proof of Relationship, authority
+context, and revocation semantics.
 
 Conceptually:
 
-parent execution
-├── child lineage A
-└── child lineage B.
+outer execution
++-- composition member A
++-- composition member B.
 
-The parent provides the execution context in which the child authorities are
-used together. It does not convert the child authorities into one merged
-lineage.
+The outer execution provides the execution context in which the member
+authorities are used together. It does not convert the member authorities into
+one merged lineage.
 
-A continuation of child lineage A must still be valid relative to child lineage
-A. A continuation of child lineage B must still be valid relative to child
-lineage B.
+A continuation of composition member A must still be valid relative to that
+member. A continuation of composition member B must still be valid relative to
+that member.
 
-Authority from one child must not be silently inserted into another child, and
-a parent execution must not manufacture authority absent from its validated
+Authority from one member must not be silently inserted into another member,
+and an outer execution must not manufacture authority absent from its validated
 components.
 
 This preserves useful composition while keeping independent authority origins
@@ -1156,7 +1156,8 @@ Each resulting lineage has its own:
 - causal history;
 - authority context;
 - attenuation path;
-- branch structure;
+- PCA ID;
+- continuity position;
 - revocation coordinates.
 
 Authority propagates only inside a valid lineage. A grant does not permit authority to move silently from one lineage into another.
@@ -1164,9 +1165,10 @@ Authority propagates only inside a valid lineage. A grant does not permit author
 This distinction is operationally visible in revocation:
 
 - grant revocation withdraws the persistent source of authority;
-- lineage revocation targets one execution lineage;
-- lineage-suffix revocation cuts off the causal future from a specified position;
-- branch revocation targets a branch domain where supported.
+- continuity revocation targets states under a PCA ID;
+- a causal suffix cutoff `(PCA ID, fromPosition)` cuts off the causal future
+  from a specified position;
+- branch-capable revocation is future or separate-profile work.
 
 Grant identity and lineage identity may be related, but they are not interchangeable.
 

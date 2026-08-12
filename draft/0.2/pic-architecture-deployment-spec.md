@@ -8,7 +8,7 @@ submissiontype: independent
 stand_alone: yes
 smart_quotes: false
 pi: [toc, sortrefs, symrefs]
-date: 2026-07-19
+date: 2026-08-12
 
 author:
   - ins: N. Gallo
@@ -28,7 +28,7 @@ informative: {}
 **Version:** 0.2 (Draft)
 **Document Status:** Public Draft
 **Intended Use:** Informational and Experimental
-**Published:** 2026-07-19
+**Published:** 2026-08-12
 **Editor(s):** Nicola Gallo (Nitro Agility S.r.l.)
 **Steward:** Nitro Agility S.r.l.
 **Source:** [github.com/pic-protocol/pic-spec/draft/0.2/pic-architecture-deployment-spec.md](https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-architecture-deployment-spec.md)
@@ -56,6 +56,21 @@ informative: {}
 >
 > Current project information and published specifications are available at `https://www.pic-protocol.org/`.
 
+--- note_Work_In_Progress
+
+> **Work in Progress — Experimental Design**
+>
+> The deployment and architecture model described in this document is under active development.
+>
+> This model may change substantially before a later stable revision.
+>
+> Implementers MUST NOT assume wire compatibility, semantic compatibility, or backward compatibility with future revisions.
+>
+> Future drafts may introduce breaking changes to terminology, data structures, processing rules, profile bindings, and
+> interoperability requirements.
+>
+> The current text is published for design review, experimentation, and implementation feedback.
+
 --- note_Editors
 
 - **Nicola Gallo** (Nitro Agility S.r.l.) Lead Editor
@@ -70,11 +85,11 @@ informative: {}
 This document is the **PIC Architecture and Deployment Specification**, a subordinate specification of the
 [PIC Specification](https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-spec.md). It describes how the components defined by the
 [PIC Prover and Verifier Specification](https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-prover-verifier-spec.md) and the
-[PIC Execution Guardrail Specification](https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-lineage-guardrail-spec.md) are arranged and operated in concrete systems: the two deployment
-architectures — **centralized**, where a trusted central server, the **Trust Plane**, validates every transition against the lineage
-history it holds, and **decentralized**, where every hop proves and verifies locally — their fit to trusted and untrusted environments,
-hybrid enterprise compositions of the two,
-and interoperability with existing token infrastructures through an OAuth token-exchange profile to be defined in a future specification.
+[PIC Sandboxed Execution Specification](https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-lineage-guardrail-spec.md) are arranged and operated in concrete systems: the two deployment
+architectures - **centralized**, where a trusted central continuity service validates continuation requests and issues or authenticates the
+resulting continuity state, and **decentralized**, where permitted nodes advance continuity locally according to profile rules - their fit
+to trusted and untrusted environments, hybrid enterprise compositions of the two, and interoperability with existing token infrastructures
+through a profile-defined OAuth token-exchange binding.
 
 This revision describes the architectures; the normative deployment requirements will be developed in forthcoming revisions. This document
 does not redefine, extend, or alter the PIC Model or the normative semantics defined by the PIC Specification. In case of conflict, the
@@ -90,7 +105,7 @@ This specification describes the architectures of PIC systems and their deployme
 their fit to trusted and untrusted environments (Section 3), hybrid enterprise compositions (Section 4), and interoperability with
 existing token infrastructures (Section 5). The components deployed are those of the
 [PIC Prover and Verifier Specification](https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-prover-verifier-spec.md) and the
-[PIC Execution Guardrail Specification](https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-lineage-guardrail-spec.md).
+[PIC Sandboxed Execution Specification](https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-lineage-guardrail-spec.md).
 
 ## Requirements Notation
 
@@ -106,13 +121,34 @@ cost and assurance properties.
 
 ## Centralized
 
-In the centralized architecture the hops work exactly as in the decentralized one — each executor constructs, signs, and remains the
-signer of its own PCA — but every proposed transition is submitted to a trusted central server, the **Trust Plane**, which acts as the
-Verifier of the `n+1` transition ([PIC Prover and Verifier Specification](https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-prover-verifier-spec.md), Sections 3 and 5.2): it
-validates the transition against the lineage history it holds and may add its own signature — a validation attestation, receipt, envelope,
-or checkpoint. That signature attests Trust Plane validation; it does not replace, and must not be interpreted as, the executor signature.
-Where a profile lets the Trust Plane materially construct a PCA, the final signature is still produced by the executor or through an
-explicit, normatively defined signing delegation. The rest of this document uses Trust Plane for the centralized trusted server.
+In the centralized architecture, a current continuity state and continuation input are submitted to a trusted central continuity service. The
+service validates the predecessor state, the proposed advancement, revocation state, non-expansion, request/execution binding, and any
+profile-required evidence. If validation succeeds, it issues or authenticates the next continuity state according to the selected profile.
+The rest of this document uses **Trust Plane** for such a centralized trusted service.
+
+In the PIC Profile 0.2 / PIC-X realization, centralized continuity is:
+
+~~~text
+trusted PIC-X-issued settled PIC Continuity JWT N
+        |
+        | workload proposes exactly one advancement
+        v
+workload-signed candidate PIC Continuity JWT
+        |
+        +-- continuity_transition_jwt
+        |
+        v
+PIC-X validation
+        |
+        v
+PIC-X-issued settled PIC Continuity JWT N+1
+        |
+        `-- no continuity_transition_jwt
+~~~
+
+PIC-X validates the workload-signed candidate and Continuity Transition JWT. PIC-X does not centrally sign the Continuity Transition JWT; it
+signs the next settled PIC Continuity JWT. PIC-X is a concrete implementation and profile realization, not a required component of the
+abstract PIC model.
 
 ~~~text
 +--------+        +--------+        +--------+
@@ -123,19 +159,24 @@ explicit, normatively defined signing delegation. The rest of this document uses
        v               v               v
       +---------------------------------+
       |           TRUST PLANE           |
-      |   validates every transition    |
-      |   signs validation attestations |
-      |   holds the lineage history     |
+      | validates continuation state    |
+      | issues/authenticates continuity |
+      | uses profile-defined state      |
       +---------------------------------+
 
-executors sign their own PCAs;
-the Trust Plane signs its validation
+centralized advancement produces the next
+profile-defined continuity state
 ~~~
 
 ## Decentralized
 
-Each hop runs its own PIC Prover and PIC Verifier locally: no central component is required, and every transition is proved and verified
-at the hop that performs it.
+In the decentralized architecture, a local prover, runtime, or workload advances continuity according to the selected profile without
+contacting a central service for every hop. The resulting continuity state remains subject to ordinary verification by the receiver and by
+any later central validation or re-issuance step defined by the profile.
+
+This topology is not part of the current PIC Profile 0.2 / PIC-X realization. Profile 0.2 currently defines centralized PIC-X-mediated
+advancement only. A future or separate profile may define local advancement, holder-signed settled artifacts, transition-history transport,
+or other decentralized mechanisms, but those mechanisms are not advertised as Profile 0.2 behavior by this document.
 
 ~~~text
 +-------------+       +-------------+       +-------------+
@@ -143,12 +184,29 @@ at the hop that performs it.
 | local P + V |  PoR  | local P + V |  PoR  | local P + V |
 +-------------+       +-------------+       +-------------+
 
-no central component; every hop proves and verifies locally
+no central component on every hop;
+advancement and verification follow the selected profile
 ~~~
+
+Central validation or re-issuance of locally advanced state is a possible future or separate-profile mechanism, distinct from advancement.
+It is not part of current Profile 0.2. Such a profile could validate and re-issue the same continuity state:
+
+~~~text
+locally issued PIC Continuity JWT M
+        |
+        v
+central validation
+        |
+        v
+centrally re-issued PIC Continuity JWT M
+~~~
+
+Such same-position re-issuance would create no new transition and would not increment position. Current Profile 0.2 does not define this
+decentralized subchain re-issuance behavior.
 
 ## Consecutive Collusion and History
 
-The decentralized incremental profile is secure hop by hop, with one documented limit
+An incremental or history-limited profile is secure hop by hop under its selected trust assumptions, with one documented limit
 ([PIC Prover and Verifier Specification](https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-prover-verifier-spec.md), Section 6.8): two or more consecutive colluding hops cannot be
 detected when the receiving Verifier lacks authenticated evidence of the earlier lineage prefix.
 
@@ -161,7 +219,8 @@ colluding hops: without the history, HOP 4
 cannot re-check the step from HOP 1 to HOP 2
 ~~~
 
-The history can be held by the Trust Plane, carried inside the PCA chain, or committed to by a succinct proof
+Continuity history or validation state can be held by the Trust Plane, carried in the continuity artifact, authenticated by external state,
+checkpointed, compacted, referenced, or committed to by a succinct proof
 ([PIC Prover and Verifier Specification](https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-prover-verifier-spec.md), Sections 5.1–5.3). Carrying the complete prefix makes size and
 validation cost grow linearly with lineage length, so it is unsuitable as the default lightweight profile; a deployment may nevertheless
 select full-chain validation when its stronger independent-verification property justifies the O(n) cost. A succinct proof keeps
@@ -169,10 +228,10 @@ verification cheap but moves the cost to proof generation and adds the proof-sys
 
 | Topology and profile | Central component | History | Cost | Consecutive collusion |
 | --- | --- | --- | --- | --- |
-| Centralized: Trust Plane | yes | history or authenticated validation state held by the Trust Plane | O(1) per hop | resisted under the Trust Plane assumptions |
-| Decentralized, incremental | none | immediate transition only | O(1) | not resisted |
-| Decentralized, full-chain | none | complete prefix carried or otherwise available | O(n) size and verification | resisted |
-| Decentralized, succinct proof | none | proof commits to the validated prefix | succinct verification; generation cost per proof system | resisted under the proof-system assumptions |
+| Centralized: Trust Plane | yes | profile-defined history or authenticated validation state | profile-defined | resisted under the Trust Plane assumptions |
+| Other-profile decentralized, history-limited | none | profile-defined local state or artifact state | profile-defined | not resisted without authenticated prefix evidence |
+| Other-profile decentralized, full-history | none | complete prefix carried or otherwise available | O(n) size and verification unless compacted | resisted |
+| Other-profile decentralized, succinct proof | none | proof commits to the validated prefix | succinct verification; generation cost per proof system | resisted under the proof-system assumptions |
 
 The profile trade-offs are analyzed in the [PIC Prover and Verifier Specification](https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-prover-verifier-spec.md), Sections 6.8 and 7.
 
@@ -182,9 +241,9 @@ This section is non-normative. The choice between the two architectures follows 
 
 In a **trusted environment** — one whose hops the deployment threat model accepts as trustworthy — consecutive collusion is out of scope:
 decentralized incremental validation may be sufficient, with no central dependency. In an **untrusted environment** where consecutive
-collusion is in scope, the deployment must select a profile that independently authenticates the relevant lineage prefix: a Trust Plane
-with authenticated history, full-chain validation, or an approved succinct-proof profile (Section 2.3). The Trust Plane is the
-operationally preferred choice — collusion resistance at O(1) without advanced cryptography — but not the only profile the model permits.
+collusion is in scope, the deployment must select a profile that independently authenticates the relevant lineage prefix: a Trust Plane,
+full-history validation, authenticated checkpoints, or an approved succinct-proof profile (Section 2.3). The Trust Plane is one operational
+choice for bounded validation without advanced cryptography, but not the only profile the model permits.
 Trust is a property of the deployment threat model, its trust anchors, and the adopted profile — a single administrative domain is not
 trusted by itself.
 
@@ -194,7 +253,7 @@ trusted by itself.
 | Untrusted or high-risk | consecutive collusion in scope | Trust Plane with authenticated history, full-chain validation, or an approved succinct-proof profile |
 
 The same segmentation drives the guardrail deployment modes of the
-[PIC Execution Guardrail Specification](https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-lineage-guardrail-spec.md) (Section 3.4): trusted segments may operate hops in non-sandbox
+[PIC Sandboxed Execution Specification](https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-lineage-guardrail-spec.md) (Section 3.4): trusted segments may operate hops in non-sandbox
 mode; untrusted or high-risk segments use sandbox mode.
 
 # Hybrid Enterprise Architectures
@@ -202,7 +261,8 @@ mode; untrusted or high-risk segments use sandbox mode.
 This section is non-normative. Enterprise deployments are rarely uniform: one execution may cross segments with different threat
 assumptions in the same chain. While execution crosses a segment in which consecutive collusion is out of scope, decentralized incremental
 verification may be used; when it enters a segment in which consecutive collusion is in scope, the deployment uses the selected
-collusion-resistant profile — Trust Plane validation, full-chain validation, or an approved succinct-proof profile (Section 3). The PIC
+collusion-resistant profile - Trust Plane validation, full-history validation, authenticated checkpoints, or an approved succinct-proof
+profile (Section 3). The PIC
 invariants are the same everywhere ([PIC Specification](https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-spec.md);
 [PIC Prover and Verifier Specification](https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-prover-verifier-spec.md), Sections 2.4 and 3.3); only the validation topology, the
 chain-validation profile, and the resulting assurance assumptions change.
@@ -240,25 +300,25 @@ segment above.
 
 # Interoperability
 
-This section is non-normative. For interoperability with existing token infrastructures, the definition of an **OAuth Token Exchange
-profile** is recommended: exchanging an Access Token for a PCA and a PCA for an Access Token, so that PIC enters and leaves existing
-systems without integration friction. This is consistent with PCA0 derivation from existing credentials
-([PIC Prover and Verifier Specification](https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-prover-verifier-spec.md), Section 1.8) and builds on OAuth 2.0 Token Exchange
-[[4]](#references). The profile will be defined in a future specification.
+This section is non-normative. OAuth is one possible entry mechanism for PIC, not a dependency of the PIC model. A profile MAY define an
+OAuth Token Exchange binding that derives initial PIC authority from an OAuth access token, an initial continuity proposal, an exchange
+profile, and local policy.
 
 ~~~text
 OAUTH INFRASTRUCTURE                      PIC
 
-+--------------+     token exchange      +--------------+
-| ACCESS TOKEN |------------------------>| PCA0         |   enter PIC
-+--------------+                         +--------------+
++--------------+     token exchange      +----------------------+
+| ACCESS TOKEN |------------------------>| PIC Continuity JWT   |   enter PIC
++--------------+                         +----------------------+
 
-+--------------+     token exchange      +--------------+
-| PCA          |------------------------>| ACCESS TOKEN |   leave PIC
-+--------------+                         +--------------+
-
-one profile, both directions
+the trusted root PCA representation is created inside the exchange
 ~~~
+
+In the Profile 0.2 / PIC-X realization, the exchange returns a PIC Continuity JWT. The PIC PCA JWT is created as the trusted root artifact
+inside that process and is carried by the returned PIC Continuity JWT at `context_of_authority.root.pca_jwt`; its compact-artifact hash is
+carried at `context_of_authority.root.pca_jwt_hash`. The returned PIC Continuity JWT is not merely an OAuth Bearer access token, even when
+OAuth Token Exchange carries it in an `access_token` response member. Transport of PIC continuity artifacts is a profile-defined binding; for
+HTTP, a deployment MAY use a `PIC-Token` header.
 
 # Contributors {#contributors}
 

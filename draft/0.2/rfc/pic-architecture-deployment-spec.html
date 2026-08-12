@@ -10,14 +10,14 @@
        This document is the  PIC Architecture and Deployment Specification , a subordinate specification of the
  PIC Specification . It describes how the components defined by the
  PIC Prover and Verifier Specification  and the
- PIC Execution Guardrail Specification  are arranged and operated in concrete systems: the two deployment
-architectures —  centralized , where a trusted central server, the  Trust Plane , validates every transition against the lineage
-history it holds, and  decentralized , where every hop proves and verifies locally — their fit to trusted and untrusted environments,
-hybrid enterprise compositions of the two,
-and interoperability with existing token infrastructures through an OAuth token-exchange profile to be defined in a future specification. 
+ PIC Sandboxed Execution Specification  are arranged and operated in concrete systems: the two deployment
+architectures -  centralized , where a trusted central continuity service validates continuation requests and issues or authenticates the
+resulting continuity state, and  decentralized , where permitted nodes advance continuity locally according to profile rules - their fit
+to trusted and untrusted environments, hybrid enterprise compositions of the two, and interoperability with existing token infrastructures
+through a profile-defined OAuth token-exchange binding.
        This revision describes the architectures; the normative deployment requirements will be developed in forthcoming revisions. This document
 does not redefine, extend, or alter the PIC Model or the normative semantics defined by the PIC Specification. In case of conflict, the
- PIC Specification  is authoritative. 
+ PIC Specification  is authoritative.
     " name="description">
 <meta content="xml2rfc 3.32.0" name="generator">
 <meta content="pic-architecture-deployment-02" name="ietf.draft">
@@ -237,7 +237,7 @@ dl > dt {
   float: left;
   margin-right: 1em;
 }
-/* 
+/*
 dl.nohang > dt {
   float: none;
 }
@@ -1223,7 +1223,7 @@ li > p:last-of-type:only-child {
 <thead><tr>
 <td class="left"></td>
 <td class="center">PIC Architecture and Deployment</td>
-<td class="right">July 2026</td>
+<td class="right">August 2026</td>
 </tr></thead>
 <tfoot><tr>
 <td class="left">Gallo</td>
@@ -1236,7 +1236,7 @@ li > p:last-of-type:only-child {
 <dl id="identifiers">
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-07-19" class="published">19 July 2026</time>
+<time datetime="2026-08-12" class="published">12 August 2026</time>
     </dd>
 <dt class="label-authors">Author:</dt>
 <dd class="authors">
@@ -1253,11 +1253,11 @@ li > p:last-of-type:only-child {
 <p id="section-abstract-1">This document is the <strong>PIC Architecture and Deployment Specification</strong>, a subordinate specification of the
 <a href="pic-spec.html">PIC Specification</a>. It describes how the components defined by the
 <a href="pic-prover-verifier-spec.html">PIC Prover and Verifier Specification</a> and the
-<a href="pic-lineage-guardrail-spec.html">PIC Execution Guardrail Specification</a> are arranged and operated in concrete systems: the two deployment
-architectures — <strong>centralized</strong>, where a trusted central server, the <strong>Trust Plane</strong>, validates every transition against the lineage
-history it holds, and <strong>decentralized</strong>, where every hop proves and verifies locally — their fit to trusted and untrusted environments,
-hybrid enterprise compositions of the two,
-and interoperability with existing token infrastructures through an OAuth token-exchange profile to be defined in a future specification.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+<a href="pic-lineage-guardrail-spec.html">PIC Sandboxed Execution Specification</a> are arranged and operated in concrete systems: the two deployment
+architectures - <strong>centralized</strong>, where a trusted central continuity service validates continuation requests and issues or authenticates the
+resulting continuity state, and <strong>decentralized</strong>, where permitted nodes advance continuity locally according to profile rules - their fit
+to trusted and untrusted environments, hybrid enterprise compositions of the two, and interoperability with existing token infrastructures
+through a profile-defined OAuth token-exchange binding.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
 <p id="section-abstract-2">This revision describes the architectures; the normative deployment requirements will be developed in forthcoming revisions. This document
 does not redefine, extend, or alter the PIC Model or the normative semantics defined by the PIC Specification. In case of conflict, the
 <strong>PIC Specification</strong> is authoritative.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
@@ -1272,7 +1272,7 @@ does not redefine, extend, or alter the PIC Model or the normative semantics def
 <strong>Version:</strong> 0.2 (Draft)
 <strong>Document Status:</strong> Public Draft
 <strong>Intended Use:</strong> Informational and Experimental
-<strong>Published:</strong> 2026-07-19
+<strong>Published:</strong> 2026-08-12
 <strong>Editor(s):</strong> Nicola Gallo (Nitro Agility S.r.l.)
 <strong>Steward:</strong> Nitro Agility S.r.l.
 <strong>Source:</strong> <a href="https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-architecture-deployment-spec.md">github.com/pic-protocol/pic-spec/draft/0.2/pic-architecture-deployment-spec.md</a><a href="#section-note.1-1" class="pilcrow">¶</a></p>
@@ -1300,25 +1300,41 @@ regulatory approval, or standards-body recognition.<a href="#section-note.2-1.1.
       </ul>
 </section>
 <section class="note" id="section-note.3">
-      <h2 id="name-editors">
-<a href="#name-editors" class="section-name selfRef">Editors</a>
+      <h2 id="name-work-in-progress">
+<a href="#name-work-in-progress" class="section-name selfRef">Work In Progress</a>
       </h2>
-<ul class="normal note">
-<li class="normal note" id="section-note.3-1.1">
-          <p id="section-note.3-1.1.1"><strong>Nicola Gallo</strong> (Nitro Agility S.r.l.) Lead Editor<a href="#section-note.3-1.1.1" class="pilcrow">¶</a></p>
-</li>
-        <li class="normal note" id="section-note.3-1.2">
-          <p id="section-note.3-1.2.1"><em>Add your name via pull request (individual or organization) — listing is subject to editor approval (see <a href="#contributors" class="auto internal xref">Section 6</a>).</em><a href="#section-note.3-1.2.1" class="pilcrow">¶</a></p>
+<ul class="normal note ulEmpty">
+<li class="normal note ulEmpty" id="section-note.3-1.1">
+          <p id="section-note.3-1.1.1"><strong>Work in Progress — Experimental Design</strong><a href="#section-note.3-1.1.1" class="pilcrow">¶</a></p>
+<p id="section-note.3-1.1.2">The deployment and architecture model described in this document is under active development.<a href="#section-note.3-1.1.2" class="pilcrow">¶</a></p>
+<p id="section-note.3-1.1.3">This model may change substantially before a later stable revision.<a href="#section-note.3-1.1.3" class="pilcrow">¶</a></p>
+<p id="section-note.3-1.1.4">Implementers MUST NOT assume wire compatibility, semantic compatibility, or backward compatibility with future revisions.<a href="#section-note.3-1.1.4" class="pilcrow">¶</a></p>
+<p id="section-note.3-1.1.5">Future drafts may introduce breaking changes to terminology, data structures, processing rules, profile bindings, and
+interoperability requirements.<a href="#section-note.3-1.1.5" class="pilcrow">¶</a></p>
+<p id="section-note.3-1.1.6">The current text is published for design review, experimentation, and implementation feedback.<a href="#section-note.3-1.1.6" class="pilcrow">¶</a></p>
 </li>
       </ul>
 </section>
 <section class="note" id="section-note.4">
+      <h2 id="name-editors">
+<a href="#name-editors" class="section-name selfRef">Editors</a>
+      </h2>
+<ul class="normal note">
+<li class="normal note" id="section-note.4-1.1">
+          <p id="section-note.4-1.1.1"><strong>Nicola Gallo</strong> (Nitro Agility S.r.l.) Lead Editor<a href="#section-note.4-1.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal note" id="section-note.4-1.2">
+          <p id="section-note.4-1.2.1"><em>Add your name via pull request (individual or organization) — listing is subject to editor approval (see <a href="#contributors" class="auto internal xref">Section 6</a>).</em><a href="#section-note.4-1.2.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
+</section>
+<section class="note" id="section-note.5">
       <h2 id="name-contributors">
 <a href="#name-contributors" class="section-name selfRef">Contributors</a>
       </h2>
 <ul class="normal note">
-<li class="normal note" id="section-note.4-1.1">
-          <p id="section-note.4-1.1.1"><em>Add your name via pull request (individual or organization) — listing is subject to editor approval (see <a href="#contributors" class="auto internal xref">Section 6</a>).</em><a href="#section-note.4-1.1.1" class="pilcrow">¶</a></p>
+<li class="normal note" id="section-note.5-1.1">
+          <p id="section-note.5-1.1.1"><em>Add your name via pull request (individual or organization) — listing is subject to editor approval (see <a href="#contributors" class="auto internal xref">Section 6</a>).</em><a href="#section-note.5-1.1.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
 </section>
@@ -1393,7 +1409,7 @@ regulatory approval, or standards-body recognition.<a href="#section-note.2-1.1.
 their fit to trusted and untrusted environments (Section 3), hybrid enterprise compositions (Section 4), and interoperability with
 existing token infrastructures (Section 5). The components deployed are those of the
 <a href="pic-prover-verifier-spec.html">PIC Prover and Verifier Specification</a> and the
-<a href="pic-lineage-guardrail-spec.html">PIC Execution Guardrail Specification</a>.<a href="#section-1-2" class="pilcrow">¶</a></p>
+<a href="pic-lineage-guardrail-spec.html">PIC Sandboxed Execution Specification</a>.<a href="#section-1-2" class="pilcrow">¶</a></p>
 <div id="requirements-notation">
 <section id="section-1.1">
         <h3 id="name-requirements-notation">
@@ -1419,14 +1435,34 @@ cost and assurance properties.<a href="#section-2-1" class="pilcrow">¶</a></p>
         <h3 id="name-centralized">
 <a href="#section-2.1" class="section-number selfRef">2.1. </a><a href="#name-centralized" class="section-name selfRef">Centralized</a>
         </h3>
-<p id="section-2.1-1">In the centralized architecture the hops work exactly as in the decentralized one — each executor constructs, signs, and remains the
-signer of its own PCA — but every proposed transition is submitted to a trusted central server, the <strong>Trust Plane</strong>, which acts as the
-Verifier of the <code>n+1</code> transition (<a href="pic-prover-verifier-spec.html">PIC Prover and Verifier Specification</a>, Sections 3 and 5.2): it
-validates the transition against the lineage history it holds and may add its own signature — a validation attestation, receipt, envelope,
-or checkpoint. That signature attests Trust Plane validation; it does not replace, and must not be interpreted as, the executor signature.
-Where a profile lets the Trust Plane materially construct a PCA, the final signature is still produced by the executor or through an
-explicit, normatively defined signing delegation. The rest of this document uses Trust Plane for the centralized trusted server.<a href="#section-2.1-1" class="pilcrow">¶</a></p>
-<div class="lang-text sourcecode" id="section-2.1-2">
+<p id="section-2.1-1">In the centralized architecture, a current continuity state and continuation input are submitted to a trusted central continuity service. The
+service validates the predecessor state, the proposed advancement, revocation state, non-expansion, request/execution binding, and any
+profile-required evidence. If validation succeeds, it issues or authenticates the next continuity state according to the selected profile.
+The rest of this document uses <strong>Trust Plane</strong> for such a centralized trusted service.<a href="#section-2.1-1" class="pilcrow">¶</a></p>
+<p id="section-2.1-2">In the PIC Profile 0.2 / PIC-X realization, centralized continuity is:<a href="#section-2.1-2" class="pilcrow">¶</a></p>
+<div class="lang-text sourcecode" id="section-2.1-3">
+<pre>
+trusted PIC-X-issued settled PIC Continuity JWT N
+        |
+        | workload proposes exactly one advancement
+        v
+workload-signed candidate PIC Continuity JWT
+        |
+        +-- continuity_transition_jwt
+        |
+        v
+PIC-X validation
+        |
+        v
+PIC-X-issued settled PIC Continuity JWT N+1
+        |
+        `-- no continuity_transition_jwt
+</pre><a href="#section-2.1-3" class="pilcrow">¶</a>
+</div>
+<p id="section-2.1-4">PIC-X validates the workload-signed candidate and Continuity Transition JWT. PIC-X does not centrally sign the Continuity Transition JWT; it
+signs the next settled PIC Continuity JWT. PIC-X is a concrete implementation and profile realization, not a required component of the
+abstract PIC model.<a href="#section-2.1-4" class="pilcrow">¶</a></p>
+<div class="lang-text sourcecode" id="section-2.1-5">
 <pre>
 +--------+        +--------+        +--------+
 | HOP 1  |        | HOP 2  |        | HOP 3  |
@@ -1436,14 +1472,14 @@ explicit, normatively defined signing delegation. The rest of this document uses
        v               v               v
       +---------------------------------+
       |           TRUST PLANE           |
-      |   validates every transition    |
-      |   signs validation attestations |
-      |   holds the lineage history     |
+      | validates continuation state    |
+      | issues/authenticates continuity |
+      | uses profile-defined state      |
       +---------------------------------+
 
-executors sign their own PCAs;
-the Trust Plane signs its validation
-</pre><a href="#section-2.1-2" class="pilcrow">¶</a>
+centralized advancement produces the next
+profile-defined continuity state
+</pre><a href="#section-2.1-5" class="pilcrow">¶</a>
 </div>
 </section>
 </div>
@@ -1452,18 +1488,38 @@ the Trust Plane signs its validation
         <h3 id="name-decentralized">
 <a href="#section-2.2" class="section-number selfRef">2.2. </a><a href="#name-decentralized" class="section-name selfRef">Decentralized</a>
         </h3>
-<p id="section-2.2-1">Each hop runs its own PIC Prover and PIC Verifier locally: no central component is required, and every transition is proved and verified
-at the hop that performs it.<a href="#section-2.2-1" class="pilcrow">¶</a></p>
-<div class="lang-text sourcecode" id="section-2.2-2">
+<p id="section-2.2-1">In the decentralized architecture, a local prover, runtime, or workload advances continuity according to the selected profile without
+contacting a central service for every hop. The resulting continuity state remains subject to ordinary verification by the receiver and by
+any later central validation or re-issuance step defined by the profile.<a href="#section-2.2-1" class="pilcrow">¶</a></p>
+<p id="section-2.2-2">This topology is not part of the current PIC Profile 0.2 / PIC-X realization. Profile 0.2 currently defines centralized PIC-X-mediated
+advancement only. A future or separate profile may define local advancement, holder-signed settled artifacts, transition-history transport,
+or other decentralized mechanisms, but those mechanisms are not advertised as Profile 0.2 behavior by this document.<a href="#section-2.2-2" class="pilcrow">¶</a></p>
+<div class="lang-text sourcecode" id="section-2.2-3">
 <pre>
 +-------------+       +-------------+       +-------------+
 | HOP 1       |------&gt;| HOP 2       |------&gt;| HOP 3       |
 | local P + V |  PoR  | local P + V |  PoR  | local P + V |
 +-------------+       +-------------+       +-------------+
 
-no central component; every hop proves and verifies locally
-</pre><a href="#section-2.2-2" class="pilcrow">¶</a>
+no central component on every hop;
+advancement and verification follow the selected profile
+</pre><a href="#section-2.2-3" class="pilcrow">¶</a>
 </div>
+<p id="section-2.2-4">Central validation or re-issuance of locally advanced state is a possible future or separate-profile mechanism, distinct from advancement.
+It is not part of current Profile 0.2. Such a profile could validate and re-issue the same continuity state:<a href="#section-2.2-4" class="pilcrow">¶</a></p>
+<div class="lang-text sourcecode" id="section-2.2-5">
+<pre>
+locally issued PIC Continuity JWT M
+        |
+        v
+central validation
+        |
+        v
+centrally re-issued PIC Continuity JWT M
+</pre><a href="#section-2.2-5" class="pilcrow">¶</a>
+</div>
+<p id="section-2.2-6">Such same-position re-issuance would create no new transition and would not increment position. Current Profile 0.2 does not define this
+decentralized subchain re-issuance behavior.<a href="#section-2.2-6" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="consecutive-collusion-and-history">
@@ -1471,7 +1527,7 @@ no central component; every hop proves and verifies locally
         <h3 id="name-consecutive-collusion-and-h">
 <a href="#section-2.3" class="section-number selfRef">2.3. </a><a href="#name-consecutive-collusion-and-h" class="section-name selfRef">Consecutive Collusion and History</a>
         </h3>
-<p id="section-2.3-1">The decentralized incremental profile is secure hop by hop, with one documented limit
+<p id="section-2.3-1">An incremental or history-limited profile is secure hop by hop under its selected trust assumptions, with one documented limit
 (<a href="pic-prover-verifier-spec.html">PIC Prover and Verifier Specification</a>, Section 6.8): two or more consecutive colluding hops cannot be
 detected when the receiving Verifier lacks authenticated evidence of the earlier lineage prefix.<a href="#section-2.3-1" class="pilcrow">¶</a></p>
 <div class="lang-text sourcecode" id="section-2.3-2">
@@ -1484,7 +1540,8 @@ colluding hops: without the history, HOP 4
 cannot re-check the step from HOP 1 to HOP 2
 </pre><a href="#section-2.3-2" class="pilcrow">¶</a>
 </div>
-<p id="section-2.3-3">The history can be held by the Trust Plane, carried inside the PCA chain, or committed to by a succinct proof
+<p id="section-2.3-3">Continuity history or validation state can be held by the Trust Plane, carried in the continuity artifact, authenticated by external state,
+checkpointed, compacted, referenced, or committed to by a succinct proof
 (<a href="pic-prover-verifier-spec.html">PIC Prover and Verifier Specification</a>, Sections 5.1–5.3). Carrying the complete prefix makes size and
 validation cost grow linearly with lineage length, so it is unsuitable as the default lightweight profile; a deployment may nevertheless
 select full-chain validation when its stronger independent-verification property justifies the O(n) cost. A succinct proof keeps
@@ -1504,26 +1561,26 @@ verification cheap but moves the cost to proof generation and adds the proof-sys
             <tr>
               <td class="text-left" rowspan="1" colspan="1">Centralized: Trust Plane</td>
               <td class="text-left" rowspan="1" colspan="1">yes</td>
-              <td class="text-left" rowspan="1" colspan="1">history or authenticated validation state held by the Trust Plane</td>
-              <td class="text-left" rowspan="1" colspan="1">O(1) per hop</td>
+              <td class="text-left" rowspan="1" colspan="1">profile-defined history or authenticated validation state</td>
+              <td class="text-left" rowspan="1" colspan="1">profile-defined</td>
               <td class="text-left" rowspan="1" colspan="1">resisted under the Trust Plane assumptions</td>
             </tr>
             <tr>
-              <td class="text-left" rowspan="1" colspan="1">Decentralized, incremental</td>
+              <td class="text-left" rowspan="1" colspan="1">Other-profile decentralized, history-limited</td>
               <td class="text-left" rowspan="1" colspan="1">none</td>
-              <td class="text-left" rowspan="1" colspan="1">immediate transition only</td>
-              <td class="text-left" rowspan="1" colspan="1">O(1)</td>
-              <td class="text-left" rowspan="1" colspan="1">not resisted</td>
+              <td class="text-left" rowspan="1" colspan="1">profile-defined local state or artifact state</td>
+              <td class="text-left" rowspan="1" colspan="1">profile-defined</td>
+              <td class="text-left" rowspan="1" colspan="1">not resisted without authenticated prefix evidence</td>
             </tr>
             <tr>
-              <td class="text-left" rowspan="1" colspan="1">Decentralized, full-chain</td>
+              <td class="text-left" rowspan="1" colspan="1">Other-profile decentralized, full-history</td>
               <td class="text-left" rowspan="1" colspan="1">none</td>
               <td class="text-left" rowspan="1" colspan="1">complete prefix carried or otherwise available</td>
-              <td class="text-left" rowspan="1" colspan="1">O(n) size and verification</td>
+              <td class="text-left" rowspan="1" colspan="1">O(n) size and verification unless compacted</td>
               <td class="text-left" rowspan="1" colspan="1">resisted</td>
             </tr>
             <tr>
-              <td class="text-left" rowspan="1" colspan="1">Decentralized, succinct proof</td>
+              <td class="text-left" rowspan="1" colspan="1">Other-profile decentralized, succinct proof</td>
               <td class="text-left" rowspan="1" colspan="1">none</td>
               <td class="text-left" rowspan="1" colspan="1">proof commits to the validated prefix</td>
               <td class="text-left" rowspan="1" colspan="1">succinct verification; generation cost per proof system</td>
@@ -1544,9 +1601,9 @@ verification cheap but moves the cost to proof generation and adds the proof-sys
 <p id="section-3-1">This section is non-normative. The choice between the two architectures follows the environment.<a href="#section-3-1" class="pilcrow">¶</a></p>
 <p id="section-3-2">In a <strong>trusted environment</strong> — one whose hops the deployment threat model accepts as trustworthy — consecutive collusion is out of scope:
 decentralized incremental validation may be sufficient, with no central dependency. In an <strong>untrusted environment</strong> where consecutive
-collusion is in scope, the deployment must select a profile that independently authenticates the relevant lineage prefix: a Trust Plane
-with authenticated history, full-chain validation, or an approved succinct-proof profile (Section 2.3). The Trust Plane is the
-operationally preferred choice — collusion resistance at O(1) without advanced cryptography — but not the only profile the model permits.
+collusion is in scope, the deployment must select a profile that independently authenticates the relevant lineage prefix: a Trust Plane,
+full-history validation, authenticated checkpoints, or an approved succinct-proof profile (Section 2.3). The Trust Plane is one operational
+choice for bounded validation without advanced cryptography, but not the only profile the model permits.
 Trust is a property of the deployment threat model, its trust anchors, and the adopted profile — a single administrative domain is not
 trusted by itself.<a href="#section-3-2" class="pilcrow">¶</a></p>
 <table class="center" id="table-2">
@@ -1572,7 +1629,7 @@ trusted by itself.<a href="#section-3-2" class="pilcrow">¶</a></p>
         </tbody>
       </table>
 <p id="section-3-4">The same segmentation drives the guardrail deployment modes of the
-<a href="pic-lineage-guardrail-spec.html">PIC Execution Guardrail Specification</a> (Section 3.4): trusted segments may operate hops in non-sandbox
+<a href="pic-lineage-guardrail-spec.html">PIC Sandboxed Execution Specification</a> (Section 3.4): trusted segments may operate hops in non-sandbox
 mode; untrusted or high-risk segments use sandbox mode.<a href="#section-3-4" class="pilcrow">¶</a></p>
 </section>
 </div>
@@ -1584,7 +1641,8 @@ mode; untrusted or high-risk segments use sandbox mode.<a href="#section-3-4" cl
 <p id="section-4-1">This section is non-normative. Enterprise deployments are rarely uniform: one execution may cross segments with different threat
 assumptions in the same chain. While execution crosses a segment in which consecutive collusion is out of scope, decentralized incremental
 verification may be used; when it enters a segment in which consecutive collusion is in scope, the deployment uses the selected
-collusion-resistant profile — Trust Plane validation, full-chain validation, or an approved succinct-proof profile (Section 3). The PIC
+collusion-resistant profile - Trust Plane validation, full-history validation, authenticated checkpoints, or an approved succinct-proof
+profile (Section 3). The PIC
 invariants are the same everywhere (<a href="pic-spec.html">PIC Specification</a>;
 <a href="pic-prover-verifier-spec.html">PIC Prover and Verifier Specification</a>, Sections 2.4 and 3.3); only the validation topology, the
 chain-validation profile, and the resulting assurance assumptions change.<a href="#section-4-1" class="pilcrow">¶</a></p>
@@ -1629,26 +1687,25 @@ segment above.<a href="#section-4.1-1" class="pilcrow">¶</a></p>
       <h2 id="name-interoperability">
 <a href="#section-5" class="section-number selfRef">5. </a><a href="#name-interoperability" class="section-name selfRef">Interoperability</a>
       </h2>
-<p id="section-5-1">This section is non-normative. For interoperability with existing token infrastructures, the definition of an <strong>OAuth Token Exchange
-profile</strong> is recommended: exchanging an Access Token for a PCA and a PCA for an Access Token, so that PIC enters and leaves existing
-systems without integration friction. This is consistent with PCA0 derivation from existing credentials
-(<a href="pic-prover-verifier-spec.html">PIC Prover and Verifier Specification</a>, Section 1.8) and builds on OAuth 2.0 Token Exchange
-<span><a href="#references" class="internal xref">[4]</a> (<a href="#references" class="auto internal xref">Section 9</a>)</span>. The profile will be defined in a future specification.<a href="#section-5-1" class="pilcrow">¶</a></p>
+<p id="section-5-1">This section is non-normative. OAuth is one possible entry mechanism for PIC, not a dependency of the PIC model. A profile MAY define an
+OAuth Token Exchange binding that derives initial PIC authority from an OAuth access token, an initial continuity proposal, an exchange
+profile, and local policy.<a href="#section-5-1" class="pilcrow">¶</a></p>
 <div class="lang-text sourcecode" id="section-5-2">
 <pre>
 OAUTH INFRASTRUCTURE                      PIC
 
-+--------------+     token exchange      +--------------+
-| ACCESS TOKEN |------------------------&gt;| PCA0         |   enter PIC
-+--------------+                         +--------------+
++--------------+     token exchange      +----------------------+
+| ACCESS TOKEN |------------------------&gt;| PIC Continuity JWT   |   enter PIC
++--------------+                         +----------------------+
 
-+--------------+     token exchange      +--------------+
-| PCA          |------------------------&gt;| ACCESS TOKEN |   leave PIC
-+--------------+                         +--------------+
-
-one profile, both directions
+the trusted root PCA representation is created inside the exchange
 </pre><a href="#section-5-2" class="pilcrow">¶</a>
 </div>
+<p id="section-5-3">In the Profile 0.2 / PIC-X realization, the exchange returns a PIC Continuity JWT. The PIC PCA JWT is created as the trusted root artifact
+inside that process and is carried by the returned PIC Continuity JWT at <code>context_of_authority.root.pca_jwt</code>; its compact-artifact hash is
+carried at <code>context_of_authority.root.pca_jwt_hash</code>. The returned PIC Continuity JWT is not merely an OAuth Bearer access token, even when
+OAuth Token Exchange carries it in an <code>access_token</code> response member. Transport of PIC continuity artifacts is a profile-defined binding; for
+HTTP, a deployment MAY use a <code>PIC-Token</code> header.<a href="#section-5-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="contributors">

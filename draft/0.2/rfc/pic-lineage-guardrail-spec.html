@@ -9,26 +9,26 @@
 <meta content="
        This document is the  PIC Sandboxed Execution Specification , a subordinate specification of the
  PIC Specification . It retains its historical repository
-filename ( pic-lineage-guardrail-spec.md ). 
-       A  Multi-Lineage Execution  carries one or more independent PIC lineages together for one proposed transition. When such a transition must
-be validated and controlled by configured policy, that control is itself an execution — and PIC governs it the way it governs any other: as
-a lineage. 
-       A  Sandboxed Execution  places the Multi-Lineage Execution inside an ordinary outer PIC lineage. Each  guardrail  is a normal executor
-of that outer lineage: it verifies the outer continuation, verifies every carried inner lineage, applies the enforcement function, and — on
-permit — proves the next ordinary outer PCA. 
-       No new PCA type is introduced, no trusted sandbox, and no external guardrail authority. The outer lineage is identified only by the
-operation  ENFORCE  and by one signed profile field,  multiLineage , that carries the inner execution. The construction is recursive: a
-carried lineage may itself be a Sandboxed Execution. 
-       
-         
-           A Sandboxed Execution is PIC applied recursively: an outer PIC execution carries and governs an inner PIC execution. 
-         
-       
-       Guardrails build on the PCA format of the
+filename ( pic-lineage-guardrail-spec.md ).
+       A  Composition Collection  carries one or more independent PIC continuities together for one proposed transition. When such a transition
+must be validated and controlled by configured policy, that control is itself an execution, and PIC governs it the way it governs any other
+execution: as a continuity.
+       A  Sandboxed Execution  places the Composition Collection inside an ordinary outer PIC continuity. Each  guardrail  is a normal executor
+of that outer continuity: it verifies the outer continuity state, verifies every member continuity, applies the enforcement function, and —
+on permit — produces the next ordinary continuity advancement.
+       No new continuity primitive is introduced, no trusted sandbox, and no external guardrail authority. The outer continuity is identified by the
+operation  ENFORCE  and by a profile-defined authenticated binding to the exact Composition Collection being evaluated. The construction is
+recursive: a member continuity may itself be a Sandboxed Execution.
+
+
+           A Sandboxed Execution is PIC applied recursively: an outer PIC execution carries and governs an inner PIC execution.
+
+
+       Guardrails build on the continuity semantics of the
  PIC Prover and Verifier Specification  and are
 consistent with the  PIC Revocation Specification ;
-they do not alter Proof of Relationship, non-expansion, or the rule that every PCA continues exactly one predecessor. In case of conflict,
-the  PIC Specification  is authoritative. 
+they do not alter Proof of Relationship, non-expansion, or the rule that every non-root continuity advancement continues exactly one
+predecessor. In case of conflict, the  PIC Specification  is authoritative.
     " name="description">
 <meta content="xml2rfc 3.32.0" name="generator">
 <meta content="pic-sandboxed-execution-02" name="ietf.draft">
@@ -248,7 +248,7 @@ dl > dt {
   float: left;
   margin-right: 1em;
 }
-/* 
+/*
 dl.nohang > dt {
   float: none;
 }
@@ -1264,25 +1264,25 @@ li > p:last-of-type:only-child {
 <p id="section-abstract-1">This document is the <strong>PIC Sandboxed Execution Specification</strong>, a subordinate specification of the
 <a href="pic-spec.html">PIC Specification</a>. It retains its historical repository
 filename (<code>pic-lineage-guardrail-spec.md</code>).<a href="#section-abstract-1" class="pilcrow">¶</a></p>
-<p id="section-abstract-2">A <strong>Multi-Lineage Execution</strong> carries one or more independent PIC lineages together for one proposed transition. When such a transition must
-be validated and controlled by configured policy, that control is itself an execution — and PIC governs it the way it governs any other: as
-a lineage.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
-<p id="section-abstract-3">A <strong>Sandboxed Execution</strong> places the Multi-Lineage Execution inside an ordinary outer PIC lineage. Each <strong>guardrail</strong> is a normal executor
-of that outer lineage: it verifies the outer continuation, verifies every carried inner lineage, applies the enforcement function, and — on
-permit — proves the next ordinary outer PCA.<a href="#section-abstract-3" class="pilcrow">¶</a></p>
-<p id="section-abstract-4">No new PCA type is introduced, no trusted sandbox, and no external guardrail authority. The outer lineage is identified only by the
-operation <code>ENFORCE</code> and by one signed profile field, <code>multiLineage</code>, that carries the inner execution. The construction is recursive: a
-carried lineage may itself be a Sandboxed Execution.<a href="#section-abstract-4" class="pilcrow">¶</a></p>
+<p id="section-abstract-2">A <strong>Composition Collection</strong> carries one or more independent PIC continuities together for one proposed transition. When such a transition
+must be validated and controlled by configured policy, that control is itself an execution, and PIC governs it the way it governs any other
+execution: as a continuity.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
+<p id="section-abstract-3">A <strong>Sandboxed Execution</strong> places the Composition Collection inside an ordinary outer PIC continuity. Each <strong>guardrail</strong> is a normal executor
+of that outer continuity: it verifies the outer continuity state, verifies every member continuity, applies the enforcement function, and —
+on permit — produces the next ordinary continuity advancement.<a href="#section-abstract-3" class="pilcrow">¶</a></p>
+<p id="section-abstract-4">No new continuity primitive is introduced, no trusted sandbox, and no external guardrail authority. The outer continuity is identified by the
+operation <code>ENFORCE</code> and by a profile-defined authenticated binding to the exact Composition Collection being evaluated. The construction is
+recursive: a member continuity may itself be a Sandboxed Execution.<a href="#section-abstract-4" class="pilcrow">¶</a></p>
 <ul class="normal ulEmpty">
 <li class="normal ulEmpty" id="section-abstract-5.1">
           <p id="section-abstract-5.1.1">A Sandboxed Execution is PIC applied recursively: an outer PIC execution carries and governs an inner PIC execution.<a href="#section-abstract-5.1.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
-<p id="section-abstract-6">Guardrails build on the PCA format of the
+<p id="section-abstract-6">Guardrails build on the continuity semantics of the
 <a href="pic-prover-verifier-spec.html">PIC Prover and Verifier Specification</a> and are
 consistent with the <a href="pic-revocation-spec.html">PIC Revocation Specification</a>;
-they do not alter Proof of Relationship, non-expansion, or the rule that every PCA continues exactly one predecessor. In case of conflict,
-the <strong>PIC Specification</strong> is authoritative.<a href="#section-abstract-6" class="pilcrow">¶</a></p>
+they do not alter Proof of Relationship, non-expansion, or the rule that every non-root continuity advancement continues exactly one
+predecessor. In case of conflict, the <strong>PIC Specification</strong> is authoritative.<a href="#section-abstract-6" class="pilcrow">¶</a></p>
 </section>
 <section class="note" id="section-note.1">
       <h2 id="name-document-status">
@@ -1298,8 +1298,8 @@ the <strong>PIC Specification</strong> is authoritative.<a href="#section-abstra
 <strong>Editor(s):</strong> Nicola Gallo (Nitro Agility S.r.l.)
 <strong>Steward:</strong> Nitro Agility S.r.l.
 <strong>Source:</strong> <a href="https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-lineage-guardrail-spec.md">github.com/pic-protocol/pic-spec/draft/0.2/pic-lineage-guardrail-spec.md</a><a href="#section-note.1-1" class="pilcrow">¶</a></p>
-<p id="section-note.1-2">This revision defines the <strong>Sandboxed Execution</strong>: PIC applied recursively — an outer PIC lineage that carries and governs an inner
-Multi-Lineage Execution. It introduces no new PCA type and no trusted sandbox.<a href="#section-note.1-2" class="pilcrow">¶</a></p>
+<p id="section-note.1-2">This revision defines the <strong>Sandboxed Execution</strong>: PIC applied recursively — an outer PIC continuity that carries and governs an inner
+Composition Collection. It introduces no new continuity artifact type and no trusted sandbox.<a href="#section-note.1-2" class="pilcrow">¶</a></p>
 </section>
 <section class="note" id="section-note.2">
       <h2 id="name-about-this-document">
@@ -1324,25 +1324,41 @@ regulatory approval, or standards-body recognition.<a href="#section-note.2-1.1.
       </ul>
 </section>
 <section class="note" id="section-note.3">
-      <h2 id="name-editors">
-<a href="#name-editors" class="section-name selfRef">Editors</a>
+      <h2 id="name-work-in-progress">
+<a href="#name-work-in-progress" class="section-name selfRef">Work In Progress</a>
       </h2>
-<ul class="normal note">
-<li class="normal note" id="section-note.3-1.1">
-          <p id="section-note.3-1.1.1"><strong>Nicola Gallo</strong> (Nitro Agility S.r.l.) Lead Editor<a href="#section-note.3-1.1.1" class="pilcrow">¶</a></p>
-</li>
-        <li class="normal note" id="section-note.3-1.2">
-          <p id="section-note.3-1.2.1"><em>Add your name via pull request (individual or organization) — listing is subject to editor approval (see <a href="#contributors" class="auto internal xref">Section 8</a>).</em><a href="#section-note.3-1.2.1" class="pilcrow">¶</a></p>
+<ul class="normal note ulEmpty">
+<li class="normal note ulEmpty" id="section-note.3-1.1">
+          <p id="section-note.3-1.1.1"><strong>Work in Progress — Experimental Design</strong><a href="#section-note.3-1.1.1" class="pilcrow">¶</a></p>
+<p id="section-note.3-1.1.2">The Sandboxed Execution and Composition Collection model described in this document is under active development.<a href="#section-note.3-1.1.2" class="pilcrow">¶</a></p>
+<p id="section-note.3-1.1.3">This model may change substantially before a later stable revision.<a href="#section-note.3-1.1.3" class="pilcrow">¶</a></p>
+<p id="section-note.3-1.1.4">Implementers MUST NOT assume wire compatibility, semantic compatibility, or backward compatibility with future revisions.<a href="#section-note.3-1.1.4" class="pilcrow">¶</a></p>
+<p id="section-note.3-1.1.5">Future drafts may introduce breaking changes to terminology, data structures, processing rules, profile bindings, and
+interoperability requirements.<a href="#section-note.3-1.1.5" class="pilcrow">¶</a></p>
+<p id="section-note.3-1.1.6">The current text is published for design review, experimentation, and implementation feedback.<a href="#section-note.3-1.1.6" class="pilcrow">¶</a></p>
 </li>
       </ul>
 </section>
 <section class="note" id="section-note.4">
+      <h2 id="name-editors">
+<a href="#name-editors" class="section-name selfRef">Editors</a>
+      </h2>
+<ul class="normal note">
+<li class="normal note" id="section-note.4-1.1">
+          <p id="section-note.4-1.1.1"><strong>Nicola Gallo</strong> (Nitro Agility S.r.l.) Lead Editor<a href="#section-note.4-1.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal note" id="section-note.4-1.2">
+          <p id="section-note.4-1.2.1"><em>Add your name via pull request (individual or organization) — listing is subject to editor approval (see <a href="#contributors" class="auto internal xref">Section 8</a>).</em><a href="#section-note.4-1.2.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
+</section>
+<section class="note" id="section-note.5">
       <h2 id="name-contributors">
 <a href="#name-contributors" class="section-name selfRef">Contributors</a>
       </h2>
 <ul class="normal note">
-<li class="normal note" id="section-note.4-1.1">
-          <p id="section-note.4-1.1.1"><em>Add your name via pull request (individual or organization) — listing is subject to editor approval (see <a href="#contributors" class="auto internal xref">Section 8</a>).</em><a href="#section-note.4-1.1.1" class="pilcrow">¶</a></p>
+<li class="normal note" id="section-note.5-1.1">
+          <p id="section-note.5-1.1.1"><em>Add your name via pull request (individual or organization) — listing is subject to editor approval (see <a href="#contributors" class="auto internal xref">Section 8</a>).</em><a href="#section-note.5-1.1.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
 </section>
@@ -1356,10 +1372,10 @@ regulatory approval, or standards-body recognition.<a href="#section-note.2-1.1.
             <p id="section-toc.1-1.1.1"><a href="#section-1" class="auto internal xref">1</a>.  <a href="#name-introduction" class="internal xref">Introduction</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1.2.1">
-                <p id="section-toc.1-1.1.2.1.1" class="keepWithNext"><a href="#section-1.1" class="auto internal xref">1.1</a>.  <a href="#name-lineage-execution" class="internal xref">Lineage Execution</a></p>
+                <p id="section-toc.1-1.1.2.1.1" class="keepWithNext"><a href="#section-1.1" class="auto internal xref">1.1</a>.  <a href="#name-pic-continuity" class="internal xref">PIC Continuity</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1.2.2">
-                <p id="section-toc.1-1.1.2.2.1" class="keepWithNext"><a href="#section-1.2" class="auto internal xref">1.2</a>.  <a href="#name-multi-lineage-execution" class="internal xref">Multi-Lineage Execution</a></p>
+                <p id="section-toc.1-1.1.2.2.1" class="keepWithNext"><a href="#section-1.2" class="auto internal xref">1.2</a>.  <a href="#name-composition-collection" class="internal xref">Composition Collection</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1.2.3">
                 <p id="section-toc.1-1.1.2.3.1" class="keepWithNext"><a href="#section-1.3" class="auto internal xref">1.3</a>.  <a href="#name-sandboxed-execution" class="internal xref">Sandboxed Execution</a></p>
@@ -1379,10 +1395,10 @@ regulatory approval, or standards-body recognition.<a href="#section-note.2-1.1.
                 <p id="section-toc.1-1.2.2.2.1"><a href="#section-2.2" class="auto internal xref">2.2</a>.  <a href="#name-pic-carrying-pic-pic-of-pic" class="internal xref">PIC Carrying PIC (PIC of PIC)</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.3">
-                <p id="section-toc.1-1.2.2.3.1"><a href="#section-2.3" class="auto internal xref">2.3</a>.  <a href="#name-recursive-multi-lineage-saf" class="internal xref">Recursive Multi-Lineage Safety</a></p>
+                <p id="section-toc.1-1.2.2.3.1"><a href="#section-2.3" class="auto internal xref">2.3</a>.  <a href="#name-recursive-composition-colle" class="internal xref">Recursive Composition Collection Safety</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.4">
-                <p id="section-toc.1-1.2.2.4.1"><a href="#section-2.4" class="auto internal xref">2.4</a>.  <a href="#name-the-multilineage-pca-profil" class="internal xref">The <code>multiLineage</code> PCA Profile Field</a></p>
+                <p id="section-toc.1-1.2.2.4.1"><a href="#section-2.4" class="auto internal xref">2.4</a>.  <a href="#name-composition-collection-bind" class="internal xref">Composition Collection Binding</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.5">
                 <p id="section-toc.1-1.2.2.5.1"><a href="#section-2.5" class="auto internal xref">2.5</a>.  <a href="#name-originating-the-sandboxed-e" class="internal xref">Originating the Sandboxed Execution</a></p>
@@ -1460,46 +1476,46 @@ regulatory approval, or standards-body recognition.<a href="#section-note.2-1.1.
 carries PIC.<a href="#section-1-1" class="pilcrow">¶</a></p>
 <div class="lang-text sourcecode" id="section-1-2">
 <pre>
-LINEAGE EXECUTION
------------------
-one origin; one predecessor per PCA; non-expansion
+PIC CONTINUITY
+--------------
+one root; one predecessor per non-root advancement; non-expansion
 
-MULTI-LINEAGE EXECUTION
------------------------
-n &gt;= 1 independent Lineage Executions carried together
+COMPOSITION COLLECTION
+----------------------
+n &gt;= 1 independent PIC continuities evaluated together
 
 SANDBOXED EXECUTION
 -------------------
-an outer PIC Lineage Execution carrying a Multi-Lineage Execution
+an outer PIC continuity carrying a Composition Collection
 </pre><a href="#section-1-2" class="pilcrow">¶</a>
 </div>
 <p id="section-1-3">The whole construction reduces to one picture:<a href="#section-1-3" class="pilcrow">¶</a></p>
 <div class="lang-text sourcecode" id="section-1-4">
 <pre>
 Sandboxed Execution
-    = outer PIC lineage
+    = outer PIC continuity
       carrying
-      inner Multi-Lineage Execution
+      inner Composition Collection
 </pre><a href="#section-1-4" class="pilcrow">¶</a>
 </div>
-<p id="section-1-5">The outer lineage applies PIC recursively to the execution that validates and controls the inner execution.<a href="#section-1-5" class="pilcrow">¶</a></p>
-<div id="lineage-execution">
+<p id="section-1-5">The outer continuity applies PIC recursively to the execution that validates and controls the inner execution.<a href="#section-1-5" class="pilcrow">¶</a></p>
+<div id="pic-continuity">
 <section id="section-1.1">
-        <h3 id="name-lineage-execution">
-<a href="#section-1.1" class="section-number selfRef">1.1. </a><a href="#name-lineage-execution" class="section-name selfRef">Lineage Execution</a>
+        <h3 id="name-pic-continuity">
+<a href="#section-1.1" class="section-number selfRef">1.1. </a><a href="#name-pic-continuity" class="section-name selfRef">PIC Continuity</a>
         </h3>
 <ul class="normal ulEmpty">
 <li class="normal ulEmpty" id="section-1.1-1.1">
-            <p id="section-1.1-1.1.1">A <strong>Lineage Execution</strong> is a single-origin PIC execution in which every PCA continues exactly one predecessor under PoR, and authority
-remains bounded by the origin authority context.<a href="#section-1.1-1.1.1" class="pilcrow">¶</a></p>
+            <p id="section-1.1-1.1.1">A <strong>PIC Continuity</strong> is a single-root PIC execution in which every non-root continuity advancement continues exactly one predecessor
+under PoR, and authority remains bounded by the root authority context.<a href="#section-1.1-1.1.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
 <ul class="normal">
 <li class="normal" id="section-1.1-2.1">
-            <p id="section-1.1-2.1.1">one origin, PCA0;<a href="#section-1.1-2.1.1" class="pilcrow">¶</a></p>
+            <p id="section-1.1-2.1.1">one trusted root authority context;<a href="#section-1.1-2.1.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-1.1-2.2">
-            <p id="section-1.1-2.2.1">every later PCA continues exactly one predecessor, witnessed by PoR;<a href="#section-1.1-2.2.1" class="pilcrow">¶</a></p>
+            <p id="section-1.1-2.2.1">every later continuity advancement continues exactly one predecessor, witnessed by PoR;<a href="#section-1.1-2.2.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-1.1-2.3">
             <p id="section-1.1-2.3.1">non-expansion at every hop, so authority only narrows;<a href="#section-1.1-2.3.1" class="pilcrow">¶</a></p>
@@ -1513,100 +1529,102 @@ remains bounded by the origin authority context.<a href="#section-1.1-1.1.1" cla
         </ul>
 <div class="lang-text sourcecode" id="section-1.1-3">
 <pre>
-PCA0-A { READ, BACKUP }
+root-A { READ, BACKUP }
    |
    | PoR + non-expansion
    v
-PCA1-A { BACKUP }
+transition-A[1] { BACKUP }
    |
    v
 NEXT EXECUTOR
 
-One origin. One predecessor per PCA. Authority only narrows.
+One root. One predecessor per advancement. Authority only narrows.
 </pre><a href="#section-1.1-3" class="pilcrow">¶</a>
 </div>
-<p id="section-1.1-4">The construction — PCA format, Prover, Verifier — is defined by the
+<p id="section-1.1-4">The construction — root representation, continuity advancement, Prover, and Verifier — is defined by the
 <a href="pic-prover-verifier-spec.html">PIC Prover and Verifier Specification</a>;
 revocation by the <a href="pic-revocation-spec.html">PIC Revocation Specification</a>; the
 formal model and proofs by the PIC Model <span><a href="#references" class="internal xref">[1]</a> (<a href="#references" class="auto internal xref">Section 11</a>)</span>. This document restates none of them.<a href="#section-1.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="multi-lineage-execution">
+<div id="composition-collection">
 <section id="section-1.2">
-        <h3 id="name-multi-lineage-execution">
-<a href="#section-1.2" class="section-number selfRef">1.2. </a><a href="#name-multi-lineage-execution" class="section-name selfRef">Multi-Lineage Execution</a>
+        <h3 id="name-composition-collection">
+<a href="#section-1.2" class="section-number selfRef">1.2. </a><a href="#name-composition-collection" class="section-name selfRef">Composition Collection</a>
         </h3>
 <ul class="normal ulEmpty">
 <li class="normal ulEmpty" id="section-1.2-1.1">
-            <p id="section-1.2-1.1.1">A <strong>Multi-Lineage Execution</strong> carries one or more independent Lineage Executions together for one proposed transition, without merging
-their authorities.<a href="#section-1.2-1.1.1" class="pilcrow">¶</a></p>
+            <p id="section-1.2-1.1.1">A <strong>Composition Collection</strong> is a bounded collection of one or more independently verifiable PIC continuities evaluated together for one
+sandboxed or enforced execution, without merging their authorities.<a href="#section-1.2-1.1.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
 <ul class="normal">
 <li class="normal" id="section-1.2-2.1">
-            <p id="section-1.2-2.1.1">it carries <code>n &gt;= 1</code> independent PIC lineages;<a href="#section-1.2-2.1.1" class="pilcrow">¶</a></p>
+            <p id="section-1.2-2.1.1">it carries <code>n &gt;= 1</code> independent PIC continuities;<a href="#section-1.2-2.1.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-1.2-2.2">
-            <p id="section-1.2-2.2.1">each lineage remains independently verifiable;<a href="#section-1.2-2.2.1" class="pilcrow">¶</a></p>
+            <p id="section-1.2-2.2.1">each continuity remains independently verifiable;<a href="#section-1.2-2.2.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-1.2-2.3">
             <p id="section-1.2-2.3.1">it has no combined authority of its own;<a href="#section-1.2-2.3.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-1.2-2.4">
-            <p id="section-1.2-2.4.1">it is the execution input carried by the <code>multiLineage</code> field (Section 2.4).<a href="#section-1.2-2.4.1" class="pilcrow">¶</a></p>
+            <p id="section-1.2-2.4.1">it is the execution input bound to the outer <code>ENFORCE</code> advancement (Section 2.4).<a href="#section-1.2-2.4.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
 <div class="lang-text sourcecode" id="section-1.2-3">
 <pre>
 +========================================+
-| MULTI-LINEAGE EXECUTION                |
+| COMPOSITION COLLECTION                 |
 |                                        |
-| carried lineage A: PCA1-A { BACKUP }   |
-| carried lineage B: PCA0-B { WRITE-S3 } |
+| member continuity A: { BACKUP }        |
+| member continuity B: { WRITE-S3 }      |
 |                                        |
 | authorities remain separate            |
 +========================================+
 
-Distinct lineages, one proposed transition.
+Distinct continuities, one proposed transition.
 </pre><a href="#section-1.2-3" class="pilcrow">¶</a>
 </div>
-<p id="section-1.2-4">A <strong>carried lineage</strong> is an independently verifiable PIC lineage representation carried within a Multi-Lineage Execution for joint evaluation
-in one exact proposed transition. A carried lineage is not an execution step, workflow stage, route segment, child lineage, subordinate
-lineage, additional outer predecessor, or authority fragment.<a href="#section-1.2-4" class="pilcrow">¶</a></p>
-<p id="section-1.2-5">The Sandboxed Execution does not execute on or through its carried lineages. It carries and evaluates their joint participation while
-preserving each lineage's independent origin, authority context, predecessor relation, signature, execution contract, and revocation state.<a href="#section-1.2-5" class="pilcrow">¶</a></p>
-<p id="section-1.2-6">A Multi-Lineage Execution is structurally composed of <code>carriedLineages</code>. The outer Sandboxed Execution remains a separate PIC lineage with
-its own origin, predecessor chain, authority <code>{ ENFORCE }</code>, execution contract, continuation, and revocation coordinates. The existence of
-carried lineages motivates the execution being evaluated, but the outer lineage does not derive authority from them.<a href="#section-1.2-6" class="pilcrow">¶</a></p>
-<p id="section-1.2-7">The name <code>carriedLineages</code> describes containment and transport within the Multi-Lineage Execution. It does not imply that the outer lineage
-is composed from, descended from, authorized by, or structurally continued from the carried lineages. The outer lineage is originated
-independently by an authorized sandbox origin; the carried lineages define the authenticated execution inputs being evaluated, not the
-authority source of the outer lineage.<a href="#section-1.2-7" class="pilcrow">¶</a></p>
-<p id="section-1.2-8">The <code>carriedLineages</code> are constitutive of the evaluated inner Multi-Lineage Execution. Without at least one carried lineage, there is no
-Multi-Lineage Execution and therefore no inner execution for this Sandboxed Execution profile to govern. The Sandboxed Execution exists to
-validate and control the proposed joint participation of its <code>carriedLineages</code>; in that functional sense, the carried lineages define the
+<p id="section-1.2-4">A <strong>composition member</strong> is an independently verifiable PIC continuity representation carried within a Composition Collection for joint
+evaluation in one exact proposed transition. A composition member is not an execution step, workflow stage, route segment, child continuity,
+subordinate continuity, additional outer predecessor, or authority fragment. In PIC Profile 0.2, each member is represented by an
+independently verifiable PIC Continuity JWT unless a more specific selected profile defines another representation.<a href="#section-1.2-4" class="pilcrow">¶</a></p>
+<p id="section-1.2-5">The Sandboxed Execution does not execute on or through its composition members. It carries and evaluates their joint participation while
+preserving each member's independent root PIC PCA JWT, PCA ID, position, effective authority, execution contract, and revocation
+state.<a href="#section-1.2-5" class="pilcrow">¶</a></p>
+<p id="section-1.2-6">A Composition Collection is structurally composed of composition members. The outer Sandboxed Execution remains a separate PIC continuity with
+its own root, predecessor path, authority <code>{ ENFORCE }</code>, execution contract, continuation semantics, and revocation coordinates. The
+existence of composition members motivates the execution being evaluated, but the outer continuity does not derive authority from them.<a href="#section-1.2-6" class="pilcrow">¶</a></p>
+<p id="section-1.2-7">The term "collection member" describes membership in the Composition Collection. It does not imply that the outer continuity is composed
+from, descended from, authorized by, or structurally continued from the composition members. The outer continuity is rooted
+independently by an authorized sandbox origin; the composition members define the authenticated execution inputs being evaluated, not the
+authority source of the outer continuity.<a href="#section-1.2-7" class="pilcrow">¶</a></p>
+<p id="section-1.2-8">The collection members are constitutive of the evaluated inner Composition Collection. Without at least one composition member, there is no
+Composition Collection and therefore no inner execution for this Sandboxed Execution profile to govern. The Sandboxed Execution exists to
+validate and control the proposed joint participation of its collection members; in that functional sense, the composition members define the
 subject matter and purpose of the outer execution.<a href="#section-1.2-8" class="pilcrow">¶</a></p>
-<p id="section-1.2-9">This dependency is semantic and structural, not an authority derivation. The outer lineage is not created from the authority of the carried
-lineages, is not their successor, and is not their union. It is independently originated by an authorized sandbox origin and carries only its
-own authority, <code>{ ENFORCE }</code>.<a href="#section-1.2-9" class="pilcrow">¶</a></p>
+<p id="section-1.2-9">This dependency is semantic and structural, not an authority derivation. The outer continuity is not created from the authority of the
+composition members, is not their successor, and is not their union. It is independently rooted by an authorized sandbox origin and carries only
+its own authority, <code>{ ENFORCE }</code>.<a href="#section-1.2-9" class="pilcrow">¶</a></p>
 <div class="lang-text sourcecode" id="section-1.2-10">
 <pre>
-carriedLineages
-    constitute the inner Multi-Lineage Execution
+collection members
+    constitute the inner Composition Collection
 
-Multi-Lineage Execution
+Composition Collection
     constitutes the execution subject evaluated by the sandbox
 
 authorized sandbox origin
-    independently originates the outer lineage
+    independently roots the outer continuity
 
-outer lineage authority
+outer continuity authority
     remains only { ENFORCE }
 </pre><a href="#section-1.2-10" class="pilcrow">¶</a>
 </div>
-<p id="section-1.2-11">Removing all <code>carriedLineages</code> removes the execution subject of the Sandboxed Execution; it does not attenuate the outer authority or
-transform the outer lineage into an empty authority container. <code>multiLineage.carriedLineages</code> MUST contain at least one element; an empty
-<code>carriedLineages</code> array represents no Multi-Lineage Execution to evaluate and MUST be rejected.<a href="#section-1.2-11" class="pilcrow">¶</a></p>
+<p id="section-1.2-11">Removing all collection members removes the execution subject of the Sandboxed Execution; it does not attenuate the outer authority or
+transform the outer continuity into an empty authority container. A Composition Collection MUST contain at least one composition member; an
+empty collection-member set represents no Composition Collection to evaluate and MUST be rejected.<a href="#section-1.2-11" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="sandboxed-execution">
@@ -1614,49 +1632,50 @@ transform the outer lineage into an empty authority container. <code>multiLineag
         <h3 id="name-sandboxed-execution">
 <a href="#section-1.3" class="section-number selfRef">1.3. </a><a href="#name-sandboxed-execution" class="section-name selfRef">Sandboxed Execution</a>
         </h3>
-<p id="section-1.3-1">A <strong>Sandboxed Execution</strong> is a multi-hop outer PIC execution. Its executors are guardrails, and each guardrail continues exactly one
-predecessor under the ordinary PIC Proof of Relationship rules:<a href="#section-1.3-1" class="pilcrow">¶</a></p>
+<p id="section-1.3-1">A <strong>Sandboxed Execution</strong> is a multi-hop outer PIC execution. Its executors are guardrails, and each non-root guardrail advancement continues
+exactly one predecessor under the ordinary PIC Proof of Relationship rules:<a href="#section-1.3-1" class="pilcrow">¶</a></p>
 <div class="lang-text sourcecode" id="section-1.3-2">
 <pre>
 OUTER SANDBOXED EXECUTION
 
 Guardrail n-1
-    produces PCA-G[n-1]
+    produces outer continuity state n-1
           |
-          | PCA-G[n-1] is presented as predecessor
+          | state n-1 is presented as predecessor
           | and verified by Guardrail n
           v
 Guardrail n
     verifies the outer predecessor
-    verifies the carried Multi-Lineage Execution
+    verifies the bound Composition Collection
     applies the enforcement function
-    produces PCA-G[n]
+    produces outer continuity advancement n
           |
-          | PCA-G[n] is presented as predecessor
+          | state n is presented as predecessor
           | and verified by Guardrail n+1
           v
 Guardrail n+1
 </pre><a href="#section-1.3-2" class="pilcrow">¶</a>
 </div>
-<p id="section-1.3-3">The guardrails are the executors of the outer Lineage Execution. They are not a parallel guardrail chain and do not use a separate
-continuity model. The executor at outer hop <code>n</code> produces <code>PCA-G[n]</code>; the executor at hop <code>n+1</code> verifies it as its received predecessor.
-Every non-origin PCA continues exactly one predecessor in its own lineage, and inner PCAs are never additional outer predecessors.<a href="#section-1.3-3" class="pilcrow">¶</a></p>
+<p id="section-1.3-3">The guardrails are the executors of the outer PIC continuity. They are not a parallel guardrail chain and do not use a separate continuity
+model. The executor at outer position <code>n</code> produces the profile-defined outer advancement; the executor at position <code>n+1</code> verifies the
+resulting state as its received predecessor. Every non-root advancement continues exactly one predecessor in its own continuity, and
+composition members are never additional outer predecessors.<a href="#section-1.3-3" class="pilcrow">¶</a></p>
 <p id="section-1.3-4">Each guardrail:<a href="#section-1.3-4" class="pilcrow">¶</a></p>
 <ol start="1" type="1" class="normal type-1" id="section-1.3-5">
 <li id="section-1.3-5.1">
-            <p id="section-1.3-5.1.1">receives an ordinary outer PCA carrying <code>multiLineage</code>;<a href="#section-1.3-5.1.1" class="pilcrow">¶</a></p>
+            <p id="section-1.3-5.1.1">receives an ordinary outer continuity state bound to a Composition Collection;<a href="#section-1.3-5.1.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-1.3-5.2">
             <p id="section-1.3-5.2.1">verifies the outer PIC continuation;<a href="#section-1.3-5.2.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-1.3-5.3">
-            <p id="section-1.3-5.3.1">verifies every carried lineage;<a href="#section-1.3-5.3.1" class="pilcrow">¶</a></p>
+            <p id="section-1.3-5.3.1">verifies every composition member;<a href="#section-1.3-5.3.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-1.3-5.4">
             <p id="section-1.3-5.4.1">applies the enforcement function;<a href="#section-1.3-5.4.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-1.3-5.5">
-            <p id="section-1.3-5.5.1">on permit, proves the next ordinary outer PCA;<a href="#section-1.3-5.5.1" class="pilcrow">¶</a></p>
+            <p id="section-1.3-5.5.1">on permit, produces the next ordinary outer continuity advancement;<a href="#section-1.3-5.5.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-1.3-5.6">
             <p id="section-1.3-5.6.1">on deny, produces no authorizing continuation for that crossing.<a href="#section-1.3-5.6.1" class="pilcrow">¶</a></p>
@@ -1664,15 +1683,15 @@ Every non-origin PCA continues exactly one predecessor in its own lineage, and i
         </ol>
 <ul class="normal ulEmpty">
 <li class="normal ulEmpty" id="section-1.3-6.1">
-            <p id="section-1.3-6.1.1">A <strong>guardrail</strong> is an executor of a Sandboxed Execution: it verifies the outer continuation, verifies the carried inner execution,
-applies the enforcement function, and, on permit, proves the next ordinary outer PCA.<a href="#section-1.3-6.1.1" class="pilcrow">¶</a></p>
+            <p id="section-1.3-6.1.1">A <strong>guardrail</strong> is an executor of a Sandboxed Execution: it verifies the outer continuation, verifies the bound inner execution,
+applies the enforcement function, and, on permit, produces the next ordinary outer continuity advancement.<a href="#section-1.3-6.1.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
 <p id="section-1.3-7">An execution is sandboxed not because a physical boundary forced guardrail invocation, but because the next conforming guardrail accepts and
-continues only a valid outer PCA.<a href="#section-1.3-7" class="pilcrow">¶</a></p>
+continues only valid outer continuity state.<a href="#section-1.3-7" class="pilcrow">¶</a></p>
 <ul class="normal ulEmpty">
 <li class="normal ulEmpty" id="section-1.3-8.1">
-            <p id="section-1.3-8.1.1">The execution is sandboxed because it can continue <strong>as valid PIC state</strong> only through valid guardrail hops of the outer lineage.<a href="#section-1.3-8.1.1" class="pilcrow">¶</a></p>
+            <p id="section-1.3-8.1.1">The execution is sandboxed because it can continue <strong>as valid PIC state</strong> only through valid guardrail advancements of the outer continuity.<a href="#section-1.3-8.1.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
 <p id="section-1.3-9">This specification does not prevent a compromised or non-conforming executor from attempting local physical actions outside the signed
@@ -1686,7 +1705,7 @@ execution.<a href="#section-1.3-9" class="pilcrow">¶</a></p>
         </h3>
 <p id="section-1.4-1">The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
 "OPTIONAL" are to be interpreted as described in BCP 14 <span><a href="#references" class="internal xref">[2]</a> (<a href="#references" class="auto internal xref">Section 11</a>)</span> <span><a href="#references" class="internal xref">[3]</a> (<a href="#references" class="auto internal xref">Section 11</a>)</span> when, and only when, they appear in all capitals
-in normative text. The sections defining <code>multiLineage</code>, its canonical binding, sandbox origination, the Guardrail Prover and Verifier
+in normative text. The sections defining Composition Collection binding, its canonical binding, sandbox origination, the Guardrail Prover and Verifier
 profile, the operation profile, Acceptance, Bypass rejection behavior, materializing-guardrail requirements, and Recursion resource limits
 are normative. The Abstract, Introduction, explanatory diagrams, examples, deployment comparisons, the service-mesh explanation, and Security
 Boundary explanations are non-normative unless a requirement is explicitly expressed using BCP 14 keywords.<a href="#section-1.4-1" class="pilcrow">¶</a></p>
@@ -1707,16 +1726,16 @@ Boundary explanations are non-normative unless a requirement is explicitly expre
 <div class="lang-text sourcecode" id="section-2.1-1">
 <pre>
 outer execution = Sandboxed Execution
-inner execution = Multi-Lineage Execution carried in multiLineage
+inner execution = Composition Collection bound to an ENFORCE advancement
 </pre><a href="#section-2.1-1" class="pilcrow">¶</a>
 </div>
-<p id="section-2.1-2">The outer execution is an ordinary Lineage Execution with its own PCA0, authority context, PoR chain, execution contract, continuation, and
-revocation coordinates. Every carried lineage independently has the same PIC structure.<a href="#section-2.1-2" class="pilcrow">¶</a></p>
-<p id="section-2.1-3">The outer execution does not absorb the inner lineages. It carries them as execution inputs and continues on its own authority, <code>ENFORCE</code>.<a href="#section-2.1-3" class="pilcrow">¶</a></p>
+<p id="section-2.1-2">The outer execution is an ordinary PIC Continuity with its own trusted root, authority context, PoR-governed advancements, execution
+contract, continuation semantics, and revocation coordinates. Every composition member independently has the same PIC continuity structure.<a href="#section-2.1-2" class="pilcrow">¶</a></p>
+<p id="section-2.1-3">The outer execution does not absorb the inner continuities. It carries them as execution inputs and continues on its own authority, <code>ENFORCE</code>.<a href="#section-2.1-3" class="pilcrow">¶</a></p>
 <div class="lang-text sourcecode" id="section-2.1-4">
 <pre>
 Outer authority  = ENFORCE
-Inner lineages   = execution inputs carried for evaluation
+Composition members = execution inputs provided for evaluation
 Outer authority != union of inner authorities
 </pre><a href="#section-2.1-4" class="pilcrow">¶</a>
 </div>
@@ -1727,31 +1746,31 @@ Outer authority != union of inner authorities
         <h3 id="name-pic-carrying-pic-pic-of-pic">
 <a href="#section-2.2" class="section-number selfRef">2.2. </a><a href="#name-pic-carrying-pic-pic-of-pic" class="section-name selfRef">PIC Carrying PIC (PIC of PIC)</a>
         </h3>
-<p id="section-2.2-1">The inner execution is already represented by PIC. The execution that validates and controls it is therefore represented by another
-ordinary PIC lineage. This is PIC carrying PIC — informally, PIC of PIC.<a href="#section-2.2-1" class="pilcrow">¶</a></p>
-<p id="section-2.2-2">The guardrail process must itself be controlled, across guardrails not yet known, so the controlled Multi-Lineage Execution becomes the
-signed subject of that outer lineage — and the same construction can be nested again.<a href="#section-2.2-2" class="pilcrow">¶</a></p>
+<p id="section-2.2-1">The inner execution is already represented by PIC. The execution that validates and controls it is therefore represented by another ordinary
+PIC continuity. This is PIC carrying PIC — informally, PIC of PIC.<a href="#section-2.2-1" class="pilcrow">¶</a></p>
+<p id="section-2.2-2">The guardrail process must itself be controlled, across guardrails not yet known, so the controlled Composition Collection becomes the
+authenticated subject of that outer continuity — and the same construction can be nested again.<a href="#section-2.2-2" class="pilcrow">¶</a></p>
 <div class="lang-text sourcecode" id="section-2.2-3">
 <pre>
-OUTER PIC LINEAGE
-PCA-G[n]
+OUTER PIC CONTINUITY STATE
+position n
 |
-+-- invariants.operations: [ENFORCE]
++-- materialized authority: [ENFORCE]
 +-- executionContract: required next-guardrail properties
-+-- multiLineage:
++-- authenticated Composition Collection binding
     |
-    +-- CARRIED PIC LINEAGE A
-    +-- CARRIED PIC LINEAGE B
+    +-- member PIC continuity A
+    +-- member PIC continuity B
     +-- ...
 </pre><a href="#section-2.2-3" class="pilcrow">¶</a>
 </div>
 <div class="lang-text sourcecode" id="section-2.2-4">
 <pre>
-PCA-G[n-1] --&gt; PCA-G[n] --&gt; PCA-G[n+1]
-                   |
-                   +-- multiLineage
-                         |
-                         +-- independently verified carried lineages
+state n-1 --&gt; advancement n --&gt; state n --&gt; advancement n+1
+                                |
+                                +-- exact Composition Collection binding
+                                      |
+                                      +-- independently verified member continuities
 </pre><a href="#section-2.2-4" class="pilcrow">¶</a>
 </div>
 <ul class="normal ulEmpty">
@@ -1761,195 +1780,195 @@ PCA-G[n-1] --&gt; PCA-G[n] --&gt; PCA-G[n+1]
         </ul>
 </section>
 </div>
-<div id="recursive-multi-lineage-safety">
+<div id="recursive-composition-collection-safety">
 <section id="section-2.3">
-        <h3 id="name-recursive-multi-lineage-saf">
-<a href="#section-2.3" class="section-number selfRef">2.3. </a><a href="#name-recursive-multi-lineage-saf" class="section-name selfRef">Recursive Multi-Lineage Safety</a>
+        <h3 id="name-recursive-composition-colle">
+<a href="#section-2.3" class="section-number selfRef">2.3. </a><a href="#name-recursive-composition-colle" class="section-name selfRef">Recursive Composition Collection Safety</a>
         </h3>
-<p id="section-2.3-1">Ordinary PIC prevents authority originating in one Lineage Execution from being represented as a valid continuation of another. Multi-Lineage
-Execution preserves this property by carrying independently valid lineages as separate carried lineages rather than creating their authority
+<p id="section-2.3-1">Ordinary PIC prevents authority originating in one PIC Continuity from being represented as a valid continuation of another. Composition Collection
+Execution preserves this property by carrying independently valid continuities as separate composition members rather than creating their authority
 union.<a href="#section-2.3-1" class="pilcrow">¶</a></p>
-<p id="section-2.3-2">Sandboxed Execution applies PIC recursively to the process that evaluates their joint participation. The outer lineage carries only
-<code>ENFORCE</code>; every carried lineage retains its own origin authority.<a href="#section-2.3-2" class="pilcrow">¶</a></p>
+<p id="section-2.3-2">Sandboxed Execution applies PIC recursively to the process that evaluates their joint participation. The outer continuity carries only
+<code>ENFORCE</code>; every composition member retains its own root-bounded authority.<a href="#section-2.3-2" class="pilcrow">¶</a></p>
 <div class="lang-text sourcecode" id="section-2.3-3">
 <pre>
 OUTER SANDBOXED EXECUTION
 authority: { ENFORCE }
 |
-+-- multiLineage
++-- Composition Collection
     |
-    +-- CARRIED LINEAGE A
-    |   origin: A
+    +-- COMPOSITION MEMBER A
+    |   root: A
     |   authority: { READ-ALL }
     |
-    +-- CARRIED LINEAGE B
-        origin: B
+    +-- COMPOSITION MEMBER B
+        root: B
         authority: { BACKUP }
 
 No authority union is created.
 </pre><a href="#section-2.3-3" class="pilcrow">¶</a>
 </div>
-<p id="section-2.3-4">Policy may permit carried lineage A and carried lineage B to participate in one concrete transition. Policy does not create
-<code>{ READ-ALL, BACKUP }</code> as a new lineage authority. Both of the following are rejected by ordinary PIC origin binding and non-expansion:<a href="#section-2.3-4" class="pilcrow">¶</a></p>
+<p id="section-2.3-4">Policy may permit composition member A and composition member B to participate in one concrete transition. Policy does not create
+<code>{ READ-ALL, BACKUP }</code> as a new continuity authority. Both of the following are rejected by ordinary PIC origin binding and non-expansion:<a href="#section-2.3-4" class="pilcrow">¶</a></p>
 <div class="lang-text sourcecode" id="section-2.3-5">
 <pre>
 invalid outer authority:
 { ENFORCE, READ-ALL, BACKUP }
 
-invalid carried lineage B successor:
+invalid composition member B advancement:
 { BACKUP, READ-ALL }
 </pre><a href="#section-2.3-5" class="pilcrow">¶</a>
 </div>
 <p id="section-2.3-6">PIC eliminates cross-lineage authority composition from valid PIC state. Sandboxed Execution recursively protects the decision that
-determines whether independently valid lineages may participate in one exact transition.<a href="#section-2.3-6" class="pilcrow">¶</a></p>
-<p id="section-2.3-7">At every recursive level, the local lineage preserves its own origin-bounded authority, while nested executions are treated only as
+determines whether independently valid continuities may participate in one exact transition.<a href="#section-2.3-6" class="pilcrow">¶</a></p>
+<p id="section-2.3-7">At every recursive level, the local continuity preserves its own root-bounded authority, while nested executions are treated only as
 independently verified execution inputs.<a href="#section-2.3-7" class="pilcrow">¶</a></p>
 <p id="section-2.3-8">This is a guarantee about valid and accepted PIC state. It does not prove that a compromised executor cannot perform an unauthorized physical
 action locally.<a href="#section-2.3-8" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="the-multilineage-pca-profile-field">
+<div id="composition-collection-binding">
 <section id="section-2.4">
-        <h3 id="name-the-multilineage-pca-profil">
-<a href="#section-2.4" class="section-number selfRef">2.4. </a><a href="#name-the-multilineage-pca-profil" class="section-name selfRef">The <code>multiLineage</code> PCA Profile Field</a>
+        <h3 id="name-composition-collection-bind">
+<a href="#section-2.4" class="section-number selfRef">2.4. </a><a href="#name-composition-collection-bind" class="section-name selfRef">Composition Collection Binding</a>
         </h3>
-<p id="section-2.4-1"><code>multiLineage</code> is a signed profile extension of an ordinary PCA, in the same extension style as the revocation coordinates of the
-<a href="pic-revocation-spec.html">PIC Revocation Specification</a>, Section 2. It carries
-one Multi-Lineage Execution; inside it, <code>carriedLineages</code> is the bounded list of independently verifiable PIC inputs.<a href="#section-2.4-1" class="pilcrow">¶</a></p>
-<div class="lang-json sourcecode" id="section-2.4-2">
+<p id="section-2.4-1">An ENFORCE advancement in a Sandboxed Execution MUST cryptographically bind the exact Composition Collection that the guardrail evaluated.
+This document uses <strong>Composition Collection</strong> and <strong>Composition Collection commitment</strong> as semantic names for that bound object and
+commitment. Their wire location, canonicalization, and serialization are defined by the selected Sandboxed Execution profile; they are not
+generic mandatory fields of every PIC Continuity JWT.<a href="#section-2.4-1" class="pilcrow">¶</a></p>
+<p id="section-2.4-2">The bound Composition Collection carries one bounded list of independently verifiable PIC continuity inputs. In PIC Profile 0.2, each
+composition member is represented as a PIC Continuity JWT unless a more specific selected profile defines another independently verifiable
+representation.<a href="#section-2.4-2" class="pilcrow">¶</a></p>
+<p id="section-2.4-3">The following is a non-normative semantic view, not a wire schema and not a set of generic PIC Continuity JWT member names:<a href="#section-2.4-3" class="pilcrow">¶</a></p>
+<div class="lang-text sourcecode" id="section-2.4-4">
 <pre>
-{
-  "multiLineage": {
-    "carriedLineages": [
-      {
-        "pca": { "...": "ordinary signed PCA" },
-        "predecessor": { "...": "when required by the selected validation profile" },
-        "role": "... authenticated, attested, or profile-derived ..."
-      }
-    ],
-    "context": {
-      "destination": "...",
-      "requestSetDigest": "sha256:...",
-      "payloadDigest": "sha256:...",
-      "freshness": "..."
-    }
-  }
-}
-</pre><a href="#section-2.4-2" class="pilcrow">¶</a>
+Composition Collection
+  members:
+    - continuity: &lt;profile-defined independently verifiable PIC continuity representation&gt;
+      role: &lt;authenticated, attested, or profile-derived&gt;
+  context:
+    destination: ...
+    requestSetDigest: sha256:...
+    payloadDigest: sha256:...
+    freshness: ...
+</pre><a href="#section-2.4-4" class="pilcrow">¶</a>
 </div>
-<p id="section-2.4-3">Semantics:<a href="#section-2.4-3" class="pilcrow">¶</a></p>
+<p id="section-2.4-5">Semantics:<a href="#section-2.4-5" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-2.4-4.1">
-            <p id="section-2.4-4.1.1">the whole <code>multiLineage</code> field is covered by the outer PCA's ordinary single signature;<a href="#section-2.4-4.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-2.4-6.1">
+            <p id="section-2.4-6.1.1">the exact Composition Collection is authenticated or cryptographically bound by the outer continuity advancement representing the
+ENFORCE crossing;<a href="#section-2.4-6.1.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-2.4-4.2">
-            <p id="section-2.4-4.2.1">every carried lineage is an ordinary PIC PCA, or the profile-selected proof representation of one;<a href="#section-2.4-4.2.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-2.4-6.2">
+            <p id="section-2.4-6.2.1">every composition member is independently verifiable under its own selected PIC continuity representation;<a href="#section-2.4-6.2.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-2.4-4.3">
-            <p id="section-2.4-4.3.1">each carried lineage keeps its own origin, predecessor relation, authority context, and revocation coordinates;<a href="#section-2.4-4.3.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-2.4-6.3">
+            <p id="section-2.4-6.3.1">each composition member keeps its own root, predecessor relation, authority context, and revocation coordinates;<a href="#section-2.4-6.3.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-2.4-4.4">
-            <p id="section-2.4-4.4.1">carried lineages are never merged;<a href="#section-2.4-4.4.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-2.4-6.4">
+            <p id="section-2.4-6.4.1">composition members are never merged;<a href="#section-2.4-6.4.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-2.4-4.5">
-            <p id="section-2.4-4.5.1">the list is bounded by the profile;<a href="#section-2.4-4.5.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-2.4-6.5">
+            <p id="section-2.4-6.5.1">the list is bounded by the profile;<a href="#section-2.4-6.5.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-2.4-4.6">
-            <p id="section-2.4-4.6.1">a carried lineage MAY itself contain <code>multiLineage</code>; recursion has no special terminal depth in the model;<a href="#section-2.4-4.6.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-2.4-6.6">
+            <p id="section-2.4-6.6.1">a composition member MAY itself be a Sandboxed Execution; recursion has no special terminal depth in the model;<a href="#section-2.4-6.6.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-2.4-4.7">
-            <p id="section-2.4-4.7.1">implementations MAY impose resource and maximum-depth limits; these are implementation and profile limits, not PIC-semantic changes.<a href="#section-2.4-4.7.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-2.4-6.7">
+            <p id="section-2.4-6.7.1">implementations MAY impose resource and maximum-depth limits; these are implementation and profile limits, not PIC-semantic changes.<a href="#section-2.4-6.7.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-2.4-5">The term <code>carriedLineages</code> does not require the complete historical chain to be embedded; the selected validation profile determines the
-independently verifiable representation carried for each lineage.<a href="#section-2.4-5" class="pilcrow">¶</a></p>
-<p id="section-2.4-6"><code>multiLineage</code> MUST NOT alter <code>previousPcaHash</code>, create additional predecessors, enter <code>invariants.operations</code>, import authority from its
-carried lineages, or replace PoR, any carried lineage's signature, or any carried lineage's validation.<a href="#section-2.4-6" class="pilcrow">¶</a></p>
-<p id="section-2.4-7">Exactness. The outer request binding commits to the complete presented <code>multiLineage</code>. The Verifier reconstructs the carried-lineage set and
-context from the presented objects and recomputes every supplied digest; an added, removed, or substituted carried lineage causes rejection.<a href="#section-2.4-7" class="pilcrow">¶</a></p>
+<p id="section-2.4-7">The term "collection member" does not require the complete historical path to be embedded; the selected validation profile determines the
+independently verifiable representation for each member continuity.<a href="#section-2.4-7" class="pilcrow">¶</a></p>
+<p id="section-2.4-8">The Composition Collection binding MUST NOT alter the outer predecessor reference, create additional predecessors, enter the outer authority
+domain, import authority from composition members, or replace PoR, any composition member's authentication, or any composition member's validation.<a href="#section-2.4-8" class="pilcrow">¶</a></p>
+<p id="section-2.4-9">Exactness. The outer request binding commits to the complete presented Composition Collection. The Verifier reconstructs the collection-member
+set and context from the presented objects and recomputes every supplied digest; an added, removed, or substituted composition member causes
+rejection.<a href="#section-2.4-9" class="pilcrow">¶</a></p>
 <ul class="normal ulEmpty">
-<li class="normal ulEmpty" id="section-2.4-8.1">
-            <p id="section-2.4-8.1.1">Exactness applies to the authenticated Multi-Lineage Execution presented to the guardrail. Detecting inputs hidden before presentation
-requires a profile-defined authenticated input manifest or observation source.<a href="#section-2.4-8.1.1" class="pilcrow">¶</a></p>
+<li class="normal ulEmpty" id="section-2.4-10.1">
+            <p id="section-2.4-10.1.1">Exactness applies to the authenticated Composition Collection presented to the guardrail. Detecting inputs hidden before presentation
+requires a profile-defined authenticated input manifest or observation source.<a href="#section-2.4-10.1.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-2.4-9">Two distinct functions must not be confused:<a href="#section-2.4-9" class="pilcrow">¶</a></p>
-<div class="lang-text sourcecode" id="section-2.4-10">
-<pre>
-multiLineage
-    carries the complete inner execution
-
-proofOfRelationship.request
-    binds the concrete ENFORCE action to the exact multiLineage
-</pre><a href="#section-2.4-10" class="pilcrow">¶</a>
-</div>
-<p id="section-2.4-11">For every non-origin outer PCA, the ordinary <code>proofOfRelationship.request</code> MUST contain a cryptographic commitment to the complete canonical
-<code>multiLineage</code> field carried by that PCA. The request profile contains at least:<a href="#section-2.4-11" class="pilcrow">¶</a></p>
+<p id="section-2.4-11">Two distinct functions must not be confused:<a href="#section-2.4-11" class="pilcrow">¶</a></p>
 <div class="lang-text sourcecode" id="section-2.4-12">
 <pre>
-proofOfRelationship.request.operation
-proofOfRelationship.request.target
-proofOfRelationship.request.securityDomain       (when applicable)
-proofOfRelationship.request.multiLineageDigest
-proofOfRelationship.request.policyCommitment
-proofOfRelationship.request.inputsCommitment
-proofOfRelationship.request.semanticProfile      (when applicable)
-proofOfRelationship.request.enforcementResult
-proofOfRelationship.request.requestDigest
-proofOfRelationship.request.payloadDigest
+Composition Collection
+    carries the complete inner execution
+
+request/execution binding
+    binds the concrete ENFORCE action to the exact Composition Collection
 </pre><a href="#section-2.4-12" class="pilcrow">¶</a>
 </div>
-<p id="section-2.4-13">This profile does not redefine the base request format
-(<a href="pic-prover-verifier-spec.html">PIC Prover and Verifier Specification</a>,
-Section 2.3); it extends the request binding. The PCA signature protects the complete <code>multiLineage</code> field as part of the PCA; the request
-commitment additionally pins the concrete <code>ENFORCE</code> operation to that exact inner execution under the executed-vs-signed rule.<a href="#section-2.4-13" class="pilcrow">¶</a></p>
-<p id="section-2.4-14"><code>multiLineageDigest</code> is mandatory in every non-origin outer PCA and is computed as:<a href="#section-2.4-14" class="pilcrow">¶</a></p>
-<div class="lang-text sourcecode" id="section-2.4-15">
+<p id="section-2.4-13">For every non-root outer advancement that represents an ENFORCE crossing, the profile-defined request/execution binding MUST contain or
+cryptographically bind a commitment to the complete canonical Composition Collection. The binding includes at least the semantic values:<a href="#section-2.4-13" class="pilcrow">¶</a></p>
+<div class="lang-text sourcecode" id="section-2.4-14">
 <pre>
-request.multiLineageDigest
-    ==
-H( "PIC-Multi-Lineage-v0" || canonical(PCA.multiLineage) )
-</pre><a href="#section-2.4-15" class="pilcrow">¶</a>
+operation
+target
+securityDomain       (when applicable)
+Composition Collection commitment
+policyCommitment
+inputsCommitment
+semanticProfile      (when applicable)
+enforcementResult
+requestDigest
+payloadDigest
+</pre><a href="#section-2.4-14" class="pilcrow">¶</a>
 </div>
-<p id="section-2.4-16">The selected profile MUST define the canonical encoding, hash suite, domain separator, carried-lineage ordering and whether it is semantic,
-duplicate-carried-lineage handling, maximum carried-lineage count, treatment of optional fields, normalization rules, and included context
-fields. <code>requestDigest</code> and <code>payloadDigest</code> MAY bind additional material, but MUST NOT replace <code>multiLineageDigest</code>. The Verifier MUST reject
-a missing digest, an unknown canonicalization profile, a non-canonical field, a digest mismatch, an added, removed, or substituted carried
-lineage, a forbidden duplicate carried lineage, a semantically significant reordering, or a mismatch between the carried context and the
-committed context.<a href="#section-2.4-16" class="pilcrow">¶</a></p>
-<p id="section-2.4-17">The decision is recorded only at <code>proofOfRelationship.request.enforcementResult</code>, where <code>enforcementResult</code> is <code>permit</code> or <code>deny</code>. It records
-the result for the exact <code>multiLineage</code>, destination, request, payload, policy, committed inputs, semantic profile, and crossing context
-bound by the same outer request. A <code>permit</code> MAY appear in an authorizing outer successor; a <code>deny</code> MUST NOT authorize continuation. A profile
-MAY record a denial for audit, but MUST NOT introduce a denial PCA type or interpret a deny-bearing PCA as permission to cross the governed
-boundary.<a href="#section-2.4-17" class="pilcrow">¶</a></p>
-<p id="section-2.4-18">For every non-origin outer PCA, <code>operation</code>, <code>multiLineageDigest</code>, and <code>enforcementResult</code> are mandatory; other request fields follow the
-selected profile's optionality rules.<a href="#section-2.4-18" class="pilcrow">¶</a></p>
-<p id="section-2.4-19">An audit representation of <code>deny</code> is not an execution-authorizing continuation. Unless a future profile explicitly defines denial-state
-progression, a denial MUST NOT be assumed to consume the predecessor continuation challenge, advance the authorizing outer lineage, or create
-an executable successor. The interoperable denial-recording format is out of scope for this revision.<a href="#section-2.4-19" class="pilcrow">¶</a></p>
-<p id="section-2.4-20">Evolution across hops. The outer PCA at hop <code>n</code> carries the exact inner execution evaluated by guardrail <code>n</code>. The next guardrail receives
-that signed object and MAY continue the same inner execution or evaluate a profile-valid successor Multi-Lineage Execution.<a href="#section-2.4-20" class="pilcrow">¶</a></p>
+<p id="section-2.4-15">This profile does not redefine the base request format
+(<a href="pic-prover-verifier-spec.html">PIC Prover and Verifier Specification</a>,
+Section 2.3); it requires an ENFORCE-specific request binding. The authenticated continuity advancement protects or binds the complete
+Composition Collection, and the request commitment pins the concrete <code>ENFORCE</code> operation to that exact inner execution under the
+executed-vs-signed rule.<a href="#section-2.4-15" class="pilcrow">¶</a></p>
+<p id="section-2.4-16">A Composition Collection commitment is mandatory in every non-root ENFORCE advancement and is computed over the selected profile's canonical
+Composition Collection representation:<a href="#section-2.4-16" class="pilcrow">¶</a></p>
+<div class="lang-text sourcecode" id="section-2.4-17">
+<pre>
+commitment == H( domainSeparator || canonical(Composition Collection) )
+</pre><a href="#section-2.4-17" class="pilcrow">¶</a>
+</div>
+<p id="section-2.4-18">The selected profile MUST define the concrete field placement, canonical encoding, hash suite, domain separator, collection-member ordering
+and whether it is semantic, duplicate-collection-member handling, maximum collection-member count, treatment of optional fields, normalization
+rules, and included context fields. <code>requestDigest</code> and <code>payloadDigest</code> MAY bind additional material, but MUST NOT replace the Composition
+Collection commitment. The Verifier MUST reject a missing digest, an unknown canonicalization profile, a non-canonical field, a digest
+mismatch, an added, removed, or substituted composition member, a forbidden duplicate composition member, a semantically significant reordering, or
+a mismatch between the presented context and the committed context.<a href="#section-2.4-18" class="pilcrow">¶</a></p>
+<p id="section-2.4-19">The decision is recorded in the profile-defined request/execution binding as <code>permit</code> or <code>deny</code> or as an equivalent profile-defined value.
+It records the result for the exact Composition Collection, destination, request, payload, policy, committed inputs, semantic profile, and
+crossing context bound by the same outer request. A <code>permit</code> MAY appear in an authorizing outer advancement; a <code>deny</code> MUST NOT authorize
+continuation. A profile MAY record a denial for audit, but MUST NOT introduce a denial artifact that is interpreted as permission to cross
+the governed boundary.<a href="#section-2.4-19" class="pilcrow">¶</a></p>
+<p id="section-2.4-20">For every non-root ENFORCE advancement, the operation, Composition Collection commitment, and enforcement result are mandatory semantic
+values; other request fields follow the selected profile's optionality rules.<a href="#section-2.4-20" class="pilcrow">¶</a></p>
+<p id="section-2.4-21">An audit representation of <code>deny</code> is not an execution-authorizing continuation. Unless a future profile explicitly defines denial-state
+progression, a denial MUST NOT be assumed to consume the predecessor continuation challenge, advance the authorizing outer continuity, or
+create an executable successor. The interoperable denial-recording format is out of scope for this revision.<a href="#section-2.4-21" class="pilcrow">¶</a></p>
+<p id="section-2.4-22">Evolution across hops. The outer continuity state at position <code>n</code> is bound to the exact inner execution evaluated by guardrail <code>n</code>. The next
+guardrail receives that authenticated state and MAY continue the same inner execution or evaluate a profile-valid successor Composition
+Collection.<a href="#section-2.4-22" class="pilcrow">¶</a></p>
 <ul class="normal ulEmpty">
-<li class="normal ulEmpty" id="section-2.4-21.1">
-            <p id="section-2.4-21.1.1">A successor outer PCA MUST NOT silently mutate <code>multiLineage</code>. If the proposed inner execution changes, the successor request MUST bind the
-complete new <code>multiLineage</code>, and every changed carried lineage MUST independently validate as required by its own PIC lineage and the
-selected profile.<a href="#section-2.4-21.1.1" class="pilcrow">¶</a></p>
+<li class="normal ulEmpty" id="section-2.4-23.1">
+            <p id="section-2.4-23.1.1">A successor outer advancement MUST NOT silently mutate the Composition Collection. If the proposed inner execution changes, the successor
+request MUST bind the complete new Composition Collection, and every changed composition member MUST independently validate as required by
+its own PIC continuity and the selected profile.<a href="#section-2.4-23.1.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-2.4-22">An unchanged carried lineage may be re-carried unchanged. A carried lineage may continue only through its own valid PIC successor. Removing a
-carried lineage is not an attenuation of the outer authority; it is a change to the execution input and MUST be visible in the signed request
-binding. Inner authority is never silently added, removed, replaced, or imported.<a href="#section-2.4-22" class="pilcrow">¶</a></p>
-<p id="section-2.4-23">The recursion is structural, not authority composition:<a href="#section-2.4-23" class="pilcrow">¶</a></p>
-<div class="lang-text sourcecode" id="section-2.4-24">
+<p id="section-2.4-24">An unchanged composition member may be represented unchanged. A composition member may continue only through its own valid PIC continuity
+advancement. Removing a composition member is not an attenuation of the outer authority; it is a change to the execution input and MUST be
+visible in the authenticated request binding. Inner authority is never silently added, removed, replaced, or imported.<a href="#section-2.4-24" class="pilcrow">¶</a></p>
+<p id="section-2.4-25">The recursion is structural, not authority composition:<a href="#section-2.4-25" class="pilcrow">¶</a></p>
+<div class="lang-text sourcecode" id="section-2.4-26">
 <pre>
-PCA
- +-- multiLineage
-      +-- carried lineage: PCA
-      +-- carried lineage: PCA
-      +-- carried lineage: PCA
-           +-- multiLineage
+outer continuity
+ +-- Composition Collection
+      +-- member continuity
+      +-- member continuity
+      +-- member continuity
+           +-- nested Composition Collection
                 +-- ...
-</pre><a href="#section-2.4-24" class="pilcrow">¶</a>
+</pre><a href="#section-2.4-26" class="pilcrow">¶</a>
 </div>
 </section>
 </div>
@@ -1962,97 +1981,102 @@ PCA
 <div class="lang-text sourcecode" id="section-2.5-2">
 <pre>
 proposing executor
-    proposes the inner Multi-Lineage Execution
+    proposes the inner Composition Collection
 
 authorized sandbox origin
-    originates the outer Sandboxed Execution
+    roots the outer Sandboxed Execution
 
 first guardrail
-    creates the first non-origin outer continuation
+    creates the first non-root outer advancement
 </pre><a href="#section-2.5-2" class="pilcrow">¶</a>
 </div>
-<p id="section-2.5-3">A Sandboxed Execution MUST begin with an ordinary origin PCA, <code>PCA0-G</code>, created by an authorized sandbox origin. The proposing executor MAY
-also be the sandbox origin only when the applicable origination policy explicitly authorizes it to originate that outer lineage. Possession
-of the inner PCAs does not authorize creation of <code>PCA0-G</code>, and the candidate first guardrail MUST NOT create its own <code>PCA0-G</code>.<a href="#section-2.5-3" class="pilcrow">¶</a></p>
+<p id="section-2.5-3">A Sandboxed Execution MUST begin with an ordinary trusted root continuity state, created by an authorized sandbox origin. The proposing
+executor MAY also be the sandbox origin only when the applicable origination policy explicitly authorizes it to root that outer continuity.
+Possession of the inner continuities does not authorize creation of the outer root, and the proposed first guardrail MUST NOT create its own
+outer root.<a href="#section-2.5-3" class="pilcrow">¶</a></p>
 <p id="section-2.5-4">The authorized sandbox origin may be the protected application, policy governance, a deployment authority, or another origin explicitly
 authorized by the applicable origin policy. No special guardrail key or separate guardrail authority is required.<a href="#section-2.5-4" class="pilcrow">¶</a></p>
-<p id="section-2.5-5">The selected Sandboxed Execution profile MUST define how authorization to originate <code>PCA0-G</code> is represented and verified. A valid origin
-signature identifies who created <code>PCA0-G</code>; it is not, by itself, proof that the issuer was authorized to originate a Sandboxed Execution under
-the applicable profile. The authorization evidence MAY be an origin trust policy, an authenticated application or deployment configuration, a
-signed origination grant, a policy-governance authorization, an attested origin role, or another profile-defined verifiable mechanism; this
-revision mandates none.<a href="#section-2.5-5" class="pilcrow">¶</a></p>
-<p id="section-2.5-6"><code>AuthorizedSandboxOrigin(PCA0-G)</code> means the issuer of <code>PCA0-G</code> is authorized, under the selected Sandboxed Execution profile and receiving
-deployment policy, to originate an outer lineage with the presented <code>ENFORCE</code> authority and execution contract.<a href="#section-2.5-6" class="pilcrow">¶</a></p>
-<p id="section-2.5-7"><code>PCA0-G</code> establishes the outer authority and the future guardrail contract; it does not evaluate the inner execution. It is an ordinary
-PCA0 — no predecessor, no PoR, signed by its authorized origin — containing at least:<a href="#section-2.5-7" class="pilcrow">¶</a></p>
-<div class="lang-json sourcecode" id="section-2.5-8">
+<p id="section-2.5-5">The selected Sandboxed Execution profile MUST define how authorization to create the outer root is represented and verified. A valid root
+signature identifies who created the root representation; it is not, by itself, proof that the issuer was authorized to originate a Sandboxed
+Execution under the applicable profile. The authorization evidence MAY be an origin trust policy, an authenticated application or deployment
+configuration, a signed origination grant, a policy-governance authorization, an attested origin role, or another profile-defined verifiable
+mechanism; this revision mandates none.<a href="#section-2.5-5" class="pilcrow">¶</a></p>
+<p id="section-2.5-6"><code>AuthorizedSandboxOrigin(root)</code> means the issuer of the outer root is authorized, under the selected Sandboxed Execution profile and
+receiving deployment policy, to originate an outer continuity with the presented <code>ENFORCE</code> authority and execution contract.<a href="#section-2.5-6" class="pilcrow">¶</a></p>
+<p id="section-2.5-7">The outer root establishes the outer authority and the future guardrail contract; it does not evaluate the inner execution. It is an
+ordinary PIC root — no predecessor, no PoR, authenticated by its authorized origin.<a href="#section-2.5-7" class="pilcrow">¶</a></p>
+<p id="section-2.5-8">The following is a semantic illustration of the authority and bootstrap requirements of the outer root. It is not the Profile 0.2 logical
+PCA schema, is not the Profile 0.2 PIC PCA JWT wire representation, and is not the Indexed Authority Map representation.<a href="#section-2.5-8" class="pilcrow">¶</a></p>
+<div class="lang-json sourcecode" id="section-2.5-9">
 <pre>
 {
-  "invariants": {
+  "authority": {
     "operations": ["ENFORCE"],
     "executionContract": { "...": "properties required of future guardrail executors" }
   },
-  "continuation": { "...": "challenge for the first guardrail" }
+  "challenge": { "...": "bootstrap challenge for the first guardrail, when used by the selected profile" }
 }
-</pre><a href="#section-2.5-8" class="pilcrow">¶</a>
+</pre><a href="#section-2.5-9" class="pilcrow">¶</a>
 </div>
-<p id="section-2.5-9"><code>PCA0-G</code> MAY carry an origin-level commitment identifying the execution proposal, but it MUST NOT contain a guardrail verdict.<a href="#section-2.5-9" class="pilcrow">¶</a></p>
-<p id="section-2.5-10">The first guardrail receives <code>PCA0-G</code> and the proposed Multi-Lineage Execution, proves conformance to the <code>PCA0-G</code> execution contract,
-validates every carried lineage, applies the enforcement function, and — on permit — produces the ordinary successor <code>PCA1-G</code>.<a href="#section-2.5-10" class="pilcrow">¶</a></p>
-<div class="lang-text sourcecode" id="section-2.5-11">
-<pre>
-PCA0-G
-  establishes ENFORCE authority
-  establishes future guardrail contract
-  emits the first continuation challenge
-
-PCA1-G
-  is produced by the first guardrail
-  carries the evaluated multiLineage
-  binds the concrete ENFORCE request
-  records the permit result
-</pre><a href="#section-2.5-11" class="pilcrow">¶</a>
-</div>
-<p id="section-2.5-12">The complete first sequence:<a href="#section-2.5-12" class="pilcrow">¶</a></p>
+<p id="section-2.5-10">In PIC Profile 0.2, the outer root is represented by the trusted root PIC PCA JWT, and the bootstrap challenge is carried in that PIC PCA
+JWT. The first guardrail decision appears in the first applicable Continuity Transition JWT proposed for the outer continuity.<a href="#section-2.5-10" class="pilcrow">¶</a></p>
+<p id="section-2.5-11">The outer root MAY carry an origin-level commitment identifying the execution proposal, but it MUST NOT contain a guardrail verdict.<a href="#section-2.5-11" class="pilcrow">¶</a></p>
+<p id="section-2.5-12">The first guardrail receives the outer root and the proposed Composition Collection, proves conformance to the root execution contract,
+validates every composition member, applies the enforcement function, and — on permit — produces the first ordinary outer continuity
+advancement.<a href="#section-2.5-12" class="pilcrow">¶</a></p>
 <div class="lang-text sourcecode" id="section-2.5-13">
 <pre>
+outer root
+  establishes ENFORCE authority
+  establishes future guardrail contract
+  carries the bootstrap challenge when used by the profile
+
+outer advancement 1
+  is produced by the first guardrail
+  binds the evaluated Composition Collection
+  binds the concrete ENFORCE request
+  records the permit result
+</pre><a href="#section-2.5-13" class="pilcrow">¶</a>
+</div>
+<p id="section-2.5-14">The complete first sequence:<a href="#section-2.5-14" class="pilcrow">¶</a></p>
+<div class="lang-text sourcecode" id="section-2.5-15">
+<pre>
 INNER EXECUTION PROPOSAL
-Multi-Lineage Execution
-[ carried lineage A | carried lineage B | ... ]
+Composition Collection
+[ composition member A | composition member B | ... ]
           |
           v
 AUTHORIZED SANDBOX ORIGIN
-PCA0-G
+outer root
   operations: [ENFORCE]
   executionContract: required guardrail properties
-  continuation: challenge for first guardrail
+  challenge: bootstrap challenge for first guardrail
           |
           | PoR
           v
 FIRST GUARDRAIL
-  verify PCA0-G
-  verify every carried lineage
+  verify outer root
+  verify every composition member
   apply enforcement function
           |
        permit
           |
           v
-PCA1-G
-  ordinary PIC successor
-  request.operation: ENFORCE
-  request.multiLineageDigest:
-    H("PIC-Multi-Lineage-v0" || canonical(multiLineage))
-  multiLineage: exact evaluated inner execution
-  request.enforcementResult: permit
-  continuation: challenge for next guardrail
+workload-signed candidate PIC Continuity JWT
+  carries exactly one continuity_transition_jwt
+  proposed operation: ENFORCE
+  binds the Composition Collection commitment
+  binds enforcementResult: permit
           |
-          | PoR
+          | PIC-X validates candidate and transition
           v
-NEXT GUARDRAIL
-</pre><a href="#section-2.5-13" class="pilcrow">¶</a>
+settled outer PIC Continuity JWT 1
+  issued by PIC-X
+  contains no pending continuity_transition_jwt
+</pre><a href="#section-2.5-15" class="pilcrow">¶</a>
 </div>
-<p id="section-2.5-14"><code>PCA1-G</code>, not <code>PCA0-G</code>, is the first outer PCA attributable to a guardrail decision. Subsequent guardrails produce <code>PCA2-G</code>, <code>PCA3-G</code>, and
-so on.<a href="#section-2.5-14" class="pilcrow">¶</a></p>
+<p id="section-2.5-16">The first outer advancement, not the outer root, is the first outer state attributable to a guardrail decision. Subsequent guardrails produce
+subsequent ordinary continuity advancements.<a href="#section-2.5-16" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="guardrail-prover-and-verifier-profile">
@@ -2060,18 +2084,18 @@ so on.<a href="#section-2.5-14" class="pilcrow">¶</a></p>
         <h3 id="name-guardrail-prover-and-verifi">
 <a href="#section-2.6" class="section-number selfRef">2.6. </a><a href="#name-guardrail-prover-and-verifi" class="section-name selfRef">Guardrail Prover and Verifier Profile</a>
         </h3>
-<p id="section-2.6-1">A guardrail performs two nested verification levels over the existing ordinary PIC procedures, then — on permit — proves the next PCA. It
-MUST perform the phases in order.<a href="#section-2.6-1" class="pilcrow">¶</a></p>
+<p id="section-2.6-1">A guardrail performs two nested verification levels over the existing ordinary PIC procedures, then — on permit — produces the next outer
+continuity advancement. It MUST perform the phases in order.<a href="#section-2.6-1" class="pilcrow">¶</a></p>
 <p id="section-2.6-2"><strong>Phase 1 — Outer PIC verification.</strong> The guardrail acts as an ordinary PIC Verifier for the outer execution:<a href="#section-2.6-2" class="pilcrow">¶</a></p>
 <ol start="1" type="1" class="normal type-1" id="section-2.6-3">
 <li id="section-2.6-3.1">
-            <p id="section-2.6-3.1.1">validate the outer predecessor;<a href="#section-2.6-3.1.1" class="pilcrow">¶</a></p>
+            <p id="section-2.6-3.1.1">validate the outer predecessor continuity state;<a href="#section-2.6-3.1.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-2.6-3.2">
-            <p id="section-2.6-3.2.1">verify <code>previousPcaHash</code>;<a href="#section-2.6-3.2.1" class="pilcrow">¶</a></p>
+            <p id="section-2.6-3.2.1">verify the profile-defined predecessor cryptographic reference;<a href="#section-2.6-3.2.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-2.6-3.3">
-            <p id="section-2.6-3.3.1">verify the predecessor continuation challenge;<a href="#section-2.6-3.3.1" class="pilcrow">¶</a></p>
+            <p id="section-2.6-3.3.1">verify challenge continuity when the selected profile uses challenges;<a href="#section-2.6-3.3.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-2.6-3.4">
             <p id="section-2.6-3.4.1">verify the guardrail executor attestation;<a href="#section-2.6-3.4.1" class="pilcrow">¶</a></p>
@@ -2089,19 +2113,19 @@ MUST perform the phases in order.<a href="#section-2.6-1" class="pilcrow">¶</a>
             <p id="section-2.6-3.8.1">verify the outer request operation is <code>ENFORCE</code>;<a href="#section-2.6-3.8.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-2.6-3.9">
-            <p id="section-2.6-3.9.1">recompute and verify the request commitment to the complete <code>multiLineage</code>.<a href="#section-2.6-3.9.1" class="pilcrow">¶</a></p>
+            <p id="section-2.6-3.9.1">recompute and verify the request commitment to the complete Composition Collection.<a href="#section-2.6-3.9.1" class="pilcrow">¶</a></p>
 </li>
         </ol>
-<p id="section-2.6-4"><strong>Phase 2 — Inner PIC verification.</strong> Only after Phase 1 succeeds, for every carried lineage:<a href="#section-2.6-4" class="pilcrow">¶</a></p>
+<p id="section-2.6-4"><strong>Phase 2 — Inner PIC verification.</strong> Only after Phase 1 succeeds, for every composition member:<a href="#section-2.6-4" class="pilcrow">¶</a></p>
 <ol start="1" type="1" class="normal type-1" id="section-2.6-5">
 <li id="section-2.6-5.1">
-            <p id="section-2.6-5.1.1">validate the carried lineage using the selected ordinary PIC validation profile;<a href="#section-2.6-5.1.1" class="pilcrow">¶</a></p>
+            <p id="section-2.6-5.1.1">validate the composition member using the selected ordinary PIC validation profile;<a href="#section-2.6-5.1.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-2.6-5.2">
-            <p id="section-2.6-5.2.1">verify its origin or immediate predecessor as required;<a href="#section-2.6-5.2.1" class="pilcrow">¶</a></p>
+            <p id="section-2.6-5.2.1">verify its root, immediate predecessor, or equivalent proof as required;<a href="#section-2.6-5.2.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-2.6-5.3">
-            <p id="section-2.6-5.3.1">verify signature and PoR;<a href="#section-2.6-5.3.1" class="pilcrow">¶</a></p>
+            <p id="section-2.6-5.3.1">verify artifact authentication and PoR;<a href="#section-2.6-5.3.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-2.6-5.4">
             <p id="section-2.6-5.4.1">verify predecessor binding;<a href="#section-2.6-5.4.1" class="pilcrow">¶</a></p>
@@ -2122,7 +2146,7 @@ MUST perform the phases in order.<a href="#section-2.6-1" class="pilcrow">¶</a>
             <p id="section-2.6-5.9.1">verify revocation coordinates and active revocation state.<a href="#section-2.6-5.9.1" class="pilcrow">¶</a></p>
 </li>
         </ol>
-<p id="section-2.6-6">Any invalid outer check or carried lineage produces deny before policy evaluation.<a href="#section-2.6-6" class="pilcrow">¶</a></p>
+<p id="section-2.6-6">Any invalid outer check or composition member produces deny before policy evaluation.<a href="#section-2.6-6" class="pilcrow">¶</a></p>
 <p id="section-2.6-7"><strong>Phase 3 — Enforcement function.</strong> Over the validated inner execution and the exact crossing context, the guardrail evaluates the
 profile-defined enforcement function. A PDP is only one possible implementation.<a href="#section-2.6-7" class="pilcrow">¶</a></p>
 <ul class="normal ulEmpty">
@@ -2131,19 +2155,20 @@ profile-defined enforcement function. A PDP is only one possible implementation.
 process boundary, or deployment topology.<a href="#section-2.6-8.1.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-2.6-9">Every carried-lineage-describing input used by the enforcement function MUST be cryptographically or operationally bound to the corresponding
-carried lineage by a mechanism not under the unilateral control of the proposing executor. This includes, when used, <code>role</code>,
+<p id="section-2.6-9">Every collection-member-describing input used by the enforcement function MUST be cryptographically or operationally bound to the corresponding
+composition member by a mechanism not under the unilateral control of the proposing executor. This includes, when used, <code>role</code>,
 semantic scopes, labels, data classifications, tenant or security-domain claims, accountable-party claims, environment claims, application
 identity, purpose or intent metadata, policy-selection metadata, and translation or semantic-profile identifiers. Accepted binding mechanisms
-MAY include origin-bound signed metadata, signed declarations from an accepted authority, trusted derivation from validated PCA contents,
+MAY include root-bound signed metadata, signed declarations from an accepted authority, trusted derivation from validated continuity contents,
 policy-controlled mappings, authenticated deployment configuration, attested execution context, verified external attributes, or
 profile-defined authenticated manifests.<a href="#section-2.6-9" class="pilcrow">¶</a></p>
 <p id="section-2.6-10">An untrusted executor's claim alone MUST NOT be sufficient as an enforcement input. The enforcement function MUST evaluate only inputs whose
 source, binding, interpretation profile, and integrity satisfy the selected Sandboxed Execution profile. An input required by policy that is
-unauthenticated, ambiguously bound, semantically unmapped, inconsistent with the presented PCA, unavailable, or controlled only by the
+unauthenticated, ambiguously bound, semantically unmapped, inconsistent with the presented continuity state, unavailable, or controlled only by the
 proposing executor MUST produce deny or indeterminate-deny.<a href="#section-2.6-10" class="pilcrow">¶</a></p>
 <p id="section-2.6-11">Failure, unavailable policy, indeterminate result, inconsistent semantic mapping, or missing committed inputs produce deny.<a href="#section-2.6-11" class="pilcrow">¶</a></p>
-<p id="section-2.6-12"><strong>Phase 4 — Outer proving.</strong> On permit, the guardrail produces the next ordinary outer PCA under the standard PIC Prover procedure. It MUST:<a href="#section-2.6-12" class="pilcrow">¶</a></p>
+<p id="section-2.6-12"><strong>Phase 4 — Outer proving.</strong> On permit, the guardrail produces or proposes the next ordinary outer continuity advancement under the standard
+PIC Prover procedure. It MUST:<a href="#section-2.6-12" class="pilcrow">¶</a></p>
 <ol start="1" type="1" class="normal type-1" id="section-2.6-13">
 <li id="section-2.6-13.1">
             <p id="section-2.6-13.1.1">identify exactly one outer predecessor;<a href="#section-2.6-13.1.1" class="pilcrow">¶</a></p>
@@ -2158,7 +2183,7 @@ proposing executor MUST produce deny or indeterminate-deny.<a href="#section-2.6
             <p id="section-2.6-13.4.1">preserve or strengthen the execution contract;<a href="#section-2.6-13.4.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-2.6-13.5">
-            <p id="section-2.6-13.5.1">carry the exact evaluated <code>multiLineage</code>;<a href="#section-2.6-13.5.1" class="pilcrow">¶</a></p>
+            <p id="section-2.6-13.5.1">bind the exact evaluated Composition Collection;<a href="#section-2.6-13.5.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-2.6-13.6">
             <p id="section-2.6-13.6.1">bind its canonical digest in the request;<a href="#section-2.6-13.6.1" class="pilcrow">¶</a></p>
@@ -2167,48 +2192,53 @@ proposing executor MUST produce deny or indeterminate-deny.<a href="#section-2.6
             <p id="section-2.6-13.7.1">bind the enforcement inputs and permit result;<a href="#section-2.6-13.7.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-2.6-13.8">
-            <p id="section-2.6-13.8.1">emit a fresh continuation;<a href="#section-2.6-13.8.1" class="pilcrow">¶</a></p>
+            <p id="section-2.6-13.8.1">emit the next profile-defined challenge or freshness value when required;<a href="#section-2.6-13.8.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-2.6-13.9">
-            <p id="section-2.6-13.9.1">sign the complete PCA once.<a href="#section-2.6-13.9.1" class="pilcrow">¶</a></p>
+            <p id="section-2.6-13.9.1">authenticate the complete advancement under the selected profile.<a href="#section-2.6-13.9.1" class="pilcrow">¶</a></p>
 </li>
         </ol>
 <p id="section-2.6-14">No additional approval signature is created. The next guardrail repeats the same procedure — and that repetition is the sandbox.<a href="#section-2.6-14" class="pilcrow">¶</a></p>
-<div class="lang-text sourcecode" id="section-2.6-15">
+<p id="section-2.6-15">In the current PIC Profile 0.2 / PIC-X realization, the guardrail or workload creates a workload-signed Continuity Transition JWT, places it
+as the single <code>continuity_transition_jwt</code> in a workload-signed candidate PIC Continuity JWT, and submits the candidate for PIC-X validation.
+PIC-X validates the outer continuity, <code>ENFORCE</code> authority, Composition Collection commitment, PoR/key binding, predecessor hash, challenge
+continuity, attenuation, revocation, and local/profile policy. On success, PIC-X issues the next settled outer PIC Continuity JWT with no
+pending <code>continuity_transition_jwt</code>. This is ordinary Profile 0.2 continuity advancement, not a sandbox-specific protocol.<a href="#section-2.6-15" class="pilcrow">¶</a></p>
+<div class="lang-text sourcecode" id="section-2.6-16">
 <pre>
-receive outer PCA
+receive outer continuity state
       |
 Phase 1: validate outer PIC continuation
       |
-Phase 2: validate every carried lineage
+Phase 2: validate every composition member
       |
 Phase 3: apply enforcement function
       |
    permit?
    /    \
  no      yes
- X       Phase 4: build and sign next ordinary outer PCA
-</pre><a href="#section-2.6-15" class="pilcrow">¶</a>
+ X       Phase 4: build candidate and obtain next settled outer continuity
+</pre><a href="#section-2.6-16" class="pilcrow">¶</a>
 </div>
-<p id="section-2.6-16"><strong>Hop-specific result.</strong> An enforcement result is hop-specific. A <code>permit</code> in <code>PCA-G[n]</code> applies only to the exact execution bound by that
-PCA — its <code>multiLineage</code>, destination, requests, payload commitments, policy commitment, input commitment, semantic profile, and crossing
-context. It does not authorize <code>PCA-G[n+1]</code>, a later crossing, a changed destination, a changed payload, a changed policy, a modified
-<code>multiLineage</code>, or any physical action not bound by the request.<a href="#section-2.6-16" class="pilcrow">¶</a></p>
-<div class="lang-text sourcecode" id="section-2.6-17">
+<p id="section-2.6-17"><strong>Hop-specific result.</strong> An enforcement result is hop-specific. A <code>permit</code> in the outer advancement at position <code>n</code> applies only to the exact
+execution bound by that advancement: its Composition Collection, destination, requests, payload commitments, policy commitment, input
+commitment, semantic profile, and crossing context. It does not authorize position <code>n+1</code>, a later crossing, a changed destination, a changed
+payload, a changed policy, a modified Composition Collection, or any physical action not bound by the request.<a href="#section-2.6-17" class="pilcrow">¶</a></p>
+<div class="lang-text sourcecode" id="section-2.6-18">
 <pre>
-PCA-G[n]
+outer advancement n
 permit for exact crossing X
         |
         v
 does not imply
         |
         v
-PCA-G[n+1]
+outer advancement n+1
 permit for crossing Y
-</pre><a href="#section-2.6-17" class="pilcrow">¶</a>
+</pre><a href="#section-2.6-18" class="pilcrow">¶</a>
 </div>
-<p id="section-2.6-18">Every later guardrail MUST verify the received outer continuation, verify the exact carried inner execution, evaluate the enforcement
-function applicable to that hop, produce its own signed result, and produce a new ordinary outer continuation only on permit.<a href="#section-2.6-18" class="pilcrow">¶</a></p>
+<p id="section-2.6-19">Every later guardrail MUST verify the received outer continuity state, verify the exact Composition Collection, evaluate the enforcement
+function applicable to that hop, produce its own authenticated result, and produce a new ordinary outer advancement only on permit.<a href="#section-2.6-19" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="operation-profile">
@@ -2219,17 +2249,18 @@ function applicable to that hop, produce its own signed result, and produce a ne
 <p id="section-2.7-1">This revision uses one operation class, <code>ENFORCE</code>:<a href="#section-2.7-1" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-2.7-2.1">
-            <p id="section-2.7-2.1.1">it means: validate the carried Multi-Lineage Execution, apply the enforcement function, and decide whether the outer execution may
+            <p id="section-2.7-2.1.1">it means: validate the bound Composition Collection, apply the enforcement function, and decide whether the outer execution may
 continue;<a href="#section-2.7-2.1.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-2.7-2.2">
-            <p id="section-2.7-2.2.1">it grants none of the authority of the carried lineages;<a href="#section-2.7-2.2.1" class="pilcrow">¶</a></p>
+            <p id="section-2.7-2.2.1">it grants none of the authority of the composition members;<a href="#section-2.7-2.2.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-2.7-2.3">
-            <p id="section-2.7-2.3.1">it is subject to ordinary PIC non-expansion: the outer lineage MAY retain or attenuate it, never add broader operations.<a href="#section-2.7-2.3.1" class="pilcrow">¶</a></p>
+            <p id="section-2.7-2.3.1">it is subject to ordinary PIC non-expansion: the outer continuity MAY retain or attenuate it, never add broader operations.<a href="#section-2.7-2.3.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-2.7-3">Future revisions MAY define additional recursive-control operation classes, using the same ordinary PCA, PoR, and profile-extension model.<a href="#section-2.7-3" class="pilcrow">¶</a></p>
+<p id="section-2.7-3">Future revisions MAY define additional recursive-control operation classes, using the same ordinary PIC continuity, PoR, and
+profile-extension model.<a href="#section-2.7-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -2242,61 +2273,56 @@ continue;<a href="#section-2.7-2.1.1" class="pilcrow">¶</a></p>
 <p id="section-3-1">Two checks are separate: <code>ENFORCE</code> must belong to the outer authority context, and the concrete executed request must be <code>ENFORCE</code>.<a href="#section-3-1" class="pilcrow">¶</a></p>
 <div class="lang-text sourcecode" id="section-3-2">
 <pre>
-ENFORCE in PCA-G[n].invariants.operations                    (authority)
-PCA-G[n].proofOfRelationship.request.operation == ENFORCE    (executed action)
+ENFORCE in materialized outer authority        (authority)
+bound request/execution operation == ENFORCE   (executed action)
 </pre><a href="#section-3-2" class="pilcrow">¶</a>
 </div>
-<p id="section-3-3">For every non-origin outer hop, both MUST hold. A conforming guardrail or receiving outer executor MUST accept the outer continuation only
+<p id="section-3-3">For every non-root outer advancement, both MUST hold. A conforming guardrail or receiving outer executor MUST accept the outer continuity only
 if:<a href="#section-3-3" class="pilcrow">¶</a></p>
 <div class="lang-text sourcecode" id="section-3-4">
 <pre>
-ValidOuterPIC(PCA-G[n-1], PCA-G[n])
-AND ValidSandboxOrigin(PCA0-G)
-AND ENFORCE in PCA-G[n].invariants.operations
-AND PCA-G[n].proofOfRelationship.request.operation == ENFORCE
-AND PCA-G[n].proofOfRelationship.request.multiLineageDigest
-      == H(
-           "PIC-Multi-Lineage-v0"
-           ||
-           canonical(PCA-G[n].multiLineage)
-         )
-AND ValidMultiLineage(PCA-G[n].multiLineage)
+ValidOuterContinuity(predecessorState, currentAdvancement)
+AND ValidSandboxOrigin(outerRoot)
+AND ENFORCE in materialized outer authority
+AND bound request/execution operation == ENFORCE
+AND bound Composition Collection commitment matches the presented Composition Collection
+AND ValidCompositionCollection(presented Composition Collection)
 AND ExactPresentedExecutionBinding
-AND PCA-G[n].proofOfRelationship.request.enforcementResult == permit
+AND bound enforcementResult == permit
 AND Fresh
 AND NotRevoked
 </pre><a href="#section-3-4" class="pilcrow">¶</a>
 </div>
-<p id="section-3-5">For <code>PCA0-G</code>, the ordinary PCA0 origin validation, the presence of <code>ENFORCE</code> in its origin authority context, and the sandbox-origin
-authorization defined below apply; it has no PoR request.<a href="#section-3-5" class="pilcrow">¶</a></p>
+<p id="section-3-5">For the outer root, ordinary root validation, the presence of <code>ENFORCE</code> in its root authority context, and the sandbox-origin authorization
+defined below apply; it has no PoR request.<a href="#section-3-5" class="pilcrow">¶</a></p>
 <p id="section-3-6">Origin authorization is part of acceptance:<a href="#section-3-6" class="pilcrow">¶</a></p>
 <div class="lang-text sourcecode" id="section-3-7">
 <pre>
-ValidSandboxOrigin(PCA0-G)
+ValidSandboxOrigin(outerRoot)
     =
-ValidOrdinaryPCA0(PCA0-G)
-AND AuthorizedSandboxOrigin(PCA0-G)
+ValidOrdinaryRoot(outerRoot)
+AND AuthorizedSandboxOrigin(outerRoot)
 </pre><a href="#section-3-7" class="pilcrow">¶</a>
 </div>
-<p id="section-3-8"><code>ValidSandboxOrigin(PCA0-G)</code> is established according to the selected chain-validation profile. A full-chain Verifier may establish it
+<p id="section-3-8"><code>ValidSandboxOrigin(outerRoot)</code> is established according to the selected continuity-validation profile. A full-history Verifier may establish it
 directly; an incremental Verifier may rely on authenticated validation state, checkpoints, Trust Plane validation, an approved succinct
-proof, or another mechanism permitted by that profile. Not every incremental receiver carries <code>PCA0-G</code>.<a href="#section-3-8" class="pilcrow">¶</a></p>
+proof, or another mechanism permitted by that profile. Not every incremental receiver carries the complete root representation.<a href="#section-3-8" class="pilcrow">¶</a></p>
 <p id="section-3-9">A receiving deployment MAY restrict the sandbox origins it accepts and MAY require a minimum outer execution contract. Such restrictions
 narrow acceptance; they do not create outer authority.<a href="#section-3-9" class="pilcrow">¶</a></p>
-<p id="section-3-10"><code>ValidMultiLineage</code> means that <code>multiLineage.carriedLineages</code> contains at least one element and every carried lineage in it validates
-independently under its own PIC lineage and the selected validation profile. Validation of one carried lineage does not validate another. A
-carried lineage is never an additional predecessor of the outer PCA. A carried lineage may itself contain <code>multiLineage</code>, enabling recursive
-composition to arbitrary finite depth. An empty <code>carriedLineages</code> array is invalid under this profile.<a href="#section-3-10" class="pilcrow">¶</a></p>
-<p id="section-3-11"><code>ExactPresentedExecutionBinding</code> means that the complete presented carried-lineage set and crossing context are reconstructed from the
+<p id="section-3-10"><code>ValidCompositionCollection</code> means that the presented Composition Collection contains at least one composition member and every composition member validates
+independently under its own PIC continuity and the selected validation profile. Validation of one composition member does not validate another. A
+composition member is never an additional predecessor of the outer continuity. A composition member may itself be a Sandboxed Execution, enabling
+recursive composition to arbitrary finite depth. An empty collection-member set is invalid under this profile.<a href="#section-3-10" class="pilcrow">¶</a></p>
+<p id="section-3-11"><code>ExactPresentedExecutionBinding</code> means that the complete presented collection-member set and crossing context are reconstructed from the
 presented objects, every supplied digest is recomputed, and the result matches the signed outer request commitments under the exactness and
 canonical-binding rules of this specification.<a href="#section-3-11" class="pilcrow">¶</a></p>
 <div class="lang-text sourcecode" id="section-3-12">
 <pre>
 ExactPresentedExecutionBinding
     =
-PresentedCarriedLineageSetMatchesCommitment
+PresentedCollectionMemberSetMatchesCommitment
 AND PresentedContextMatchesCommitment
-AND RecomputedMultiLineageDigestMatches
+AND RecomputedCompositionCollectionCommitmentMatches
 AND RecomputedRequestAndPayloadCommitmentsMatch
 AND NoHiddenSubstitutionWithinPresentedObjects
 </pre><a href="#section-3-12" class="pilcrow">¶</a>
@@ -2306,28 +2332,28 @@ profile-defined authenticated input manifest, observation source, attested conte
 specification. The two predicates remain distinct:<a href="#section-3-13" class="pilcrow">¶</a></p>
 <div class="lang-text sourcecode" id="section-3-14">
 <pre>
-ValidMultiLineage
-    validates every carried lineage independently
+ValidCompositionCollection
+    validates every composition member independently
 
 ExactPresentedExecutionBinding
     validates completeness and exact binding
-    of the presented multi-lineage execution
+    of the presented composition-collection execution
     and its crossing context
 </pre><a href="#section-3-14" class="pilcrow">¶</a>
 </div>
 <p id="section-3-15">The receiving component MUST recompute all digests and MUST reject:<a href="#section-3-15" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-3-16.1">
-          <p id="section-3-16.1.1">a missing <code>multiLineage</code>;<a href="#section-3-16.1.1" class="pilcrow">¶</a></p>
+          <p id="section-3-16.1.1">a missing Composition Collection binding;<a href="#section-3-16.1.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-3-16.2">
-          <p id="section-3-16.2.1">an invalid outer continuation;<a href="#section-3-16.2.1" class="pilcrow">¶</a></p>
+          <p id="section-3-16.2.1">an invalid outer continuity;<a href="#section-3-16.2.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-3-16.3">
-          <p id="section-3-16.3.1">an invalid carried lineage;<a href="#section-3-16.3.1" class="pilcrow">¶</a></p>
+          <p id="section-3-16.3.1">an invalid composition member;<a href="#section-3-16.3.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-3-16.4">
-          <p id="section-3-16.4.1">an added, removed, or substituted presented carried lineage;<a href="#section-3-16.4.1" class="pilcrow">¶</a></p>
+          <p id="section-3-16.4.1">an added, removed, or substituted presented composition member;<a href="#section-3-16.4.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-3-16.5">
           <p id="section-3-16.5.1">a mismatched request, destination, or payload;<a href="#section-3-16.5.1" class="pilcrow">¶</a></p>
@@ -2342,8 +2368,9 @@ ExactPresentedExecutionBinding
           <p id="section-3-16.8.1">stale, replayed, or revoked state.<a href="#section-3-16.8.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
-<p id="section-3-17">This profile adds no second signature system: guardrail approval is the ordinary outer PCA signature, nothing else. Each <code>permit</code> is
-hop-specific: it authorizes only the exact crossing bound by its own outer PCA, never a later hop or a changed crossing.<a href="#section-3-17" class="pilcrow">¶</a></p>
+<p id="section-3-17">This profile adds no second signature system: guardrail approval is the ordinary authentication of the outer continuity advancement, nothing
+else. Each <code>permit</code> is hop-specific: it authorizes only the exact crossing bound by its own outer advancement, never a later hop or a changed
+crossing.<a href="#section-3-17" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="bypass">
@@ -2352,12 +2379,12 @@ hop-specific: it authorizes only the exact crossing bound by its own outer PCA, 
 <a href="#section-4" class="section-number selfRef">4. </a><a href="#name-bypass" class="section-name selfRef">Bypass</a>
       </h2>
 <p id="section-4-1">A sender may physically present the inner execution without a valid outer continuation. The next conforming guardrail rejects it because the
-required Sandboxed Execution lineage is absent or invalid.<a href="#section-4-1" class="pilcrow">¶</a></p>
+required Sandboxed Execution continuity is absent or invalid.<a href="#section-4-1" class="pilcrow">¶</a></p>
 <div class="lang-text sourcecode" id="section-4-2">
 <pre>
 BYPASS ATTEMPT
 
-sender ---- inner Multi-Lineage only ----&gt; next conforming guardrail
+sender ---- inner Composition Collection only ----&gt; next conforming guardrail
                                            reject:
                                            no valid outer continuation
 </pre><a href="#section-4-2" class="pilcrow">¶</a>
@@ -2373,66 +2400,82 @@ sender ---- inner Multi-Lineage only ----&gt; next conforming guardrail
 <a href="#section-4.1" class="section-number selfRef">4.1. </a><a href="#name-non-pic-aware-target" class="section-name selfRef">Non-PIC-Aware Target</a>
         </h3>
 <p id="section-4.1-1">A non-PIC-aware target cannot verify the outer Sandboxed Execution. For such a target, the final hop of the Sandboxed Execution is the
-<strong>materializing guardrail</strong> — an ordinary executor of the outer lineage that performs the exact physical action permitted by its own bound
+<strong>materializing guardrail</strong> — an ordinary executor of the outer continuity that performs the exact physical action permitted by its own bound
 outer request.<a href="#section-4.1-1" class="pilcrow">¶</a></p>
-<p id="section-4.1-2">It MUST produce and sign its ordinary outer successor PCA for the exact materialized action; it MUST NOT complete or mutate an already-signed
-PCA. The materializing guardrail:<a href="#section-4.1-2" class="pilcrow">¶</a></p>
+<p id="section-4.1-2">It MUST follow the selected ordinary PIC advancement profile for the exact materialized action; it MUST NOT complete or mutate an
+already-authenticated advancement. The materializing guardrail:<a href="#section-4.1-2" class="pilcrow">¶</a></p>
 <ol start="1" type="1" class="normal type-1" id="section-4.1-3">
 <li id="section-4.1-3.1">
             <p id="section-4.1-3.1.1">verifies its outer predecessor;<a href="#section-4.1-3.1.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-4.1-3.2">
-            <p id="section-4.1-3.2.1">verifies every carried lineage;<a href="#section-4.1-3.2.1" class="pilcrow">¶</a></p>
+            <p id="section-4.1-3.2.1">verifies every composition member;<a href="#section-4.1-3.2.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-4.1-3.3">
             <p id="section-4.1-3.3.1">evaluates the enforcement function;<a href="#section-4.1-3.3.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-4.1-3.4">
-            <p id="section-4.1-3.4.1">constructs its own ordinary outer successor PCA;<a href="#section-4.1-3.4.1" class="pilcrow">¶</a></p>
+            <p id="section-4.1-3.4.1">constructs the ordinary outer continuity advancement or advancement proposal required by the selected profile;<a href="#section-4.1-3.4.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-4.1-3.5">
             <p id="section-4.1-3.5.1">binds the exact physical action, destination, payload, participants, policy inputs, and context;<a href="#section-4.1-3.5.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-4.1-3.6">
-            <p id="section-4.1-3.6.1">signs the complete successor PCA;<a href="#section-4.1-3.6.1" class="pilcrow">¶</a></p>
+            <p id="section-4.1-3.6.1">authenticates the complete advancement or proposal as required by the selected profile;<a href="#section-4.1-3.6.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-4.1-3.7">
-            <p id="section-4.1-3.7.1">performs exactly the bound physical action.<a href="#section-4.1-3.7.1" class="pilcrow">¶</a></p>
+            <p id="section-4.1-3.7.1">follows any profile-required settlement or acceptance rules for treating the continuation as valid;<a href="#section-4.1-3.7.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-4.1-3.8">
+            <p id="section-4.1-3.8.1">performs exactly the bound physical action according to the selected materialization profile and its ordering rules.<a href="#section-4.1-3.8.1" class="pilcrow">¶</a></p>
 </li>
         </ol>
-<p id="section-4.1-4">After the decision, control of that concrete materialized target operation does not return to the proposing executor; this concerns the
-materialized operation, not ownership of unrelated application workflow.<a href="#section-4.1-4" class="pilcrow">¶</a></p>
-<div class="lang-text sourcecode" id="section-4.1-5">
+<p id="section-4.1-4">For current PIC Profile 0.2, the materializing guardrail or workload validates the outer predecessor, validates every Composition Collection
+member, evaluates enforcement, constructs and signs the Continuity Transition JWT, constructs and signs the candidate PIC Continuity JWT, and
+submits the candidate through the ordinary PIC-X advancement flow. PIC-X validates the candidate and transition and, on success, issues the
+next settled outer PIC Continuity JWT. The settled token is signed by PIC-X and contains no pending <code>continuity_transition_jwt</code>.<a href="#section-4.1-4" class="pilcrow">¶</a></p>
+<p id="section-4.1-5">This document does not define the exact temporal ordering between PIC-X settlement and the final irreversible physical side effect against a
+non-PIC-aware target. That ordering is profile-defined or deployment-defined.<a href="#section-4.1-5" class="pilcrow">¶</a></p>
+<p id="section-4.1-6">After the decision, control of that concrete materialized target operation does not return to the proposing executor; this concerns the
+materialized operation, not ownership of unrelated application workflow.<a href="#section-4.1-6" class="pilcrow">¶</a></p>
+<div class="lang-text sourcecode" id="section-4.1-7">
 <pre>
 proposing executor
       |
-      | proposed Multi-Lineage Execution
+      | proposed Composition Collection
       v
 materializing guardrail
       |
       | validates outer PIC
-      | validates carried lineages
+      | validates composition members
       | evaluates enforcement
-      | physically performs exact permitted action
+      | builds Profile 0.2 candidate
+      | binds exact target operation
       v
-non-PIC-aware target
-</pre><a href="#section-4.1-5" class="pilcrow">¶</a>
+  +-------- PIC-X validates candidate and transition
+  |         and issues settled outer continuity
+  |
+  +-------- non-PIC-aware target receives only
+            the exact bound permitted action
+
+The timing between PIC-X settlement and irreversible physical action is profile-defined.
+</pre><a href="#section-4.1-7" class="pilcrow">¶</a>
 </div>
-<p id="section-4.1-6">The materializing guardrail is not a new trusted authority, a special PCA type, a required service mesh, a universal gateway, or a
-protocol-level physical sandbox; it remains an ordinary executor of the outer PIC lineage. For a non-PIC-aware target, ensuring that the
+<p id="section-4.1-8">The materializing guardrail is not a new trusted authority, a special continuity artifact type, a required service mesh, a universal gateway,
+or a protocol-level physical sandbox; it remains an ordinary executor of the outer PIC continuity. For a non-PIC-aware target, ensuring that the
 target cannot also be reached through unrelated credentials, alternate routes, direct network access, or other physical paths remains a
 deployment responsibility, addressed by the
-<a href="pic-architecture-deployment-spec.html">PIC Architecture and Deployment Specification</a>.<a href="#section-4.1-6" class="pilcrow">¶</a></p>
-<p id="section-4.1-7">PIC determines whether an execution may continue as valid PIC state; network infrastructure may prevent ungoverned physical access. These are
-separate guarantees, and one does not replace the other.<a href="#section-4.1-7" class="pilcrow">¶</a></p>
-<div class="lang-text sourcecode" id="section-4.1-8">
+<a href="pic-architecture-deployment-spec.html">PIC Architecture and Deployment Specification</a>.<a href="#section-4.1-8" class="pilcrow">¶</a></p>
+<p id="section-4.1-9">PIC determines whether an execution may continue as valid PIC state; network infrastructure may prevent ungoverned physical access. These are
+separate guarantees, and one does not replace the other.<a href="#section-4.1-9" class="pilcrow">¶</a></p>
+<div class="lang-text sourcecode" id="section-4.1-10">
 <pre>
 PIC validity boundary:
     Is this a valid recursive PIC continuation?
 
 Deployment path boundary:
     Can the target be reached through an alternate physical route?
-</pre><a href="#section-4.1-8" class="pilcrow">¶</a>
+</pre><a href="#section-4.1-10" class="pilcrow">¶</a>
 </div>
 </section>
 </div>
@@ -2442,7 +2485,7 @@ Deployment path boundary:
 <a href="#section-4.2" class="section-number selfRef">4.2. </a><a href="#name-relationship-to-service-mes" class="section-name selfRef">Relationship to Service Meshes and Deployment Infrastructure</a>
         </h3>
 <p id="section-4.2-1">A Sandboxed Execution does not require a service mesh, sidecar, proxy, gateway, network-interception layer, or physical sandbox. The validity
-of guardrail traversal derives from the outer PIC lineage: ordinary Proof of Relationship, exactly-one-predecessor continuity,
+of guardrail traversal derives from the outer PIC continuity: ordinary Proof of Relationship, exactly-one-predecessor continuity,
 non-expansion, request binding, executor conformance, revocation checks, and verification by the next conforming outer executor.<a href="#section-4.2-1" class="pilcrow">¶</a></p>
 <p id="section-4.2-2">A service mesh MAY transport, route, encrypt, observe, load-balance, or operationally restrict a Sandboxed Execution. It is not the source of
 the execution's continuity, guardrail authorization, authority separation, or sandboxing property. PIC therefore assumes responsibility for
@@ -2456,16 +2499,16 @@ provides:                          may provide:
 - guardrail-to-guardrail PoR;      - service discovery;
 - exact request binding;           - routing;
 - authority non-expansion;         - observability;
-- independent lineage checks;      - load balancing;
+- independent continuity checks;      - load balancing;
 - recursive validation;            - rate limiting;
 - rejection of an invalid          - network policy;
   outer continuation.              - operational path restriction;
                                    - resilience and availability.
 </pre><a href="#section-4.2-3" class="pilcrow">¶</a>
 </div>
-<p id="section-4.2-4">A service mesh does not make an invalid PCA valid, does not replace PIC verification, and does not create a Sandboxed Execution merely by
-forcing traffic through a proxy. Conversely, PIC does not replace networking, transport confidentiality, availability engineering, service
-discovery, or physical path control. It is unnecessary only as the source of the cryptographic and lineage-based sandboxing guarantee.<a href="#section-4.2-4" class="pilcrow">¶</a></p>
+<p id="section-4.2-4">A service mesh does not make invalid continuity state valid, does not replace PIC verification, and does not create a Sandboxed Execution
+merely by forcing traffic through a proxy. Conversely, PIC does not replace networking, transport confidentiality, availability engineering, service
+discovery, or physical path control. It is unnecessary only as the source of the cryptographic and continuity-based sandboxing guarantee.<a href="#section-4.2-4" class="pilcrow">¶</a></p>
 <ul class="normal ulEmpty">
 <li class="normal ulEmpty" id="section-4.2-5.1">
             <p id="section-4.2-5.1.1">A service mesh may carry the sandbox, but it is not the sandbox.<a href="#section-4.2-5.1.1" class="pilcrow">¶</a></p>
@@ -2496,18 +2539,18 @@ already documented by that specification (Section 6.8). Sandboxed Execution intr
 <p id="section-5-1">The model is recursively closed. No special root guardrail object exists, and no new trust primitive appears at deeper levels.<a href="#section-5-1" class="pilcrow">¶</a></p>
 <div class="lang-text sourcecode" id="section-5-2">
 <pre>
-PCA outer
- +-- multiLineage
-      +-- PCA inner A
-      +-- PCA inner B
-           +-- multiLineage
+outer continuity
+ +-- Composition Collection
+      +-- inner continuity A
+      +-- inner continuity B
+           +-- nested Composition Collection
                 +-- deeper PIC execution
 </pre><a href="#section-5-2" class="pilcrow">¶</a>
 </div>
 <p id="section-5-3">At every level:<a href="#section-5-3" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-5-4.1">
-          <p id="section-5-4.1.1">the same ordinary PCA structure is reused;<a href="#section-5-4.1.1" class="pilcrow">¶</a></p>
+          <p id="section-5-4.1.1">the same ordinary PIC continuity semantics are reused;<a href="#section-5-4.1.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-5-4.2">
           <p id="section-5-4.2.1">the same PoR semantics are reused;<a href="#section-5-4.2.1" class="pilcrow">¶</a></p>
@@ -2519,39 +2562,39 @@ PCA outer
           <p id="section-5-4.4.1">validation recursively invokes the appropriate PIC Verifier profile;<a href="#section-5-4.4.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-5-4.5">
-          <p id="section-5-4.5.1">each level has exactly one predecessor in its own lineage;<a href="#section-5-4.5.1" class="pilcrow">¶</a></p>
+          <p id="section-5-4.5.1">each level has exactly one predecessor in its own continuity;<a href="#section-5-4.5.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-5-4.6">
-          <p id="section-5-4.6.1">an inner PCA is never an additional predecessor of the outer PCA;<a href="#section-5-4.6.1" class="pilcrow">¶</a></p>
+          <p id="section-5-4.6.1">an inner continuity is never an additional predecessor of the outer continuity;<a href="#section-5-4.6.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-5-4.7">
-          <p id="section-5-4.7.1">no authority flows upward from inner lineages.<a href="#section-5-4.7.1" class="pilcrow">¶</a></p>
+          <p id="section-5-4.7.1">no authority flows upward from inner continuities.<a href="#section-5-4.7.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
-<p id="section-5-5">At every recursive level the same separation holds: one predecessor in the local lineage, origin-bounded authority, ordinary PoR, ordinary
+<p id="section-5-5">At every recursive level the same separation holds: one predecessor in the local continuity, root-bounded authority, ordinary PoR, ordinary
 non-expansion, exact request binding, and independent revocation.<a href="#section-5-5" class="pilcrow">¶</a></p>
 <div class="lang-text sourcecode" id="section-5-6">
 <pre>
 LEVEL 0
-outer PCA { ENFORCE }
+outer continuity { ENFORCE }
 |
-+-- multiLineage
++-- Composition Collection
     |
-    +-- LEVEL 1 / Carried Lineage A
-    |   PCA { READ }
+    +-- LEVEL 1 / Composition Member A
+    |   continuity { READ }
     |
-    +-- LEVEL 1 / Carried Lineage B
-        PCA { ENFORCE }
+    +-- LEVEL 1 / Composition Member B
+        continuity { ENFORCE }
         |
-        +-- multiLineage
+        +-- Composition Collection
             |
-            +-- LEVEL 2 / Carried Lineage C
-                PCA { WRITE }
+            +-- LEVEL 2 / Composition Member C
+                continuity { WRITE }
 </pre><a href="#section-5-6" class="pilcrow">¶</a>
 </div>
 <p id="section-5-7">Nesting adds execution structure. It does not create authority inheritance between recursive levels.<a href="#section-5-7" class="pilcrow">¶</a></p>
 <p id="section-5-8">The model is recursively composable to arbitrary finite depth — not literal infinite execution. Implementations MUST bound maximum recursion
-depth, carried-lineage count, encoded size, and total validation work. Resource limits cause rejection or indeterminate-deny according to the
+depth, collection-member count, encoded size, and total validation work. Resource limits cause rejection or indeterminate-deny according to the
 profile;
 they do not change PIC semantics.<a href="#section-5-8" class="pilcrow">¶</a></p>
 </section>
@@ -2572,16 +2615,16 @@ they do not change PIC semantics.<a href="#section-5-8" class="pilcrow">¶</a></
             <p id="section-6.1-2.1.1">an outer hop without valid PoR cannot continue;<a href="#section-6.1-2.1.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-6.1-2.2">
-            <p id="section-6.1-2.2.1">an unauthorized guardrail cannot become a valid successor;<a href="#section-6.1-2.2.1" class="pilcrow">¶</a></p>
+            <p id="section-6.1-2.2.1">an unauthorized guardrail cannot become a valid continuity advancement;<a href="#section-6.1-2.2.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-6.1-2.3">
             <p id="section-6.1-2.3.1">the outer authority cannot expand beyond <code>ENFORCE</code>;<a href="#section-6.1-2.3.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-6.1-2.4">
-            <p id="section-6.1-2.4.1">an invalid inner PCA causes rejection;<a href="#section-6.1-2.4.1" class="pilcrow">¶</a></p>
+            <p id="section-6.1-2.4.1">an invalid inner continuity causes rejection;<a href="#section-6.1-2.4.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-6.1-2.5">
-            <p id="section-6.1-2.5.1">a different inner execution cannot be substituted without invalidating the signed binding;<a href="#section-6.1-2.5.1" class="pilcrow">¶</a></p>
+            <p id="section-6.1-2.5.1">a different inner execution cannot be substituted without invalidating the authenticated binding;<a href="#section-6.1-2.5.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-6.1-2.6">
             <p id="section-6.1-2.6.1">skipping guardrails cannot produce a valid outer continuation.<a href="#section-6.1-2.6.1" class="pilcrow">¶</a></p>
@@ -2624,20 +2667,20 @@ does not prove that a human policy or its interpretation is correct.<a href="#se
       </h2>
 <div class="lang-text sourcecode" id="section-7-1">
 <pre>
-LINEAGE EXECUTION
-one origin;
-one predecessor per PCA;
+PIC CONTINUITY
+one root;
+one predecessor per non-root advancement;
 authority never expands.
 
-MULTI-LINEAGE EXECUTION
-one or more carried lineages constitute
+COMPOSITION COLLECTION
+one or more composition members constitute
 the inner execution being evaluated;
 each remains independently rooted and verified;
 their authorities are never merged.
 
 SANDBOXED EXECUTION
-an outer ENFORCE lineage carries the Multi-Lineage Execution;
-each guardrail verifies and continues that outer lineage.
+an outer ENFORCE continuity carries the Composition Collection;
+each guardrail verifies and advances that outer continuity.
 
 PIC CARRYING PIC — PIC OF PIC
 the execution that validates PIC execution
@@ -2649,8 +2692,8 @@ one authority state, and the evaluation process itself continues only as valid P
 <p id="section-7-3">A service mesh may carry, observe, encrypt, or operationally restrict this execution, but it is not the source of its sandboxing property.<a href="#section-7-3" class="pilcrow">¶</a></p>
 <p id="section-7-4">Physical executor behavior, alternate physical paths, implementation failure, cryptographic compromise, unavailable authenticated history,
 and policy-semantic error remain at the stated boundaries of the model.<a href="#section-7-4" class="pilcrow">¶</a></p>
-<p id="section-7-5">Without at least one carried lineage, there is no inner Multi-Lineage Execution for this profile to evaluate. This does not make the carried
-lineages authority parents of the outer lineage.<a href="#section-7-5" class="pilcrow">¶</a></p>
+<p id="section-7-5">Without at least one composition member, there is no inner Composition Collection for this profile to evaluate. This does not make the member
+continuities authority parents of the outer continuity.<a href="#section-7-5" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="contributors">

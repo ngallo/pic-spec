@@ -43,13 +43,12 @@ defines the normative requirements for the two complementary components of Proof
 <strong>Provenance Identity Continuity (PIC) Model</strong> at verification time.</t>
 </list></t>
 
-<t>At every hop, a node acts in both roles: it <strong>verifies</strong> the proof received from its predecessor and <strong>proves</strong> continuity to its successor
-by constructing a new proof, which the next node in turn verifies.</t>
+<t>At every hop, a node acts in both roles: it <strong>verifies</strong> the continuity state received from its predecessor and <strong>proves</strong> continuity to its
+successor by producing the next continuity advancement required by the selected profile.</t>
 
-<t>It specifies the per-hop <strong>Proof of Relationship</strong> and successor-PCA construction (Section 2), the ordered <strong>Verifier checks</strong> — including the
-executed-vs-signed rule — that validate a hop before authority is exercised (Section 3), authority as an abstract <strong>attenuation domain</strong> with
-a Policy Decision Point boundary (Section 4), and the <strong>chain representations</strong> that carry a proof: the full hash chain, the snapshot hash
-chain this specification orients on, and succinct proofs (Section 5).</t>
+<t>It specifies the per-hop <strong>Proof of Relationship</strong> and continuity-advancement requirements (Section 2), the ordered <strong>Verifier checks</strong> -
+including the executed-vs-signed rule - that validate a hop before authority is exercised (Section 3), authority as an abstract
+<strong>attenuation domain</strong> with a Policy Decision Point boundary (Section 4), and profile-selected <strong>continuity representations</strong> (Section 5).</t>
 
 <t>This document does not redefine, extend, or alter the PIC Model or the normative semantics defined by the PIC Specification.</t>
 
@@ -145,7 +144,7 @@ regulatory approval, or standards-body recognition.</t>
   <middle>
 
 
-<?line 89?>
+<?line 88?>
 
 <section anchor="introduction"><name>Introduction</name>
 
@@ -173,6 +172,9 @@ proof is invalid, the hop is rejected before any authority is exercised.</t>
 decentralized</em> — each hop carrying everything the next needs to verify it — or with the help of a trusted component such as a snapshot
 server. Section 5 describes these representations; the PIC <em>invariants</em> are the same in every case, but the concrete assurance and trust
 assumptions differ by profile (Sections 6.8, 7) — the profiles are not equivalent.</t>
+
+<t>This statement concerns the abstract PIC model and profile space. The current PIC Profile 0.2 / PIC-X realization defined by this
+specification uses centralized PIC-X-mediated advancement and settlement.</t>
 
 <t>PIC also draws a <strong>clean line between the security model and transport</strong>. The guarantees come from the signed continuity chain, not from how
 it travels: an implementation must not rely on the transport — a TLS session, a network perimeter, a message bus — to obtain them (the
@@ -366,12 +368,16 @@ appear in all capitals within normative text.</t>
 <t>Examples in this document are illustrative and non-normative.</t>
 
 </section>
-<section anchor="origin-authority-context-pca0"><name>Origin Authority Context (PCA0)</name>
+<section anchor="origin-authority-context"><name>Origin Authority Context</name>
 
-<t>A lineage begins when a principal expresses an intent within its privileges. The result is a <strong>PIC Context of Authority (PCA)</strong>: the signed
-document that carries the <strong>invariants</strong> of a lineage, that is, the authority that may continue (<spanx style="verb">operations</spanx>) and the <spanx style="verb">executionContract</spanx>
-that executors must satisfy. The PCA of the origin, <strong>PCA0</strong>, contains no Proof of Relationship: there is no predecessor to relate to. Every
-later hop continues, and may only attenuate, the invariants granted by the PCA0.</t>
+<t>A lineage begins when a principal expresses an intent within its privileges. The result is a <strong>PIC Context of Authority (PCA)</strong>: the logical
+authority context that establishes the upper bound for the lineage. The root PCA contains no Proof of Relationship: there is no predecessor
+to relate to. Every later continuity advancement continues, and may only attenuate, the authority established by the root.</t>
+
+<t>This specification does not require every hop to create a new signed PCA. A profile defines the concrete signed root representation and the
+concrete continuity-advancement representation. In PIC Profile 0.2, the trusted root is represented by a <strong>PIC PCA JWT</strong>. A workload
+proposes one advancement by signing a <strong>Continuity Transition JWT</strong> and placing it in a workload-signed candidate <strong>PIC Continuity JWT</strong>.
+PIC-X validates the candidate and issues the next settled <strong>PIC Continuity JWT</strong>.</t>
 
 <t>The examples represent authority as an <spanx style="verb">operations</spanx> set — the reference profile, matching the operation-resource privileges of the model
 <xref target="references">[1]</xref>. PIC does not require this representation, nor does it define the application's authorization vocabulary; Section 4
@@ -379,7 +385,7 @@ covers authority as an abstract domain (roles, labels, scopes, policy references
 
 <t>In the running scenario, Alice connects to the backup SaaS. The service agreement confirms that the service is operated in Europe by an
 accountable party and does not use agentic execution. On those terms she grants access to all her files for backup. Her client produces a
-PCA0, signed by Alice:</t>
+root PCA, signed or otherwise authenticated by the selected origin profile:</t>
 
 <figure><sourcecode type="json"><![CDATA[
 {
@@ -406,7 +412,7 @@ PCA0, signed by Alice:</t>
 ]]></sourcecode></figure>
 
 <t>Later, Alice uses the same SaaS to summarize a document. The terms are different this time: the service runs in the United States and uses
-an AI agent. She accepts them, but only for the file <spanx style="verb">foo</spanx>. The resulting PCA0 grants less and constrains differently:</t>
+an AI agent. She accepts them, but only for the file <spanx style="verb">foo</spanx>. The resulting root PCA grants less and constrains differently:</t>
 
 <figure><sourcecode type="json"><![CDATA[
 {
@@ -431,97 +437,113 @@ an AI agent. She accepts them, but only for the file <spanx style="verb">foo</sp
 }
 ]]></sourcecode></figure>
 
-<t>Each PCA0 starts a distinct lineage with its own invariants, and no later hop can expand them. These are the two lineages of Section 1.4.
-The <spanx style="verb">continuation</spanx> block is the challenge each PCA emits for its next hop, consumed in the Proof of Relationship (Section 2.3).</t>
+<t>Each root PCA starts a distinct lineage with its own authority bound, and no later continuity advancement can expand it. These are the two
+lineages of Section 1.4. The <spanx style="verb">continuation</spanx> block in these examples is the root bootstrap challenge consumed by the first Proof of
+Relationship (Section 2.3). PIC Profile 0.2 carries the corresponding root challenge as <spanx style="verb">challenge.next_challenge</spanx> inside the signed root
+PIC PCA JWT.</t>
 
-<t>A PCA0 may be <strong>minted directly</strong> by an authenticated permissioned entity, or <strong>derived from an existing credential</strong> — for example from an
-OAuth access token, or from a JWT through a custom token-exchange profile. These derivations are <em>out of scope</em> for this specification, but
-they are in line with it, and one point must be clear: <strong>PIC does not change authentication.</strong> Identity and authentication mechanisms remain
-exactly as they are and establish the <em>origin</em>; PIC governs only how authority propagates <em>after</em> that origin exists. Wherever it comes from,
-the derivation is where a PCA0 is born, and execution starts from there.</t>
+<t>A root PCA may be <strong>minted directly</strong> by an authenticated permissioned entity, or <strong>derived from an existing credential</strong> - for example from
+an OAuth access token through a profile-defined exchange. These derivations are out of scope for this specification, but they are in line
+with it, and one point must be clear: <strong>PIC does not change authentication.</strong> Identity and authentication mechanisms establish the origin;
+PIC governs only how authority propagates after that origin exists.</t>
 
 </section>
 </section>
 <section anchor="prover-requirements"><name>Prover Requirements</name>
 
-<t>A <strong>PIC Prover</strong> constructs the <strong>PIC Context of Authority (PCA)</strong> for the next execution hop. Except for the origin <strong>PCA0</strong> (Section 1.8),
-every PCA produced by a Prover MUST:</t>
+<t>A <strong>PIC Prover</strong> produces the next continuity advancement for a lineage. Except for the root establishment step, every continuity
+advancement produced by a Prover MUST:</t>
 
 <t><list style="numbers" type="1">
-  <t>identify <strong>exactly one</strong> predecessor PCA;</t>
-  <t>include a <strong>cryptographic reference</strong> to that predecessor;</t>
-  <t>include a <strong>Proof of Relationship</strong> that responds to the predecessor's continuation challenge and binds the current execution to it;</t>
-  <t>carry <strong>invariants</strong> equal to or more restrictive than the predecessor invariants;</t>
-  <t>be <strong>integrity-protected as a whole</strong> by a single signature of the current executor.</t>
+  <t>identify <strong>exactly one</strong> predecessor continuity state;</t>
+  <t>include or bind a <strong>cryptographic reference</strong> to that predecessor;</t>
+  <t>include or bind the <strong>Proof of Relationship</strong> required by the selected profile;</t>
+  <t>yield authority equal to or more restrictive than the predecessor materialized authority;</t>
+  <t>bind the concrete execution or request as required by the selected profile;</t>
+  <t>be integrity-protected according to the selected profile.</t>
 </list></t>
 
-<t>The first requirement is what keeps the <em>cross-lineage composition</em> of Section 1.4 out of the model: a PCA that combines authority from two
-lineages cannot be <em>validated as a conforming continuation</em>. An executor can always assemble arbitrary bytes locally; what it cannot do is
-have such a document accepted (Section 1.1). The construction below is a <em>minimal profile</em> chosen for clarity.</t>
+<t>The first requirement is what keeps the cross-lineage composition of Section 1.4 out of the model: an advancement that combines authority
+from two lineages cannot be validated as a conforming continuation. An executor can always assemble arbitrary bytes locally; what it cannot
+do is have such a state accepted.</t>
 
 <section anchor="prover-procedure"><name>Prover Procedure</name>
 
-<t>Given a predecessor PCA, the Prover MUST perform the following steps and MUST NOT emit a successor PCA if any of them fails:</t>
+<t>Given a predecessor continuity state, the Prover MUST perform the following steps and MUST NOT emit a continuity advancement if any of them
+fails:</t>
 
 <t><list style="numbers" type="1">
-  <t>validate the predecessor PCA (Section 2.2);</t>
-  <t>build the Proof of Relationship, responding to the predecessor's continuation challenge (Section 2.3);</t>
-  <t>keep or attenuate the invariants (Section 2.4);</t>
-  <t>assemble the PCA — PoR, invariants, and a fresh continuation challenge — and sign it as a whole (Section 2.5);</t>
-  <t>emit the signed PCA to the next hop.</t>
+  <t>validate the predecessor continuity state (Section 2.2);</t>
+  <t>establish exactly one causal predecessor;</t>
+  <t>build the Proof of Relationship required by the selected profile (Section 2.3);</t>
+  <t>keep or attenuate the predecessor materialized authority (Section 2.4);</t>
+  <t>bind the concrete execution or request as required by the selected profile;</t>
+  <t>produce the next continuity advancement artifact (Section 2.5);</t>
+  <t>ensure the resulting authority is no greater than the predecessor authority.</t>
 </list></t>
 
 <figure><sourcecode type="text"><![CDATA[
-receive PCA[n-1]
+receive current continuity state
       |
       v
-validate predecessor
+validate predecessor continuity state
       |
       v
-build PoR (respond to predecessor challenge)
+build PoR and request/execution binding
       |
       v
-keep or attenuate invariants
+keep or attenuate materialized authority
       |
       v
-assemble and sign PCA[n]  (single signature)
+produce next continuity advancement
       |
       v
-emit PCA[n]
+emit updated continuity state
 ]]></sourcecode></figure>
 
-<t>The following sections define each step.</t>
+<t>At the abstract level, the advancement is not required to be a PCA. In PIC Profile 0.2, the proposed advancement artifact is a Continuity
+Transition JWT carried as <spanx style="verb">continuity_transition_jwt</spanx> in a workload-signed candidate PIC Continuity JWT. PIC-X validates that candidate and
+issues the next settled PIC Continuity JWT with no pending <spanx style="verb">continuity_transition_jwt</spanx>.</t>
 
 </section>
 <section anchor="predecessor-validation"><name>Predecessor Validation</name>
 
-<t>The Prover MUST validate the predecessor PCA by applying the Verifier procedure of Section 3. If validation fails, the Prover MUST NOT
-emit a successor PCA. The rest of this section assumes a valid predecessor.</t>
+<t>The Prover MUST validate the predecessor continuity state by applying the Verifier procedure of Section 3. If validation fails, the Prover
+MUST NOT emit a continuity advancement. The rest of this section assumes a valid predecessor.</t>
 
 </section>
 <section anchor="proof-of-relationship"><name>Proof of Relationship</name>
 
-<t>The <strong>PoR</strong> is the payload that binds the current execution to <em>exactly one</em> predecessor. It is carried in the clear inside the successor PCA
-as the <spanx style="verb">proofOfRelationship</spanx> field and is covered by the single PCA signature (Section 2.5). It carries:</t>
+<t>The <strong>PoR</strong> binds the current execution to exactly one predecessor. A non-root continuity advancement MUST carry or cryptographically bind
+the PoR required by the selected profile. The PoR establishes:</t>
 
 <t><list style="symbols">
-  <t><strong><spanx style="verb">previousPcaHash</spanx></strong> — the hash of the predecessor PCA, binding this step to exactly one lineage;</t>
-  <t><strong><spanx style="verb">continuationResponse</spanx></strong> — the predecessor's emitted <spanx style="verb">continuation.challenge</spanx> (Section 2.5) with a random value the executor generates
-locally. It proves the executor <strong>observed and holds</strong> the predecessor PCA (it has the challenge) and keeps the response fresh. It does
-<strong>not</strong> prove that the request causally required this step, nor that this executor was designated as the successor;</t>
-  <t><strong><spanx style="verb">executor</spanx></strong> and <strong><spanx style="verb">request</spanx></strong> — the executor identifier and the <em>request binding</em>: the <spanx style="verb">operation</spanx>, its <spanx style="verb">target</spanx> (resource), the
-<spanx style="verb">securityDomain</spanx> (tenant), and <spanx style="verb">requestDigest</spanx> / <spanx style="verb">payloadDigest</spanx> when the decision depends on the request or its payload. Signing these
-ties the authority to the <strong>concrete action</strong>, so enforcement can check that what is executed matches what was signed (Section 3);</t>
-  <t><strong><spanx style="verb">executorAttestation</spanx></strong> — the <em>conformance evidence</em>: the executor attestation of Section 1.6, embedded in full (it carries its own
-issuer signature, elided in the examples), proving that the executor satisfies the predecessor execution contract.</t>
+  <t>a predecessor cryptographic reference;</t>
+  <t>challenge continuity or an equivalent profile-defined freshness mechanism;</t>
+  <t>holder, executor, or key relationship as required by the profile;</t>
+  <t>request or execution binding where applicable;</t>
+  <t>conformance evidence where the profile requires executor conformance.</t>
 </list></t>
+
+<t>For PIC Profile 0.2, <spanx style="verb">proof_of_relationship</spanx> is carried inside the Continuity Transition JWT. Key binding is part of that PoR; this
+specification does not define a separate generic <spanx style="verb">key_binding</spanx> field. The predecessor hash for the current centralized Profile 0.2
+realization is:</t>
+
+<figure><sourcecode type="text"><![CDATA[
+predecessor_hash = hash(compact previous trusted PIC Continuity JWT N)
+]]></sourcecode></figure>
+
+<t>The first transition still consumes the bootstrap challenge from
+<spanx style="verb">context_of_authority.root.pca_jwt.payload.challenge.next_challenge</spanx>. Later transitions use the current challenge material made available by
+the previous settled continuity state according to the selected Profile 0.2 schema. This document does not assign a settled-token field for
+that post-initial challenge material.</t>
 
 <t>Continuing the running scenario, the backup service performing <spanx style="verb">BACKUP</spanx> produces the following PoR payload:</t>
 
 <figure><sourcecode type="json"><![CDATA[
 {
   "type": "PIC-PoR-v0",
-  "previousPcaHash": "sha256:4f6c...",
+  "predecessorReference": "profile-defined cryptographic reference",
   "continuationResponse": {
     "predecessorChallenge": "base64url... (from the predecessor's continuation)",
     "executorNonce": "base64url-random-256-bit-value"
@@ -555,34 +577,30 @@ issuer signature, elided in the examples), proving that the executor satisfies t
 }
 ]]></sourcecode></figure>
 
-<t>The Prover MUST check its own PoR before proceeding: if the executor does not satisfy the predecessor execution contract, or
-<spanx style="verb">previousPcaHash</spanx> does not match the predecessor, or the challenge response is not built from the predecessor's challenge, the PoR is
-<em>invalid</em> and the Prover MUST stop — a PCA carrying an invalid PoR is rejected at the next hop anyway. The predecessor's challenge is
-<em>single-use</em> by default (Section 6.1): it prevents replay within a Verifier's state or a coordinated system, but does not guarantee global
-uniqueness across independent Verifiers.</t>
+<t>The Prover MUST check its own PoR before proceeding: if the executor does not satisfy the predecessor execution contract, if the predecessor
+reference does not match the predecessor continuity state, or if the challenge or equivalent freshness evidence does not satisfy the
+selected profile, the PoR is invalid and the Prover MUST stop. A continuity advancement carrying an invalid PoR is rejected at the next hop
+anyway.</t>
 
-<t><strong>What the PoR proves.</strong> The PoR does not prove physical, counterfactual, or prior-designation causation. Taken in isolation, the challenge
-response proves only that the successor observed and holds the predecessor PCA. The complete PoR, validated together with the checks of
-Section 3.3, proves <strong>PIC execution causality</strong>: the current hop is a valid, contract-conforming, non-expansive continuation of exactly one
-predecessor, bound to the concrete request, and therefore constitutes the next element (<spanx style="verb">n+1</spanx>) of that PIC execution. This is the causal
-linkage of the model <xref target="references">[1]</xref>, the property the Lean formalization verifies <xref target="references">[2]</xref>.</t>
+<t><strong>What the PoR proves.</strong> The PoR does not prove physical, counterfactual, or prior-designation causation. Taken in isolation, a challenge
+response proves only what the selected profile defines it to prove. The complete PoR, validated together with the checks of Section 3.3,
+proves <strong>PIC execution causality</strong>: the current hop is a valid, contract-conforming, non-expansive continuation of exactly one predecessor,
+bound to the concrete request where applicable, and therefore constitutes the next element of that PIC execution. This is the causal linkage
+of the model <xref target="references">[1]</xref>, the property the Lean formalization verifies <xref target="references">[2]</xref>.</t>
 
-<t><strong>Continuation is open by default.</strong> Because the PCA and its challenge travel in the clear, <em>any</em> executor that observes the PCA and holds a
-conforming attestation can produce a valid successor with its own key — the challenge proves it saw the PCA, not that it was chosen. This
-<em>open</em> continuation is the core behavior of the N+1 case, where the successor is unknown at delegation time. What is executed is still pinned:
-the <spanx style="verb">request</spanx> block fixes the concrete action, and the executed-vs-signed rule holds <strong>unconditionally</strong> (Section 3.3) — an executor cannot
-sign one request and then change target, tenant, or payload at execution. Constraints on <em>who</em> may continue — a known recipient, key, or
-channel — are extension profiles, out of scope here (Section 6.6).</t>
+<t><strong>Continuation is open by default.</strong> The core model does not require a predecessor to preselect a concrete successor. A profile MAY constrain
+holder keys, recipients, or channels, but those constraints are profile-specific. What is executed is still pinned: the request or execution
+binding fixes the concrete action, and the executed-vs-signed rule holds unconditionally (Section 3.3).</t>
 
 <t><strong>Out of scope.</strong> The canonical form of the <spanx style="verb">request</spanx>, digest construction, streaming and partial payloads, and request-binding construction
 are defined by a separate specification. The core keeps only the mandatory executed-vs-signed check (Section 3.3).</t>
 
 <ul empty="true"><li>
-  <t><strong>Note — proof mechanism agility.</strong> This hash-and-signature construction is a <em>non-normative example</em>, chosen to make the model easy to
-follow. Implementations may realize the PoR and the PCA integrity protection with other mechanisms — signed hash chains, Merkle proofs,
-accumulators, recursive or zero-knowledge proofs, hardware-backed attestations — including ones that do not disclose the evidence in the
-clear, provided they preserve the normative semantics: binding to <em>exactly one</em> predecessor lineage, responding to the predecessor's
-continuation challenge, non-expansion of the invariants, and integrity of the successor PCA as a whole.</t>
+  <t><strong>Note - proof mechanism agility.</strong> This hash-and-signature construction is a non-normative example. Implementations may realize PoR and
+advancement integrity with other mechanisms - signed hash chains, Merkle proofs, accumulators, recursive or zero-knowledge proofs,
+hardware-backed attestations - including ones that do not disclose the evidence in the clear, provided they preserve the normative
+semantics: binding to exactly one predecessor, profile-defined freshness or challenge continuity, non-expansion of authority, and
+integrity of the concrete advancement.</t>
 
   <t>Carrying the attestation in the clear is a property of this minimal profile only. <strong>Selective disclosure</strong> — revealing just the attributes
 the execution contract requires — is out of scope here and is a separate implementation concern, but it is recommended for production
@@ -592,8 +610,8 @@ profiles that handle sensitive attributes (Section 6.4).</t>
 </section>
 <section anchor="invariant-monotonicity"><name>Invariant Monotonicity</name>
 
-<t>Once the PoR holds, the Prover determines the successor invariants. At each hop the invariants are either <em>kept unchanged</em> or <em>attenuated</em>,
-<strong>never expanded</strong>:</t>
+<t>Once the PoR holds, the Prover determines the resulting materialized authority. At each hop the authority is either kept unchanged or
+attenuated, <strong>never expanded</strong>:</t>
 
 <t><list style="symbols">
   <t>every entry in <strong><spanx style="verb">operations</spanx></strong> MUST also be present in the predecessor <spanx style="verb">operations</spanx>;</t>
@@ -603,8 +621,8 @@ profiles that handle sensitive attributes (Section 6.4).</t>
 <t>A Prover MAY drop operations, add constraints, or shorten the validity period. A Prover MUST NOT add operations, relax constraints,
 or extend the validity period. <em>What is dropped at a hop is lost:</em> no later hop can reintroduce it.</t>
 
-<t>The predecessor <strong>PCA0</strong> (Section 1.8) granted <spanx style="verb">READ-ALL</spanx> and <spanx style="verb">BACKUP</spanx>. The backup service needs only read access downstream, so it drops
-<spanx style="verb">BACKUP</spanx> and sets the attenuated <spanx style="verb">invariants</spanx> (covered by the single PCA signature of Section 2.5):</t>
+<t>The root authority context (Section 1.8) granted <spanx style="verb">READ-ALL</spanx> and <spanx style="verb">BACKUP</spanx>. The backup service needs only read access downstream, so it drops
+<spanx style="verb">BACKUP</spanx> and sets the attenuated <spanx style="verb">invariants</spanx>:</t>
 
 <figure><sourcecode type="json"><![CDATA[
 {
@@ -623,176 +641,129 @@ or extend the validity period. <em>What is dropped at a hop is lost:</em> no lat
 <t>The order that decides "more restrictive" is defined by the profile (Section 4): here <spanx style="verb">operations</spanx> uses subset inclusion and the
 <spanx style="verb">executionContract</spanx> fields use the reference profile's order.</t>
 
+<t>In PIC Profile 0.2, the PIC PCA JWT carries an Indexed Authority Map. Removal attenuation applies only to
+<spanx style="verb">attenuations.principal.remove_bitmap</spanx>, <spanx style="verb">attenuations.attributes.remove_bitmap</spanx>, and <spanx style="verb">attenuations.invariants.remove_bitmap</spanx>, each evaluated
+against the section-local numeric indexes of its own map section. Execution-contract restriction does not use a removal bitmap; accepted
+contract restrictions are carried as <spanx style="verb">attenuations.contract.additions</spanx>, validated by PIC-X as canonical contract <spanx style="verb">key</spanx>/<spanx style="verb">value</spanx> entries, and
+assigned the next section-local numeric indexes in the materialized effective contract map. Existing contract constraints are not removed,
+replaced, or weakened; accepted constraints accumulate with logical AND.</t>
+
 </section>
-<section anchor="successor-pca-construction"><name>Successor PCA Construction</name>
+<section anchor="continuity-advancement-construction"><name>Continuity Advancement Construction</name>
 
-<t>The Prover assembles the successor PCA from the <strong><spanx style="verb">proofOfRelationship</spanx></strong> of Section 2.3 and the attenuated <strong><spanx style="verb">invariants</spanx></strong> of Section 2.4,
-adds a fresh <strong><spanx style="verb">continuation</spanx></strong> challenge for the next hop, and signs the whole document with a <strong>single</strong> executor signature (the outer
-<spanx style="verb">proof</spanx>). Both parts are shown here collapsed, since each appears in full above; this section highlights the wrapper, the emitted challenge,
-and the one signature:</t>
+<t>The Prover assembles the next continuity advancement from the PoR of Section 2.3, the attenuation of Section 2.4, the request or execution
+binding required by the profile, and the profile-defined freshness material for the next step. The profile defines the signed artifact that
+protects those values.</t>
 
-<figure><sourcecode type="json"><![CDATA[
-{
-  "proofOfRelationship": { "…": "the PoR payload of Section 2.3" },
-  "invariants":          { "…": "the attenuated invariants of Section 2.4" },
-  "continuation": {
-    "challenge": "base64url-random-256-bit-value",
-    "mode": "single-use",
-    "expiresAt": "2026-07-17T10:06:00Z"
-  },
-  "issuedAt": "2026-07-17T10:01:00Z",
-  "expiresAt": "2026-07-18T10:00:00Z",
-  "proof": {
-    "type": "Ed25519Signature2020",
-    "verificationMethod": "did:example:workloads:eu:backup-service#key-1",
-    "signature": "base64url..."
-  }
-}
-]]></sourcecode></figure>
+<t>In PIC Profile 0.2, a Continuity Transition JWT contains <spanx style="verb">position</spanx>, <spanx style="verb">predecessor_hash</spanx>, <spanx style="verb">challenge.previous_challenge</spanx>,
+<spanx style="verb">challenge.next_challenge</spanx>, <spanx style="verb">attenuations</spanx>, and <spanx style="verb">proof_of_relationship</spanx>. It is carried only by the workload-produced candidate PIC
+Continuity JWT for the current exchange. PIC-X validates the candidate and, if the advancement is accepted, issues the next settled PIC
+Continuity JWT with no pending <spanx style="verb">continuity_transition_jwt</spanx>. Decoded JSON views of those JWTs are illustrative only; the wire representation
+is compact JWS.</t>
 
-<t>One signature covers everything: predecessor reference, challenge response, executor evidence, attenuated invariants, the emitted
-<spanx style="verb">continuation</spanx>, and the temporal fields. It is <em>attributable</em> — the whole hop is signed by the executor that made it — and <em>tamper-evident</em>:
-changing any field invalidates it. This is what forbids the cross-lineage composition of Section 1.4: a PoR that responds to one lineage's
-challenge cannot be paired with <spanx style="verb">invariants</spanx> drawn from another and still verify, so the combined document <em>cannot be validated as a
-conforming continuation</em>. The only other signature a Verifier checks is the issuer's, inside the embedded attestation; that one belongs to
-the attestation, not to PIC. Profiles that must transport or verify the PoR or the invariants independently MAY add internal signatures
-(Section 5).</t>
-
-<t><strong>Handoff: the envelope.</strong> A PCA is a <em>self-contained</em> signed object: its signature is valid on its own, without any wrapper. Forwarding is
-done by an <strong>envelope</strong>, signed by the forwarding workload, that carries the predecessor PCA together with the new PCA:</t>
+<t>The following non-normative sketch shows the abstract contents of an advancement:</t>
 
 <figure><sourcecode type="json"><![CDATA[
 {
-  "envelope": {
-    "forwardedBy": "did:example:workloads:eu:backup-service",
-    "predecessor":       { "…": "PCA[n-1], self-contained, signed by n-1" },
-    "predecessorDigest": "sha256:… (content id of PCA[n-1])",
-    "current":           { "…": "PCA[n], self-contained, signed by n" },
-    "currentDigest":     "sha256:… (content id of PCA[n])"
-  },
-  "proof": {
-    "type": "Ed25519Signature2020",
-    "verificationMethod": "did:example:workloads:eu:backup-service#key-1",
-    "signature": "base64url..."
-  }
+  "predecessorReference": "profile-defined cryptographic reference",
+  "proofOfRelationship": { "...": "profile-defined PoR" },
+  "attenuation": { "...": "profile-defined authority attenuation" },
+  "nextFreshness": { "...": "profile-defined next challenge or equivalent" },
+  "requestBinding": { "...": "profile-defined request/execution binding" },
+  "signatureOrProof": { "...": "profile-defined integrity protection" }
 }
 ]]></sourcecode></figure>
 
-<t>Both <spanx style="verb">predecessor</spanx> and <spanx style="verb">current</spanx> are PCAs — same shape, one the continuation of the other — so the envelope names them symmetrically. The
-next hop unwraps the envelope, takes <spanx style="verb">current</spanx> (<spanx style="verb">PCA[n]</spanx>) <strong>unchanged</strong> — its signature still verifies, since the bytes were never altered —
-and places it as the <spanx style="verb">predecessor</spanx> of its own envelope, alongside the PCA it creates. Envelopes are <strong>never nested</strong>: the new envelope
-re-carries the PCA, not the old envelope, so size stays bounded. The envelope signature is the <em>handoff</em> proof — it attributes the forwarding
-to the workload and MAY also bind the transport or request (Section 6.6) — and is separate from the PCA's own continuity signature.</t>
-
-<t><spanx style="verb">predecessorDigest</spanx> and <spanx style="verb">currentDigest</spanx> are the content-addressed identifiers of the two carried PCAs. A PCA cannot contain its own hash
-(that would be self-referential), so these digests live in the envelope, where they serve as the PCAs' ids for linking, logging, and
-deduplication — <spanx style="verb">currentDigest</spanx> is what the next hop places in its <spanx style="verb">previousPcaHash</spanx>. They are a <strong>convenience, not trusted input</strong>: a
-Verifier MUST recompute each digest from the PCA bytes, reject a mismatch, and check that <spanx style="verb">predecessorDigest</spanx> equals the <spanx style="verb">previousPcaHash</spanx>
-carried inside <spanx style="verb">current</spanx>. Security rests on that recomputation and on the signatures, never on the supplied digests.</t>
-
-<t>By default the envelope carries only the immediate transition — the predecessor and the new PCA. <spanx style="verb">n+1</spanx> verifies that one step (Section 3.3),
-which already catches any single misbehaving hop. It does not re-verify the earlier chain; it trusts that each earlier hop verified its own
-predecessor. The trade-offs of that trust — and when to carry the full chain or a succinct proof instead — are covered in Section 6.8, and
-how the chain is represented is a profile choice (Section 5).</t>
-
-<ul empty="true"><li>
-  <t><strong>Normative guarded-crossing requirement.</strong> A Sandboxed Execution profile
-(<eref target="https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-lineage-guardrail-spec.md">PIC Sandboxed Execution Specification</eref>) MAY
-carry a <spanx style="verb">multiLineage</spanx> field in an ordinary PCA and extend the ordinary request binding as defined by that specification; this does not
-replace the executor signature, Proof of Relationship, or ordinary handoff semantics of any PCA.</t>
-</li></ul>
+<t>The integrity protection MUST cover the predecessor reference, PoR, attenuation, freshness material, request/execution binding, and temporal
+fields required by the selected profile. A valid signature or proof is necessary but not sufficient: the Verifier still performs all semantic
+checks in Section 3.</t>
 
 </section>
 </section>
 <section anchor="verifier-requirements"><name>Verifier Requirements</name>
 
-<t>A <strong>PIC Verifier</strong> validates the PCA presented at a hop <em>before any authority is exercised</em>. The <strong>per-hop checks</strong> of Section 3.3 are the
-same in every profile; what differs is how far the Verifier walks. In the <strong>full-chain</strong> profile it validates the whole chain back to the
-origin: it walks to <strong>PCA0</strong>, validates it, and validates each later PCA against its immediate predecessor. In the <strong>incremental</strong> profile
-(Section 6.8) it validates the immediate transition carried in the envelope and relies on inductive validity — each hop having validated its
-own predecessor. A Verifier MUST:</t>
+<t>A <strong>PIC Verifier</strong> validates a continuity state before any authority is exercised. The checks are profile-dependent in representation but
+not in semantics. A Verifier MUST:</t>
 
 <t><list style="numbers" type="1">
-  <t>establish and validate the origin <strong>PCA0</strong> (full-chain profile) or the immediate predecessor (incremental profile);</t>
-  <t>validate every hop it walks against its immediate predecessor;</t>
-  <t>accept the hop only if <strong>every</strong> step it validates is valid; otherwise reject.</t>
+  <t>establish and validate the trusted root;</t>
+  <t>validate the concrete continuity representation selected by the profile;</t>
+  <t>validate every required causal advancement or equivalent proof representation;</t>
+  <t>materialize the current authority;</t>
+  <t>accept only if every required check succeeds; otherwise reject.</t>
 </list></t>
 
-<t>The authority a Verifier may authorize at the current hop is exactly the <spanx style="verb">invariants</spanx> of the last PCA. By monotonicity (Section 2.4) these
-are bounded by the origin, so a privilege absent from PCA0 can never be authorized downstream. The procedure below is written for the
-full-chain profile; the incremental profile applies steps 3 and following to the single received transition.</t>
+<t>The authority a Verifier may authorize at the current hop is the current materialized authority. By monotonicity (Section 2.4), it is bounded
+by the root authority, so a privilege absent from the root cannot be authorized downstream.</t>
 
 <section anchor="verifier-procedure"><name>Verifier Procedure</name>
 
-<t>Given a received PCA and the chain behind it, the Verifier MUST perform the following steps and MUST reject the hop if any of them fails:</t>
+<t>Given a received continuity state, the Verifier MUST perform the following steps and MUST reject the hop if any of them fails:</t>
 
 <t><list style="numbers" type="1">
-  <t>walk back to the origin PCA0;</t>
-  <t>validate PCA0 (Section 3.2);</t>
-  <t>for each PCA from PCA1 to the received one, validate the hop against its predecessor (Section 3.3);</t>
-  <t>accept, and authorize the <spanx style="verb">invariants</spanx> of the last PCA.</t>
+  <t>establish the trusted root authority representation;</t>
+  <t>validate the root representation and its authenticated origin;</t>
+  <t>validate the profile-selected continuity representation;</t>
+  <t>validate predecessor continuity for each required advancement;</t>
+  <t>validate PoR for each non-root advancement;</t>
+  <t>validate challenge continuity or the equivalent freshness mechanism used by the profile;</t>
+  <t>validate profile-required evidence, conformance, freshness, temporal state, and revocation state;</t>
+  <t>validate request/executed-vs-signed semantics;</t>
+  <t>apply profile-defined attenuations and verify non-expansion;</t>
+  <t>verify the final materialized authority commitment when the profile defines one;</t>
+  <t>accept the materialized current authority.</t>
 </list></t>
 
-<figure><sourcecode type="text"><![CDATA[
-receive PCA[n] and the chain behind it
-      |
-      v
-walk back to PCA0
-      |
-      v
-validate PCA0            <-- origin: signature only, no PoR, no hash
-      |
-      v
-for i = 1 .. n:
-  validate PCA[i] against PCA[i-1]   <-- integrity, binding, challenge,
-                                         attestation, conformance,
-                                         non-expansion, temporal, request
-      |
-      v
-all valid ?  accept and authorize invariants of PCA[n]  :  reject
-]]></sourcecode></figure>
+<t>For PIC Profile 0.2, ordinary verification of a settled artifact includes verifying the PIC-X-issued PIC Continuity JWT signature, verifying
+the profile, verifying the nested root PIC PCA JWT at <spanx style="verb">context_of_authority.root.pca_jwt</spanx>, verifying
+<spanx style="verb">context_of_authority.root.pca_jwt_hash</spanx>, and confirming that the artifact is settled and contains no pending <spanx style="verb">continuity_transition_jwt</spanx>.
+When revocation is enabled for a revocable Profile 0.2 continuity, the Verifier also validates the authenticated PCA ID and authenticated
+continuity position required by the PIC Revocation Specification before evaluating applicable authenticated revocation state. This document
+does not assign concrete settled-token fields or placement for those revocation coordinates. Ordinary Profile 0.2 Verifiers are not required
+to replay a transported transition history.</t>
 
-<t>The following sections define each step. This walk-the-whole-chain procedure is the <em>illustrative</em> one for the hash-chain profile;
-alternative chain-validation methods — snapshots and succinct proofs — establish the same checks by other means and at lower cost
-(Section 5).</t>
+<t>When PIC-X processes an advancement candidate, it additionally verifies the previous trusted settled PIC Continuity JWT, the workload-signed
+candidate PIC Continuity JWT, the single <spanx style="verb">continuity_transition_jwt</spanx>, the Continuity Transition JWT signature, PoR/key binding,
+<spanx style="verb">predecessor_hash</spanx>, position increment, challenge continuity, attenuation, contract additions, non-expansion, revocation, and local/profile
+policy. If validation succeeds, PIC-X issues the next settled PIC Continuity JWT with no pending transition.</t>
 
 </section>
-<section anchor="origin-validation-pca0"><name>Origin Validation (PCA0)</name>
+<section anchor="root-validation"><name>Root Validation</name>
 
-<t>The origin <strong>PCA0</strong> (Section 1.8) is validated <em>differently</em> from later hops: it carries no Proof of Relationship and no predecessor hash,
-because there is no predecessor. The Verifier MUST:</t>
+<t>The root authority context is validated differently from later advancements: it carries no Proof of Relationship and no predecessor
+reference, because there is no predecessor. The Verifier MUST:</t>
 
 <t><list style="symbols">
-  <t>verify the <strong>signature</strong> of PCA0 against its issuer — in the running scenario, Alice (the signature is elided in the Section 1.8 examples
-for brevity);</t>
-  <t>confirm PCA0 is within its <strong>validity period</strong> (<spanx style="verb">issuedAt</spanx> / <spanx style="verb">expiresAt</spanx>).</t>
+  <t>verify the root representation according to the selected profile;</t>
+  <t>verify that the root issuer or origin authority is trusted for the represented authority;</t>
+  <t>confirm applicable temporal and revocation state;</t>
+  <t>extract the root authority and any root bootstrap challenge or equivalent freshness material.</t>
 </list></t>
 
-<t>The <spanx style="verb">invariants</spanx> of PCA0 are the <em>origin grant</em> and are taken as authoritative: they define the <strong>upper bound</strong> of authority for the whole
-lineage. There is nothing earlier to check them against. Like any PCA, PCA0 emits a <spanx style="verb">continuation</spanx> challenge that its first successor must
-answer (Section 2.3); who may validly originate a PCA0 is a trust-boundary question addressed in Section 6.2.</t>
+<t>In PIC Profile 0.2, the root representation is a PIC PCA JWT carried at <spanx style="verb">context_of_authority.root.pca_jwt</spanx> by the settled PIC Continuity
+JWT. The PIC PCA JWT carries the root Indexed Authority Map and <spanx style="verb">challenge.next_challenge</spanx>, which initializes the first Continuity
+Transition JWT. The hash of the compact signed PIC PCA JWT is carried as <spanx style="verb">context_of_authority.root.pca_jwt_hash</spanx>.</t>
 
 </section>
-<section anchor="hop-validation-pca1-onward"><name>Hop Validation (PCA1 onward)</name>
+<section anchor="advancement-validation"><name>Advancement Validation</name>
 
-<t>Each PCA from <strong>PCA1</strong> onward continues its predecessor. Given a PCA and its <em>already-validated</em> predecessor, the Verifier MUST perform the
-following checks <strong>in order</strong> and MUST reject the whole chain if any fails:</t>
+<t>For each non-root continuity advancement, the Verifier MUST perform the following checks and MUST reject the continuity state if any fails:</t>
 
 <t><list style="numbers" type="1">
-  <t><strong>integrity</strong> — the outer <spanx style="verb">proof</spanx> is a valid single signature over the whole document under the profile's canonical encoding
+  <t><strong>integrity</strong> — the advancement artifact or proof is valid under the profile's canonical encoding and cryptographic suite
 (Section 6.4);</t>
-  <t><strong>predecessor binding</strong> — <spanx style="verb">previousPcaHash</spanx> equals the hash of the <em>presented</em> predecessor PCA, and the challenge answered, the
-<spanx style="verb">invariants</spanx> attenuated, and the <spanx style="verb">executionContract</spanx> checked all belong to <strong>that same</strong> predecessor: they MUST be one concrete
-transition, never fields stitched together from different PCAs;</t>
-  <t><strong>continuation</strong> — the <spanx style="verb">continuationResponse</spanx> carries the predecessor's emitted challenge, the challenge is unexpired and, when
-<spanx style="verb">single-use</spanx>, has not already been consumed (Section 6.1);</t>
+  <t><strong>predecessor binding</strong> — the predecessor cryptographic reference identifies exactly one predecessor continuity state, and the challenge
+answered, authority attenuated, and execution contract checked all belong to that same predecessor;</t>
+  <t><strong>continuation</strong> — the challenge or equivalent freshness mechanism satisfies the selected profile and has the declared consumption scope
+(Section 6.1);</t>
   <t><strong>attestation</strong> — the embedded executor attestation is valid: its issuer signature verifies, the issuer is trusted for the asserted
-attributes, it is within its validity period, and its <spanx style="verb">subject</spanx> matches <spanx style="verb">executor</spanx>, which matches the key that signed the PCA;</t>
+attributes, it is within its validity period, and its <spanx style="verb">subject</spanx> matches <spanx style="verb">executor</spanx>, which matches the key or holder proof accepted for
+the advancement by the selected profile;</t>
   <t><strong>conformance</strong> — the attested attributes satisfy the predecessor <spanx style="verb">executionContract</spanx> under the profile's conformance function
 (Section 4); for example a <spanx style="verb">deterministic</spanx> contract rejects an <spanx style="verb">agentic</spanx> executor;</t>
-  <t><strong>non-expansion</strong> — the <spanx style="verb">invariants</spanx> are equal to or more restrictive than the predecessor <spanx style="verb">invariants</spanx> under the profile's attenuation
-order (Section 4);</t>
-  <t><strong>temporal</strong> — the PCA is within its <spanx style="verb">issuedAt</spanx> / <spanx style="verb">expiresAt</spanx> window and that window is contained in the predecessor's (Section 6.3);</t>
+  <t><strong>non-expansion</strong> — the resulting authority is equal to or more restrictive than the predecessor materialized authority under the
+profile's attenuation order (Section 4);</t>
+  <t><strong>temporal</strong> — the advancement and resulting continuity state satisfy the profile's temporal rules (Section 6.3);</t>
   <t><strong>request match</strong> — the operation, target, tenant, parameters, and digests actually served or executed match those signed in the PoR
 <spanx style="verb">request</spanx> (Section 2.3); mandatory in every profile (see enforcement below).</t>
 </list></t>
@@ -800,16 +771,14 @@ order (Section 4);</t>
 <t>A valid signature establishes <em>integrity</em>, not <em>semantic validity</em>: checks 2–8 are separate and the Verifier MUST NOT skip them because the
 signature verified. The Verifier does <strong>not</strong> trust that the Prover already performed these checks; it repeats them independently.</t>
 
-<t><strong>Executed-vs-signed, always.</strong> Independently of the profile — <em>open</em> included — a verified PCA authorizes the <em>signed</em> action and no other:
-the reference monitor MUST verify that the operation, target, tenant, parameters, and digests actually executed match those bound in the PoR
-<spanx style="verb">request</spanx> (Section 2.3), and MUST refuse any action that differs, even if the PCA verified. Signing one request and executing another is
-always a violation. This is distinct from <em>who</em> may continue (continuation is open, check 3) and from <em>whether</em> policy allows the action:
-authorizing the concrete action against the authority context is a profile or PDP decision (Section 4), not a core rule — the core requires
-only non-expansion (Section 4.1) and this executed-vs-signed match.</t>
+<t><strong>Executed-vs-signed, always.</strong> Independently of the profile - open continuation included - a verified continuity state authorizes the signed
+or otherwise bound action and no other. The reference monitor MUST verify that the operation, target, tenant, parameters, and digests
+actually executed match those bound by the request/execution commitment, and MUST refuse any action that differs. Signing one request and
+executing another is always a violation.</t>
 
-<t>This is where the cross-lineage composition of Section 1.4 fails: an <spanx style="verb">invariants</spanx> block with privileges absent from the predecessor fails
-<em>non-expansion</em> (6), and a PoR that does not answer the predecessor's challenge fails <em>continuation</em> (3) or <em>predecessor binding</em> (2). Such
-a document <em>cannot be validated as a conforming continuation</em>, even though an executor can always assemble arbitrary bytes locally.</t>
+<t>This is where the cross-lineage composition of Section 1.4 fails: authority absent from the predecessor fails non-expansion (6), and a PoR
+that does not bind to the predecessor fails continuation (3) or predecessor binding (2). Such a state cannot be validated as a conforming
+continuation, even though an executor can always assemble arbitrary bytes locally.</t>
 
 </section>
 </section>
@@ -881,63 +850,77 @@ label vocabularies with provably semantic-monotone orders, and the PIC↔PDP int
 
 </section>
 </section>
-<section anchor="chain-representations"><name>Chain Representations</name>
+<section anchor="continuity-representations"><name>Continuity Representations</name>
 
-<t>A PIC chain can be implemented and validated in more than one way. The choice does not change the model — the invariants and the checks of
-Section 3 stay the same — but it changes the <em>cost of validation</em> at a hop and the <em>trust assumptions</em>. This section is non-normative,
-except for one requirement that is normative: a representation does not inherit the Lean proof automatically — each MUST show that its
-concrete acceptance predicate implies the abstract PoC (Section 6.5). An implementation profile selects one representation; this section
-expands on the proof mechanism agility of Section 2.3.</t>
+<t>A PIC continuity state can be represented and validated in more than one way. The choice does not change the model - the invariants and the
+checks of Section 3 stay the same - but it changes validation cost and trust assumptions. This section is non-normative, except for one
+requirement that is normative: a representation does not inherit the Lean proof automatically; each profile MUST show that its concrete
+acceptance predicate implies the abstract PoC (Section 6.5).</t>
 
-<section anchor="full-hash-chain"><name>Full Hash Chain</name>
+<t>A continuity profile MAY use:</t>
 
-<t>Each PCA references its predecessor by hash. The Verifier walks the chain from <strong>PCA0</strong> to the current hop, checking every hop as described
-in Section 3. Validation cost is <em>linear</em> in the length of the chain, <strong>O(n)</strong> for a chain of <spanx style="verb">n</spanx> hops. No external component is required:
-the chain, with the hashes and proofs each hop needs, is presented with the request.</t>
+<t><list style="symbols">
+  <t>self-contained transition graphs;</t>
+  <t>incremental representations;</t>
+  <t>compacted or checkpointed representations;</t>
+  <t>referenced history;</t>
+  <t>succinct proofs;</t>
+  <t>other proof mechanisms.</t>
+</list></t>
+
+<t>The profile MUST define its acceptance predicate, canonicalization, cryptographic references, freshness mechanism, authority materialization,
+and failure behavior. It MUST preserve exactly-one-predecessor continuity, PoR, non-expansion, request/execution binding, and verifier
+independence.</t>
+
+<section anchor="current-profile-02-representation"><name>Current Profile 0.2 Representation</name>
+
+<t>PIC Profile 0.2 uses centralized PIC-X-mediated settlement. A settled PIC Continuity JWT is issued by PIC-X and binds to the immutable root
+PIC PCA JWT through <spanx style="verb">context_of_authority.root.pca_jwt</spanx> and <spanx style="verb">context_of_authority.root.pca_jwt_hash</spanx>; it contains no pending
+<spanx style="verb">continuity_transition_jwt</spanx>.</t>
 
 <figure><sourcecode type="text"><![CDATA[
-PCA0 <--hash-- PCA1 <--hash-- PCA2 <--hash-- PCA[n]
- |                                             |
- +------------ verify every hop --------------+
-                    cost: O(n)
+trusted PIC-X-issued settled PIC Continuity JWT N
+        |
+        | workload proposes exactly one advancement
+        v
+workload-signed candidate PIC Continuity JWT
+        |
+        +-- continuity_transition_jwt
+        v
+PIC-X validation
+        |
+        v
+trusted PIC-X-issued settled PIC Continuity JWT N+1
 ]]></sourcecode></figure>
 
-<t>This is the reference baseline and the decentralized, collusion-resistant fallback (Section 7). It is, however, <strong>too slow to be a working
-default</strong>: cost and message size grow without bound with the chain length. The specification therefore does not build on it for practical
-multi-hop deployments — it remains available where its O(n) cost is acceptable and full independent re-verification is required.</t>
+<t>The candidate is not a trusted settled continuity artifact. PIC-X validates the previous settled continuity, the candidate outer signature,
+the single Continuity Transition JWT, PoR/key binding, predecessor hash, position increment, challenge continuity, attenuation,
+non-expansion, revocation, and local/profile policy. If validation succeeds, PIC-X issues the next settled PIC Continuity JWT with no
+pending transition.</t>
+
+<t>Profile 0.2 does not transport a replayable transition graph in the settled PIC Continuity JWT. Any settled-token placement for
+materialized authority state or post-initial challenge material is defined by the selected Profile 0.2 schema; this document does not invent
+a current-authority field or challenge field.</t>
 
 </section>
-<section anchor="snapshot-hash-chain"><name>Snapshot Hash Chain</name>
+<section anchor="self-contained-transition-graphs"><name>Self-Contained Transition Graphs</name>
 
-<t>Every so many hops, a trusted party validates the chain so far and issues a signed <strong>snapshot</strong> attesting that the chain up to some <spanx style="verb">PCA[k]</spanx>
-is valid. A Verifier presented with a snapshot verifies the <em>snapshot signature</em> and then validates only the hops after it, instead of
-walking all the way back to PCA0. Validation cost drops to the distance from the last snapshot, <strong>O(hops since the last snapshot)</strong>. The
-trade-off is an <em>external trusted component</em> — the snapshot issuer — added to the trust model.</t>
-
-<figure><sourcecode type="text"><![CDATA[
-PCA0 ... PCA[k]  ==>  snapshot (signed by trusted issuer)
-                          |
-                          +--> verify only PCA[k+1] ... PCA[n]
-                               cost: O(hops since snapshot)
-]]></sourcecode></figure>
-
-<t><strong>This is the profile the specification orients on.</strong> Forthcoming versions develop their normative constructions on the snapshot hash chain:
-it keeps validation bounded without requiring advanced cryptography. The choice stays non-normative — an implementation may use the full
-hash chain (5.1) or a succinct proof (5.3) and adapt accordingly — but the worked examples and constructions of this specification assume
-this profile.</t>
+<t>A future or separate profile MAY use a self-contained transition graph, provided the profile defines the graph format, predecessor
+references, authority materialization, proof requirements, and acceptance predicate. Such a graph is not the current Profile 0.2 realization.</t>
 
 </section>
-<section anchor="succinct-proofs-zero-knowledge"><name>Succinct Proofs (Zero-Knowledge)</name>
+<section anchor="incremental-checkpointed-or-referenced-history"><name>Incremental, Checkpointed, or Referenced History</name>
 
-<t>The validity of the whole chain can be compressed into a single <strong>succinct proof</strong> — for example a zero-knowledge SNARK — that a Verifier
-checks without walking the chain and without seeing its contents. Verifying is <strong>O(1)</strong> in the length of the chain, and the underlying
-evidence need not be disclosed. The <strong>SNARK is only an example</strong>: any cryptographic construction that soundly proves the chain's validity
-would serve. The choice of construction, and the verification of its soundness, are <strong>out of scope</strong> for this document.</t>
+<t>A profile MAY carry only the information needed for the receiving Verifier, rely on external authenticated state, use checkpoints, use
+compacted or referenced history, or combine those mechanisms. Such a profile MUST define what the Verifier independently verifies and what
+trust assumption, if any, is placed on a validator, checkpoint issuer, history service, or prior verifier.</t>
 
-<figure><sourcecode type="text"><![CDATA[
-PCA0 ... PCA[n]  -->  succinct proof (e.g. ZK-SNARK)  -->  Verifier
-                                                           check: O(1)
-]]></sourcecode></figure>
+</section>
+<section anchor="succinct-proofs"><name>Succinct Proofs</name>
+
+<t>The validity of a continuity prefix can be represented by a succinct proof - for example a zero-knowledge proof or accumulator proof - that a
+Verifier checks without walking the entire prefix. The choice of construction, soundness assumptions, setup, disclosure properties, and
+verification procedure are out of scope for this document and MUST be defined by the selected profile.</t>
 
 </section>
 </section>
@@ -976,8 +959,8 @@ successors continue the same predecessor, which is permitted provided each branc
 valid, and no branch composes authority from — or recovers authority attenuated by — another branch. Authorized fan-out is therefore
 distinct from unauthorized replay: the difference is declared by <spanx style="verb">mode</spanx>/<spanx style="verb">maxUses</spanx> and enforced by the Verifier.</t>
 
-<t>Three consumption semantics are therefore distinct; the base decentralized profile provides only the first. <strong>Local single-use</strong>: the
-challenge is consumed once per Verifier state; independent Verifiers without shared state can each accept the same continuation.
+<t>Three consumption semantics are therefore distinct. <strong>Local single-use</strong>: the challenge is consumed once per Verifier state; independent
+Verifiers without shared state can each accept the same continuation.
 <strong>Coordinated single-use</strong>: the challenge is consumed once across Verifiers; it requires shared state or a coordinating component — the
 Trust Plane of the <eref target="https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-architecture-deployment-spec.md">PIC Architecture and Deployment Specification</eref>, or a future federation profile.
 <strong>Bounded multi-use (fan-out)</strong>: reuse explicitly authorized and declared by <spanx style="verb">mode</spanx>/<spanx style="verb">maxUses</spanx>. A property that depends exclusively on local
@@ -991,10 +974,10 @@ freshness mechanism: the anti-replay enforcement MUST match the scope the profil
 MUST provide the shared state or coordination required to enforce that claim across the participating Verifiers.</t>
 
 </section>
-<section anchor="origin-pca0-trust-boundary"><name>Origin (PCA0) Trust Boundary</name>
+<section anchor="origin-trust-boundary"><name>Origin Trust Boundary</name>
 
 <t>PIC governs propagation <em>after</em> an origin authority context has been validly established. It does not by itself determine whether an actor
-was entitled to originate that context. Minting or deriving a PCA0 (Section 1.8) MUST be permissioned, policy-controlled, attributable, and
+was entitled to originate that context. Minting or deriving a root PCA (Section 1.8) MUST be permissioned, policy-controlled, attributable, and
 auditable. In particular, distinguishing a request-caused action from an action an executor re-originates as a new lineage of its own is a
 responsibility of the origination policy and the enforcement architecture, not of the continuity invariant: a compromised executor that
 re-originates authority is outside the guarantee.</t>
@@ -1002,7 +985,8 @@ re-originates authority is outside the guarantee.</t>
 </section>
 <section anchor="temporal-rules-and-per-hop-expiry"><name>Temporal Rules and Per-Hop Expiry</name>
 
-<t>For every non-origin PCA a Verifier MUST check:</t>
+<t>For every non-root continuity advancement a Verifier MUST check the temporal constraints defined by the selected profile. A simple profile
+may use:</t>
 
 <figure><sourcecode type="text"><![CDATA[
 current.issuedAt    ≥ predecessor.issuedAt
@@ -1011,10 +995,11 @@ current.issuedAt    ≤ verificationTime < current.expiresAt
 challenge.expiresAt ≤ predecessor.expiresAt
 ]]></sourcecode></figure>
 
-<t>Beyond this lineage bound, each hop SHOULD carry its <strong>own short expiry</strong>, set from its creation time and distinct from the lineage's total
-validity. The lineage <spanx style="verb">expiresAt</spanx> bounds the whole chain; a tighter per-hop window bounds a single continuation. This second, shorter expiry
-limits the damage of a replay: even if a continuation is duplicated within the lineage's total validity, it is accepted only for the brief
-window after its creation, not for the full remaining lifetime of the lineage. PCA0 need not carry the tighter window; later hops SHOULD.</t>
+<t>Beyond this lineage bound, each advancement SHOULD carry its own short expiry or equivalent freshness bound, set from its creation time and
+distinct from the lineage's total validity. The lineage <spanx style="verb">expiresAt</spanx> bounds the whole continuity state; a tighter per-advancement window
+bounds a single continuation. This second, shorter expiry limits the damage of a replay: even if a continuation is duplicated within the
+lineage's total validity, it is accepted only for the brief window after its creation, not for the full remaining lifetime of the lineage.
+The root need not carry the tighter window; later advancements SHOULD.</t>
 
 <t>Allowed clock skew is a profile parameter. Online verification uses the current time; retrospective (audit) verification requires
 trusted-time evidence for the execution instant and is left to a profile.</t>
@@ -1026,8 +1011,8 @@ trusted-time evidence for the execution instant and is left to a profile.</t>
 Each profile MUST state its canonical encoding, hash algorithm, signature algorithm, domain-separation rules, and a suite identifier. The
 illustrative profile uses canonical JSON, SHA-256, and Ed25519; these are not required of every implementation.</t>
 
-<t>PIC is not tied to JSON. A profile MAY carry and sign PCAs with established envelopes such as <strong>JOSE</strong> (JWS/JWT) or <strong>COSE</strong>, or with any
-canonical binary encoding. For network-heavy or resource-constrained infrastructure, a binary format is RECOMMENDED — in particular
+<t>PIC is not tied to JSON. A profile MAY carry and sign root authority and continuity artifacts with established envelopes such as <strong>JOSE</strong>
+(JWS/JWT) or <strong>COSE</strong>, or with any canonical binary encoding. For network-heavy or resource-constrained infrastructure, a binary format is RECOMMENDED — in particular
 <strong>CBOR</strong> (with COSE for signing) — to reduce size and parsing cost; deterministic CBOR gives the reproducible byte representation this
 section requires. Selective-disclosure or zero-knowledge mechanisms MAY replace full-attestation signing, provided the Verifier can still
 establish the required attributes, issuer validity, subject binding, validity period, and conformance. Such mechanisms do not change PIC
@@ -1044,8 +1029,8 @@ is not claimed that Lean proves the security of a cryptographic implementation.<
 </section>
 <section anchor="proof-of-possession-optional"><name>Proof of Possession (Optional)</name>
 
-<t>The core binds a hop to its executor through the PCA signature and pins the action through the <spanx style="verb">request</spanx> block (Section 2.3). A profile MAY
-add a <strong>proof of possession</strong> of the request or channel — for example <strong>DPoP</strong> <xref target="references">[5]</xref>, <strong>HTTP Message Signatures</strong>
+<t>The core binds a hop to its accepted continuity advancement and pins the action through the request/execution binding (Section 2.3). A
+profile MAY add a <strong>proof of possession</strong> of the request or channel — for example <strong>DPoP</strong> <xref target="references">[5]</xref>, <strong>HTTP Message Signatures</strong>
 <xref target="references">[6]</xref>, or an equivalent signed request binding — or otherwise constrain the recipient or channel. These are <strong>not core
 continuation modes</strong> and are <strong>not needed for the N+1 model</strong>, whose successor is unknown; they serve profiles that require additional
 presentation constraints.</t>
@@ -1059,40 +1044,32 @@ of this specification.</t>
 </section>
 <section anchor="transport-separation-and-confidentiality"><name>Transport Separation and Confidentiality</name>
 
-<t>The security model is independent of transport (Section 1): the guarantees rest on the signed chain, and an implementation MUST NOT rely on
+<t>The security model is independent of transport (Section 1): the guarantees rest on the signed continuity state, and an implementation MUST NOT rely on
 the channel to obtain them. Transport nonetheless matters for <strong>confidentiality and attack surface</strong>, exactly as it does for OAuth. A
-man-in-the-middle on an unprotected channel cannot forge a valid PCA — the signatures prevent that — but it can read message contents,
+man-in-the-middle on an unprotected channel cannot forge a valid continuity state - the signatures or proofs prevent that - but it can read message contents,
 including the result of a command, and attempt interception. That is a transport problem, addressed by transport, not by PIC.</t>
 
-<t>PIC is carrier-agnostic: the same chain runs over HTTP, over messaging systems such as Apache Kafka, or over any other transport. For
-messaging in particular, channels SHOULD be encrypted. A <em>plain outsider</em> who reads a PCA cannot continue it — minting a valid successor
-needs a conforming attestation. But in the <strong>open core</strong> (Section 2.3), any conforming executor that observes the PCA <em>can</em> continue it: the
-core does not restrict <em>who</em> continues. What it does pin is the <em>action</em> (the request binding) and the fact that authority cannot grow
-(non-expansion); constraints on recipient or channel are future profiles (Section 6.6). Encryption here protects payload confidentiality and
-reduces the man-in-the-middle surface — it is not a source of the model's integrity, and it is not what prevents continuation.</t>
+<t>PIC is carrier-agnostic: the same continuity state can run over HTTP, over messaging systems such as Apache Kafka, or over any other
+transport. For messaging in particular, channels SHOULD be encrypted. A plain outsider who reads a continuity artifact cannot continue it
+without satisfying the selected profile's PoR and conformance requirements. In the open core (Section 2.3), the core does not restrict who
+continues; it pins the action and prevents authority expansion. Constraints on recipient or channel are profile-specific (Section 6.6).
+Encryption protects payload confidentiality and reduces the man-in-the-middle surface; it is not a source of the model's integrity.</t>
 
 </section>
 <section anchor="incremental-verification-and-trusted-hops"><name>Incremental Verification and Trusted Hops</name>
 
-<t>The <strong>incremental</strong> profile (Section 2.5) forwards only the immediate transition in the envelope, <spanx style="verb">[PCA[n-1], PCA[n]]</spanx>, and validates that
-one transition at each hop. Global validity back to PCA0 is then <em>inductive</em>: a valid <spanx style="verb">PCA[n]</spanx> implies its predecessor was validated by the
-hop that produced it, and so on to the origin. The per-hop checks — hash link, non-expansion, conformance, PoR (Section 3.3) — catch <strong>any
-single</strong> hop that expands authority or fails its contract, at the next honest hop: the next Verifier holds both PCAs of that transition and
-rejects it.</t>
+<t>An incremental or history-limited profile validates only the continuity evidence it carries or references at the receiving hop, and relies
+on authenticated prior validation state for earlier positions. Global validity back to the root is then inductive under that profile's trust
+assumptions.</t>
 
-<t>This profile makes one explicit assumption: <strong>each hop is a trusted verifier.</strong> It resists a single compromised or buggy hop, but not two
-or more <em>consecutive colluding</em> hops. If <spanx style="verb">PCA[n-1]</spanx> is minted already expanded by a compromised <spanx style="verb">n-1</spanx> and forwarded by a complicit <spanx style="verb">n</spanx>, then
-<spanx style="verb">n+1</spanx> — lacking <spanx style="verb">PCA[n-2]</spanx> — cannot re-verify the <spanx style="verb">n-2 → n-1</spanx> step and would accept it.</t>
+<t>This profile makes one explicit assumption: <strong>the prior validation boundary is trusted according to the selected profile</strong>. It can contain a
+single faulty hop when the next honest Verifier has the evidence needed to reject that hop. It does not, by itself, resist two or more
+consecutive colluding hops when the receiving Verifier lacks authenticated evidence of the earlier prefix.</t>
 
-<t>The predecessor hashes do <strong>not</strong> close this gap, and it is worth being precise about why. They prove <em>linkage and order</em> — that each PCA
-follows the one it names, unaltered, so history cannot be reordered or rewritten. They do <strong>not</strong> prove <em>non-expansion of content</em>. Checking
-that a step did not expand needs the <spanx style="verb">invariants</spanx> of the predecessor — its bytes — and a hash is one-way: a downstream verifier holds
-<spanx style="verb">H(PCA[n-2])</spanx> (inside <spanx style="verb">PCA[n-1]</spanx>) but not <spanx style="verb">I(n-2)</spanx>, so it cannot re-check a step whose PCA it does not carry. The colluding hops do not
-rewrite history and do not forge any honest DID; they sign two expanded PCAs with their <strong>own</strong> keys, and the next honest hop never holds the
-earlier bytes to notice. This is the same trust model as a snapshot (Section 5.2): the incremental profile is, in effect, a decentralized
-per-hop snapshot, each envelope attesting that its signer validated its predecessor. A deployment that must resist consecutive collusion MUST use the <strong>full-chain</strong> profile — the envelope carries <spanx style="verb">[PCA0 … PCA[n]]</spanx>
-and the Verifier re-validates every step independently — or a succinct proof that commits to the whole prefix (Section 5.3). Safety against a
-single faulty hop holds in all profiles; the choice is only how much independent re-verification the deployment wants to pay for.</t>
+<t>Cryptographic predecessor references do not close this gap by themselves. They prove linkage and order. They do not prove that omitted
+authority-state content did not expand. A deployment that must resist consecutive collusion MUST use a profile that independently
+authenticates the relevant prefix: full-history validation, trusted central validation, authenticated checkpoints, succinct proofs, or an
+equivalent profile-defined mechanism.</t>
 
 </section>
 </section>
@@ -1108,18 +1085,18 @@ compromised-but-authorized parties.</t>
       <ttcol align='left'>Central party</ttcol>
       <ttcol align='left'>Per-hop cost</ttcol>
       <ttcol align='left'>Consecutive collusion</ttcol>
-      <c>Decentralized, incremental (default)</c>
+      <c>Decentralized, history-limited</c>
       <c>none</c>
-      <c>O(1)</c>
-      <c>not resisted</c>
-      <c>Decentralized, full-chain</c>
+      <c>profile-defined</c>
+      <c>not resisted without authenticated prefix evidence</c>
+      <c>Decentralized, full-history</c>
       <c>none</c>
-      <c>O(n)</c>
+      <c>O(n) or profile-defined</c>
       <c>resisted</c>
-      <c>Central / snapshot validator</c>
+      <c>Central validator / checkpoint issuer</c>
       <c>yes</c>
-      <c>O(1)</c>
-      <c>resisted</c>
+      <c>profile-defined</c>
+      <c>resisted under central-validator assumptions</c>
       <c>Succinct proof (e.g. SNARK)</c>
       <c>none</c>
       <c>O(1) verify</c>
@@ -1127,22 +1104,19 @@ compromised-but-authorized parties.</t>
 </texttable>
 
 <t><list style="symbols">
-  <t><strong>Decentralized, incremental</strong> (Section 2.5). Each hop forwards only the immediate transition; no central component; O(1). Resists a single
-faulty hop but not consecutive collusion. Right when every hop is a trusted verifier and group compromise is out of scope.</t>
-  <t><strong>Decentralized, full-chain.</strong> The envelope carries <spanx style="verb">[PCA0 … PCA[n]]</spanx> and every hop re-validates every step. No central party, and
-consecutive collusion is resisted — the honest verifier holds the earlier bytes and the colluders cannot forge the honest DIDs — at O(n)
-size and validation cost per hop.</t>
-  <t><strong>Central (or snapshot) validator.</strong> A trusted service validates each hop against the lineage history it holds, or issues periodic signed
-snapshots (Section 5.2). Workloads forward at O(1), and the validator catches an expansion even under hop collusion because it holds the
-earlier invariants. This is the practical way to resist collusion at O(1) without advanced cryptography — at the cost of a central trust
-anchor and an availability dependency.</t>
+  <t><strong>Decentralized, history-limited.</strong> Each hop verifies the evidence available under the selected profile. It can be lightweight, but does
+not resist consecutive collusion unless the profile supplies authenticated prefix evidence.</t>
+  <t><strong>Decentralized, full-history.</strong> The Verifier independently validates the relevant prefix. No central party is required, but size and
+validation cost grow with the represented history unless the profile defines compaction.</t>
+  <t><strong>Central validator or checkpoint issuer.</strong> A trusted service validates advancements, maintains or authenticates validation state, or
+issues checkpoints. This can resist collusion under the central-validator assumptions, at the cost of a trust and availability dependency.</t>
   <t><strong>Succinct proof.</strong> A succinct proof — for example a SNARK or accumulator — proves non-expansion over the whole prefix (Section 5.3): decentralized, O(1) to verify, and
 collusion-resistant, all at once — at the cost of proof-generation complexity and a heavier cryptographic profile.</t>
 </list></t>
 
-<t>Stated plainly: <strong>to resist collusion among compromised-but-authorized hops while keeping O(1) forwarding and no advanced cryptography, use a
-central or federated validator.</strong> The decentralized alternatives that also resist it are full-chain (pay O(n)) or succinct proofs (pay in
-cryptography). Fully decentralized <em>and</em> lightweight means trusting each hop — the incremental profile and its documented limit (Section 6.8).</t>
+<t>Stated plainly: <strong>to resist collusion among compromised-but-authorized hops while keeping bounded forwarding and no advanced cryptography,
+use a central or federated validator, or another profile-defined authenticated-prefix mechanism.</strong> Fully decentralized and lightweight means
+trusting the prior validation boundary according to the selected profile.</t>
 
 </section>
 <section anchor="zero-trust"><name>Zero Trust</name>
@@ -1151,13 +1125,13 @@ cryptography). Fully decentralized <em>and</em> lightweight means trusting each 
 aspiration.</t>
 
 <t><list style="symbols">
-  <t><strong>No implicit trust from network location.</strong> Authorization comes from the signed continuity chain, never from where a request originates. A
+  <t><strong>No implicit trust from network location.</strong> Authorization comes from the signed continuity state, never from where a request originates. A
 caller inside the perimeter has exactly the authority its lineage carries, and no more (Section 6.7).</t>
   <t><strong>Every hop is verified, never assumed.</strong> No step is trusted because a previous one was: the Verifier re-checks the transition it holds —
 signature, predecessor link, challenge, attestation, conformance, non-expansion, time (Section 3.3) — and never assumes the Prover already
 did. The full-chain profile re-checks <em>every</em> hop; the incremental profile re-checks the immediate transition and trusts prior verifiers
 inductively (Section 6.8).</t>
-  <t><strong>Least privilege by construction.</strong> Authority only attenuates; each hop carries the smallest context it needs and can never regain what an
+  <t><strong>Least privilege by construction.</strong> Authority only attenuates; each hop carries or materializes the smallest context it needs and can never regain what an
 ancestor dropped (Section 2.4). A privilege absent from the origin cannot appear anywhere downstream.</t>
   <t><strong>Assume breach, contain it.</strong> A buggy or compromised executor can act arbitrarily in its own step, but it cannot propagate an invalid
 authority state as a valid continuation (Section 1.1). The blast radius is one hop, not the chain.</t>
@@ -1167,10 +1141,10 @@ time bounds (Section 6.3) making the decision specific to this request rather th
 continuation of the lineage (Section 1.2). Compromising an identity does not confer authority the lineage never delegated to it.</t>
 </list></t>
 
-<t>These hold against a single faulty hop in every profile. The two that quantify over the <em>whole</em> chain — explicit verification of every hop,
-and end-to-end non-expansion — hold absolutely only when the whole prefix is verified: the full-chain profile, a trusted snapshot, or a
-succinct proof. In the incremental profile they hold <em>inductively</em>, trusting each prior verifier (Section 6.8). The result is not "trust
-nothing" as a slogan but a model where trust is <em>earned per hop, verified explicitly, and bounded by construction</em>.</t>
+<t>These hold against a single faulty hop when the selected profile gives the receiving Verifier the evidence needed to reject that hop. The
+properties that quantify over the whole continuity prefix hold absolutely only when the relevant prefix is independently authenticated:
+full-history validation, trusted central validation, authenticated checkpoints, succinct proofs, or an equivalent profile-defined mechanism.
+The result is not "trust nothing" as a slogan but a model where trust is earned per hop, verified explicitly, and bounded by construction.</t>
 
 </section>
 <section anchor="contributors"><name>Contributors</name>
@@ -1248,526 +1222,484 @@ those defined in the PIC Legal Appendices.</t>
   </back>
 
 <!-- ##markdown-source:
-H4sIAAAAAAAAA+W965IbV3Yu+D+fYgc74qgKAkAWRVFq0N2eUrHUYjdFckjK
-ss1gNBJAVlWaiUw4M1FFdKsd/uUTZ37OnIh5gTPzIvMm/SSz1rfW2pcEiqLU
-bh9PDEMiq4C87L32ul8nk0nWl31VzNydF0/O3Iu2uS5al9cr93dFW16URXsn
-yxeLtrj+0BWrZlnna3rIplxONrhicq3fTu7dz5Z5X1w27W7myvqiycpNO3N1
-UxdZt12sy64rm7rfbQr+elVsCvqr7rOup5f8Pq/oupnbFV3WrfO2//0/b5u+
-6GbuIq+6ItuUM/emb5Zj1zVt3xYXHf20W/MPb7MVvXbm7t+7/3By74vJyedZ
-lm/7q6adZc5N6F30lGdT95u8qhr6xDnZw7Ny2VR59HHTXvKnfdu408uyKvud
-ezVtp9UU3xbrvKxoO7hresl3/S81X5zLtdNls86yumnXeV9e0/P/+KeMoRD/
-PqFj4L8IKH3x+8fNcrsmCPz+VZ/32y7LRiOC+j8Vy342Gjk9BNpzU4Vv3PfF
-oitpu3TFm5ubm6meBC6b0g7eHl31/aab3b176Nu7x/Qoey8/45aDHI3o0Pm4
-+Jp70/vu6HGbX/Tx3U5WjaVuF1W5dLiErnhS93y0K/ddh3U+MSg0dV4Bo87f
-b+hl/JQce+P7u6tixVdHxzgana/KvmmPumP+Jj4wd3TooHh9r/riJm9XcsOB
-s6Qrmm27FAhelv3VdsFHdzcGFX7pNsXy7or3dJcgcPcQpPiS6XoVYP6jz1tU
-zeIuYVL9cU8+jtDldNFs+9+/vio7jzlZ9mun4FPwuz//6393z5re5Xw+9Yog
-MRplv6br+Ea3ssOjn/M6JsNq51bFdVE1Gzo4fjutY4kzcxs7Hpd3bkO06ZoL
-118VCYriXHljPf1Ply52KfhpBXIA9FJX9p1rm6rgB75K3qWnN8WSn/Tuiq6g
-3btFUdQuXzWbvliNHS25aTv+Kd8AcvRT00YLpbfzAp+cv/567J68xN+nX43d
-y6/PnOAUffDqOf11fjZ2339Gf509O6OrnhM4njymd3/dbAl6vCY8Oq93rqFH
-tq5TsHYThRfgSbSV1+Uf9IZtXRUdQdhVxJlady205Ir3GzqokmFNTyHuJo+8
-KbvCb7iU/dLh0FrH/C+TU1sXvT9QXRCdAoGtJJK6adp3BNNizQfDK+UPyvrS
-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
-+Xxi52u1pHusTfZrC5TNwtTIa5FwBWsKaBaxiUd88FBBCcEfmhgYPLqmF+V0
-O3pv7IRcorGB2PUpDo+HNeU8DzlMnxZZKa5KZIsfyNVdStKxb3ZdVjub84xs
-UcL1uDgCHQE17xu9aFmbIM6euf3ehWF8ThJZTww5QawF+mGQVVtuO3VuiW/V
-kvNF7cVu2bhSdjG2Q+HJGL5hH+/6fK+CNzRXhLiJFLukaFizstnPDj9TKAZI
-JrSotAddabJqUvZglcTiFdC+hr7JJxwY2q+l6NKewbn0JeObMfxKNv0EAR7J
-ngZKGKwNpTFcRPL5ObyXL/vuUDo9HpkA5tGAd/rxs+I1Wvh4rtgCAaBpfmp8
-qqzenhmuidKgGYhoQVr4pn0XzGb8m+OnCU1xNtIltAckxojPuSvAK6NGuAc8
-CYPZG+o2uWnkkP95y3lF3IjE9L4RFL+RBnLR9MuCB8NWBd6WGmdScrKa9M2k
-qFcDnRKhFyx00TXVtpfgPv3l0y8SZTOSOjOfF5wy27hTT/AYso6bpQqQr6I+
-xILhWsXCRhE3HY0HGk/Ke4fum9chDq8YeUc0ex2edkfdpVVzyZ05tqhbgrdE
-pxmIssNSI29rLbUFxfsRHaGgTGR31EQg5ukjaaDHkSZOE+QS1D/+Yhn9+ieJ
-VJCgwZeaEBiutvQRP1aANc2q1IH16hD1X5ImriPHFg03u3hqPck7LYuRFZ5u
-2IahY/1q+oVSSobav6eE0JV9TQLi32NQNz+Sa/lkMMHS52jygi22CqFew1Pn
-eclZ0MyOaG3H4s+KpurQ/6QtiU14wRniUAAPdHahs0IaBfypoXwL09v4YRzd
-RPY72cQEHdIxS9pa7n7DjaclCU9H4omsQ0I9acp1s0Kg8wSerPWCkOT+vfuf
-W3a4tuiRg9IGWabCkEVF/0Vb3OQbHuRC7BRvHbtnU3fETyN0xgTvb30vxB8B
-Fluaj8tO81KTGeyS4kEbkrVPiWm++YP82LSXd7nQuF11d0++oD8P7p+E0//A
-Rcfu6PHzJzN3cm/6+f0vT+xS//V0b0sPsaV9GMxIG/AFNrJd3ktQiV5EFV0E
-yniTujWA/vSJO+VxVj++0fsn97/8/OTk/gc3ahfdslH/NRcyYKmYvqnyJ5yc
-dVaD3I4R7JG/MO2eDUpHKwHklaNhHOdr5NZ1m/G0J2tNawncq2k7rVji5l2W
-FOq6V33BFjJ3c9w5pRJk91lC4zhkfYnHCMmmaXkjFs7LhOS1+RxCb5YGDXV+
-UFPWY16DBwT7SUWqzhIwHAf9Uq5OtgAffSfb4Pv2982eqWiygOYojEZ/db7G
-KwsMdcz9/g0WjwKnfTzOBryPs0il3wAfNMnCpmXU76071AFGlgx+YHYq+3qG
-AKEmquR+k8ry6QxmYjqfMnJ818HSPpU+ovSypzmdFWs1pKhruGSMy78KBgmj
-9NjQSH45jY9cysRbTpFkzsrew04ecsYPecyp+py9LC61p+x78BrL01Jda3LD
-Y7x1AKpxhgHnEf7DE2HJD75owgThWPHoP+Tw54e/mx/7xNAM2UM/7XxBx1wM
-drGVMXDwQBMJsobC1kb2pJYEVQnzX1ScVxbCbYnOEJr/7kFjfOs38BfkpXBh
-7GqsKCVWPI/vrfkIRNWMeIBlfFryS7pL/mC7sJJii5e+2aP5f4dzCn0EhNKs
-vzni8F4RCFXae1xbRHkmgeWeVXbrzwzrO9kXHZG6rD3go26+OtsDxbHs/io2
-sAujGv/g+Ra1OQgT5cYLlFVmNhLlIh5OeOgAwSJehlYlf4xS2P/ELOHNydv/
-ibI5b/++vJ7df3jvi+m9L39576F7s+ymZy/fTt2bvH1fXkMKk3lyN1wSUOK2
-K455W/cPbwsgIoU/TvejdeCzB4P6Fz1hQLlUeSxURDrnGphC0KOlRrhZX/JL
-gXiwJjwynoTPJoRzV8on8sMovveYvi2KFLtvfSC2/9lb91Wbr2rulvCKAHDy
-y19yt9rR7wpIfwnqwBvObb2/PkMmwJNaO0O/jDpWP2UVls/qq7MX7uTBmK92
-909Ofkkbby+WEzFbRF26WPL//GXY1c3NzfT267DYB2/pLeUiH5Mxwmd1gqWe
-oqpRC1q+42nZYHXXnXvK49fxiywey3G8te95a4O1fnnyxYNb18pffsxa+Tqs
-9fO37uuiJ+nyeDp2Z/l6syiqihc+BsCrgqj4t/TL02bFkUNCfrr2NX3wW44Y
-jt23U1z7X9z3ecnjiB4LdnJKyEjGfN2f3iNBupbkXJhuByt1uJDlmLbKW/zl
-gwe3Hwd/+TFb5OuwxYeEO/nyHTFEEvG01pfENhmPfot1vyIGUO+wEV44Owpv
-rZux1d0/+cDqYiPjQ6sjQyL7fwEarS+BvBQBAA==
+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
+MAAa4INyCKpg+Fo1NUmV0/1iNDOlyEkagcT1R0ULojbHaCA6ZtSypKk2xRid
+cnmyzvFeCSHgNUdXnXTDNEcjUh0Wl6lBIDRaZmMSNj6lMljiQruFuwzm3oy6
+XeMSyR6MUAriaW7rZdFpW0pf5Fk1bHPXV9YyDeuS1WuxlaZ+VG0VJb63lvvy
+RGKUQuFzaQzVT+/2Y/2dun8t8w/ftlQg9uge/cCeWj8wn9bcW7MD6VsRP7lC
+ZK0J+dYNZ69F5QdHI8Qeoc8SY4792uQOYx+VIx6s/4J7K8MXUWjOF/FzyBtD
+7BoZB5Sa7/hFeYG99lxT3GCyjpKp7OhUOjJ5fGsm14Gnc8ncgG4CXQ64w6No
+2lhTRjZwnCEkdOxrIY6t/kfQxjX9rilE7UkoBtsKN+T4lHNbPD2UbLg8nQbi
+mAYSzXaCaGgICCMhvMWs0CqC1NusuyUphtF1zj4VRTKuoB/q5PMFkkY/CdZe
+pcDTZgZaeGQBIAt0L+SdVHgQORKiTUA0h6SQEsc/TsPJCIqQGpQ5gU/9oMkY
+GEklUKrS5vTUeY5eXfTMcDd2QmN5TSEkVaHNflXVMyroib0buBZVe01OeNsW
+S9Mi8riV0H1VUqzb3OzJQd6Nl6iKY/G39AZBpmPg//KHw3vIN4R/ivwZjULF
+0VYxAE2BkoZK42LAsMTsrGOYAUwkrxKr3mngriK4CKPwq+REtBxX7ERqsupM
+bHcGjIryb1UpTvuttLLoQZrSAnTIBcH3Ein7KtBBeYiBcL6PE9MKHiBpirv9
+ekNVL7juBOWQEBQPOVGIFxpGelV527jca2JtCulNm5VL8WbilMCLBC+5ia6F
+YeClzDUeBrokKL/SpjChfwxa4Lvrpig8P/FhsKYIU7MOinjoL6lsUbjcVk/X
+pBDHIfn6En1F14JThjyRm7IX1LyIrKnZIp6gS8klQonuJxWf1RzFxc+boFw8
+m4cgYiU4179jubtlxKo03ifBoeQdqfJvqnxVaOzkezSmT5v5dYnq2UYKMz6D
+c623pC5GiaA/HGi1tSvYkM2Myqytyzk1QavndUW/oO7wEETJ7CEG7R8umvyy
+ewj2GX2Yu3chEEneQ1+aLBeHHCVVY/ayUIUz6KSj0Zeihi0ROI5bmR4I5VIf
+e77iIN8rDPlULuzFoYa7aFOq9mqtYaryhuSA/jQCoN2IUUf8M4mpJ0CmSbdu
+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
 
 -->
 

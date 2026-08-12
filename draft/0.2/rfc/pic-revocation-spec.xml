@@ -32,21 +32,19 @@
     <abstract>
 
 
-<?line 68?>
+<?line 83?>
 
-<t>This document is the <strong>PIC Revocation Specification</strong>, a subordinate specification of the <eref target="https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-spec.md">PIC Specification</eref>. It defines how
-<strong>authority is revoked</strong> within the Provenance Identity Continuity (PIC) Model.</t>
+<t>This document is the <strong>PIC Revocation Specification</strong>, a subordinate specification of the
+<eref target="https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-spec.md">PIC Specification</eref>. It defines how authority is revoked within
+the Provenance Identity Continuity (PIC) Model.</t>
 
-<t>Expiry bounds <em>how long</em> a PCA is valid; revocation withdraws validity <em>before</em> that bound. The profile supports grant-, key-, delegate-,
-attestation-, issuer-, and policy-based revocation, and adds a property specific to PIC: <strong>causal execution cutoffs</strong> — revoking a lineage,
-a branch, or its future from a given position.</t>
+<t>Expiry bounds how long a continuity state may be accepted; revocation withdraws validity before that bound. PIC revocation preserves the
+core model invariants: exactly one predecessor per non-root advancement, Proof of Relationship, authority non-expansion, and no authority
+import from unrelated continuities.</t>
 
-<t>This revision normatively defines the <strong>revocation coordinates</strong> and their hop-by-hop continuity (Section 2), the requirements for turning a
-historical selector into a causal cutoff (Section 4), and the revocation-authorization and revocation-state requirements (Section 5). It
-illustrates candidate revocation strategies (Section 3, non-normative). The coordinates extend the PCA format of the
-<eref target="https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-prover-verifier-spec.md">PIC Prover and Verifier Specification</eref>; they do not alter the PIC Model invariants — non-expansion of the
-signed state and Proof of Relationship are unchanged, and every PCA still continues exactly one predecessor. In case of conflict, the
-<strong>PIC Specification</strong> is authoritative.</t>
+<t>For the current PIC Profile 0.2 / PIC-X realization, the native causal revocation coordinate is a stable authenticated <strong>PCA ID</strong> plus a
+continuity <strong>position</strong>. Additional authenticated selectors, such as grant, issuer, key, delegate, attestation, or policy selectors, may be
+used by a profile but do not replace the causal coordinate when descendants must be invalidated.</t>
 
 
 
@@ -106,10 +104,34 @@ regulatory approval, or standards-body recognition.</t>
     </note>
 
 
-    <note title="Editors">
+    <note title="Work In Progress">
 
 
 <?line 59?>
+
+<ul empty="true"><li>
+  <t><strong>Work in Progress — Experimental Design</strong></t>
+
+  <t>The revocation model described in this document is under active development.</t>
+
+  <t>This model may change substantially before a later stable revision.</t>
+
+  <t>Implementers MUST NOT assume wire compatibility, semantic compatibility, or backward compatibility with future revisions.</t>
+
+  <t>Future drafts may introduce breaking changes to terminology, data structures, processing rules, profile bindings, and
+interoperability requirements.</t>
+
+  <t>The current text is published for design review, experimentation, and implementation feedback.</t>
+</li></ul>
+
+
+    </note>
+
+
+    <note title="Editors">
+
+
+<?line 74?>
 
 <t><list style="symbols">
   <t><strong>Nicola Gallo</strong> (Nitro Agility S.r.l.) Lead Editor</t>
@@ -123,7 +145,7 @@ regulatory approval, or standards-body recognition.</t>
     <note title="Contributors">
 
 
-<?line 64?>
+<?line 79?>
 
 <t><list style="symbols">
   <t><em>Add your name via pull request (individual or organization) — listing is subject to editor approval (see <xref target="contributors"></xref>).</em></t>
@@ -138,1098 +160,295 @@ regulatory approval, or standards-body recognition.</t>
   <middle>
 
 
-<?line 84?>
+<?line 97?>
 
 <section anchor="introduction"><name>Introduction</name>
 
-<t>This section is non-normative. It explains the concepts revocation needs; the normative requirements are in Sections 2, 4, and 5.</t>
+<t>This section is non-normative. It introduces the revocation model used by this document.</t>
 
-<section anchor="what-is-a-lineage"><name>What Is a Lineage</name>
+<t>PIC continuity starts from a trusted root PIC Context of Authority, or PCA, and advances through non-root continuity advancements. A
+revocation that must affect descendants needs a stable way to name the root authority context and a stable way to name the causal position at
+which validity stops.</t>
 
-<t>An <strong>execution lineage</strong> is simply the sequence of PCAs produced as one execution proceeds from hop to hop. It begins at the origin, the
-<strong>PCA0</strong>, and each later PCA continues exactly one predecessor:</t>
+<t>In PIC Profile 0.2, PIC-X issues settled PIC Continuity JWTs. A workload may propose exactly one advancement in a candidate PIC Continuity
+JWT by carrying one <spanx style="verb">continuity_transition_jwt</spanx>. PIC-X validates that candidate and, if it accepts the advancement, issues the next settled
+PIC Continuity JWT. Settled Profile 0.2 continuity artifacts do not carry a replayable transition history.</t>
 
-<figure><sourcecode type="text"><![CDATA[
-PCA0  ->  PCA1  ->  PCA2  ->  …  ->  PCAn
-]]></sourcecode></figure>
+<t>Revocation state remains external and dynamic. Revoking a PCA, position, key, delegate, attestation, grant, issuer, or policy does not
+rewrite the root PIC PCA JWT and does not rebuild historical transitions. Verifiers and PIC-X evaluate authenticated revocation state against
+the presented continuity state.</t>
 
-<t>When an executor hands off to more than one successor (fan-out), the lineage branches — but each branch still continues a single
-predecessor:</t>
-
-<figure><sourcecode type="text"><![CDATA[
-PCA100
- ├── PCA101-A
- └── PCA101-B
-]]></sourcecode></figure>
-
-<t>Each individual lineage path is causally sequential; the lineage as a whole may form a tree under fan-out. Revocation operates on this
-structure: to revoke, one must be able to <em>name</em> a lineage, a branch domain within it, and a <em>position</em>.</t>
-
-</section>
-<section anchor="three-kinds-of-revocation-state"><name>Three Kinds of Revocation State</name>
-
-<t>This is the one distinction a reader coming from OAuth or capability systems needs. Not everything a PCA touches can be revoked the same way,
-because not everything survives to the next hop.</t>
-
-<t><strong>Lineage-persistent state</strong> is signed data propagated (or attenuated) along the lineage:</t>
-
-<figure><sourcecode type="text"><![CDATA[
-profile
-lineageId
-grantId
-lineageCounter
-originIssuer               (when propagated)
-branchId                   (when the profile is branch-capable)
-operations
-executionContract
-]]></sourcecode></figure>
-
-<t>A revocation or restriction over these can be applied downstream, because the Verifier still holds the data.</t>
-
-<t><strong>Hop-local evidence</strong> validates one concrete transition and does not become a permanent property of every descendant:</t>
-
-<figure><sourcecode type="text"><![CDATA[
-executor
-signing key
-executorAttestation
-request binding
-proofOfRelationship
-branchCreationNonce        (present only in a branch-creation PCA)
-]]></sourcecode></figure>
-
-<t>Revoking hop-local evidence has direct effect only while that evidence is still <em>presented</em> to a Verifier.</t>
-
-<t><strong>Derived causal revocation</strong> bridges the two. A historical revocation of a <spanx style="verb">KEY</spanx>, <spanx style="verb">DELEGATE</spanx>, <spanx style="verb">ATTESTATION</spanx>, or <spanx style="verb">ISSUER</spanx> reaches descendants
-only when the historical position is turned into a native cutoff:</t>
-
-<figure><sourcecode type="text"><![CDATA[
-LINEAGE-SUFFIX(lineageId, fromCounter)
-]]></sourcecode></figure>
-
-<t>The key change is that historical evidence is converted into an <em>execution coordinate</em> that downstream Verifiers can still evaluate — a
-revocation is expressed as a position in an execution, not only as a revoked credential. A Verifier at a later hop applies the cutoff without
-seeing the historical key, identity, or attestation again.</t>
-
-</section>
 <section anchor="requirements-notation"><name>Requirements Notation</name>
 
-<t>The <strong>normative</strong> sections of this document are Sections 2, 4, and 5. Sections 1, 3, and 6 are <strong>non-normative</strong>.</t>
+<t>The normative sections of this document are Sections 2, 3, 4, and 5. Sections 1 and 6 are non-normative.</t>
 
 <t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
-"OPTIONAL" are to be interpreted as described in BCP 14 <xref target="references">[2]</xref> <xref target="references">[3]</xref> when, and only when, they appear in all capitals,
-and only within the normative sections. Examples are illustrative and non-normative.</t>
+"OPTIONAL" are to be interpreted as described in BCP 14 <xref target="references">[2]</xref> <xref target="references">[3]</xref> when, and only when, they appear in all capitals
+within normative text.</t>
 
 </section>
 </section>
 <section anchor="revocation-coordinates"><name>Revocation Coordinates</name>
 
-<t>This section is normative. It defines the structural fields a <strong>revocable</strong> PCA carries and the continuity a Verifier checks. A profile that
-does not support revocation MAY omit them; a revocable profile MUST include them. They extend the PCA format of the
-<eref target="https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-prover-verifier-spec.md">PIC Prover and Verifier Specification</eref> and are covered by the same single PCA signature; they do not change
-its non-expansion or Proof-of-Relationship rules.</t>
+<t>This section is normative.</t>
 
-<section anchor="origin-pca-pca0"><name>Origin PCA (PCA0)</name>
+<section anchor="pca-id"><name>PCA ID</name>
 
-<t>A revocable PCA0 carries <spanx style="verb">profile</spanx>, <spanx style="verb">originNonce</spanx>, <spanx style="verb">lineageId</spanx>, <spanx style="verb">lineageCounter</spanx>, <spanx style="verb">grantId</spanx> (when it derives from a separately revocable
-grant), and <spanx style="verb">originIssuer</spanx> (when the profile supports direct origin-issuer revocation). All are covered by the PCA0 signature, which itself
-includes <spanx style="verb">lineageId</spanx>.</t>
+<t>A revocable Profile 0.2 continuity MUST have a stable authenticated <strong>PCA ID</strong>. The PCA ID identifies the root authority context for
+revocation purposes.</t>
 
-<t><strong><spanx style="verb">lineageId</spanx> is derived from a non-self-referential origin core.</strong> A PCA cannot hash <em>itself</em> to obtain its own identifier, so <spanx style="verb">lineageId</spanx>
-is the hash of a canonical projection of PCA0 that excludes <spanx style="verb">lineageId</spanx> and <spanx style="verb">proof</spanx>:</t>
+<t>The PCA ID MUST be bound to the trusted root PIC PCA JWT or to authenticated root metadata covered by the selected profile. It MUST NOT be a
+freely chosen unauthenticated value. The selected profile MUST define how the PCA ID is represented, authenticated, and validated.</t>
 
-<figure><sourcecode type="text"><![CDATA[
-originCore = the profile-defined canonical projection of PCA0, excluding lineageId and proof
-lineageId  = H( "PIC-Lineage-v0" || canonical(originCore) )
-]]></sourcecode></figure>
+<t>This document does not define the concrete wire claim carrying the PCA ID. It also does not define the JWT <spanx style="verb">jti</spanx> claim as the PCA ID. A
+profile MAY map a concrete claim to the PCA ID only when that mapping is explicitly defined and authenticated by that profile.</t>
 
-<t><spanx style="verb">originCore</spanx> MUST include at least <spanx style="verb">profile</spanx>, <spanx style="verb">issuer</spanx>, <spanx style="verb">originNonce</spanx>, the presence and value of <spanx style="verb">grantId</spanx>, the origin authority context,
-<spanx style="verb">issuedAt</spanx>, and <spanx style="verb">expiresAt</spanx>. The profile MUST define exactly the fields included, the fields excluded, the canonical encoding, the hash
-suite, and the domain separator.</t>
-
-<t>The origin commitment binds <spanx style="verb">lineageId</spanx> to the declared issuer, nonce, profile, grant binding, and origin authority context. Copying those
-public fields does not create a valid colliding lineage, because the resulting PCA0 must also satisfy the origin trust boundary
-(<eref target="https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-prover-verifier-spec.md">PIC Prover and Verifier Specification</eref>, Section 6.2) and carry a valid signature (or equivalent origin
-authorization) for the committed issuer:</t>
+<t>The compact signed root PIC PCA JWT is carried by a settled Profile 0.2 PIC Continuity JWT at:</t>
 
 <figure><sourcecode type="text"><![CDATA[
-originNonce                     distinguishes intentionally separate origins by the same issuer
-issuer signature / origin authz  prevents another party from creating a valid origin as that issuer
+context_of_authority.root.pca_jwt
 ]]></sourcecode></figure>
 
-<t><strong><spanx style="verb">originNonce</spanx></strong> SHOULD contain at least 128 random bits; 256 random bits are RECOMMENDED. An issuer MUST generate a fresh <spanx style="verb">originNonce</spanx> for
-every intentionally distinct lineage and MUST NOT reuse one within the same origin-commitment namespace. Two PCA0 with the same origin
-commitment (hence the same <spanx style="verb">lineageId</spanx>) MUST be treated as the <em>same</em> origin, not as independent lineages. Global reuse detection MAY require
-an authenticated origin registry, a transparency log, or shared state, but the no-reuse rule remains a requirement of the origin issuer.</t>
+<t>Its compact-artifact hash is carried at:</t>
 
-<t><strong><spanx style="verb">grantId</spanx></strong> — present when the origin derives from a separately revocable grant. The binding between <spanx style="verb">grantId</spanx>, its grant authority, and
-the authority context MUST be verifiable during PCA0 validation. Possession or knowledge of a <spanx style="verb">grantId</spanx> does not authorize its revocation
-(Section 5.1). It MUST NOT be interpreted as authorization on its own, and MAY be shared by several PCA0.</t>
-
-<t><strong><spanx style="verb">originIssuer</spanx></strong> — when the profile supports direct origin-issuer revocation, <spanx style="verb">PCA0.originIssuer == PCA0.issuer</spanx>, covered by the signature
-and propagated unchanged (Section 2.2). <spanx style="verb">originIssuer</spanx> is a revocation-administration coordinate: it does not grant execution authority, does
-not designate a successor, and does not replace Proof of Relationship or executor conformance.</t>
-
-<t><strong><spanx style="verb">profile</spanx></strong> identifies the revocable profile in force. <strong><spanx style="verb">lineageCounter</spanx></strong> MUST be <spanx style="verb">0</spanx>.</t>
-
-<t><strong>Branch coordinate</strong> — in a branch-capable profile (Section 2.4), PCA0 carries the root branch domain <spanx style="verb">branchId</spanx>, derived from <spanx style="verb">lineageId</spanx>
-as <spanx style="verb">rootBranchId = H( "PIC-Root-Branch-v0" || lineageId )</spanx> and covered by the PCA0 signature. There is no root nonce and no absent-root case.</t>
-
-<figure><sourcecode type="json"><![CDATA[
-{
-  "profile": "PIC-Revocable-v0",
-  "issuer": "did:example:users:alice",
-  "originIssuer": "did:example:users:alice",
-  "originNonce": "base64url-random-256-bit-value",
-  "grantId": "urn:uuid:11111111-1111-4111-8111-111111111111",
-  "lineageId": "sha256:…",
-  "branchId": "sha256:… (rootBranchId, derived from lineageId; Section 2.4)",
-  "lineageCounter": 0,
-  "invariants": { "…": "operations and executionContract (Prover/Verifier spec)" },
-  "continuation": { "…": "the emitted challenge" },
-  "issuedAt": "2026-07-17T10:00:00Z",
-  "expiresAt": "2026-07-18T10:00:00Z",
-  "proof": { "…": "signature covering the complete PCA0, including lineageId and branchId" }
-}
+<figure><sourcecode type="text"><![CDATA[
+context_of_authority.root.pca_jwt_hash
 ]]></sourcecode></figure>
 
-<t>To validate PCA0, the Verifier MUST reconstruct <spanx style="verb">originCore</spanx>, recompute <spanx style="verb">lineageId</spanx>, compare it with <spanx style="verb">PCA0.lineageId</spanx>, recompute
-<spanx style="verb">rootBranchId</spanx> from the recomputed <spanx style="verb">lineageId</spanx> and compare it with <spanx style="verb">PCA0.branchId</spanx> (in a branch-capable profile), verify the complete PCA0
-signature, verify the origin authorization, and verify the grant binding when <spanx style="verb">grantId</spanx> is present.</t>
+<t>Those fields identify the root artifact. Whether either value is used directly as the PCA ID is profile-defined.</t>
 
 </section>
-<section anchor="successor-pca"><name>Successor PCA</name>
+<section anchor="position"><name>Position</name>
 
-<t>Every non-origin PCA MUST propagate <spanx style="verb">profile</spanx>, <spanx style="verb">lineageId</spanx>, the presence and value of <spanx style="verb">grantId</spanx>, and <spanx style="verb">originIssuer</spanx> (when the profile
-propagates it) <strong>unchanged</strong>, MUST set <spanx style="verb">lineageCounter</spanx> to the predecessor's value plus one, and MUST cover all of them under the PCA
-signature. A Prover MUST NOT alter or drop these fields, MUST NOT introduce a <spanx style="verb">grantId</spanx> the predecessor lacks, and MUST NOT change the
-<spanx style="verb">profile</spanx>.</t>
+<t>A revocable Profile 0.2 continuity MUST expose or authenticate a continuity <spanx style="verb">position</spanx>.</t>
 
-<t>In a branch-capable profile (Section 2.4) the successor MUST propagate <spanx style="verb">branchId</spanx> <strong>unchanged</strong>, except when it is itself an authorized
-branch-creation PCA, where it derives a fresh <spanx style="verb">branchId</spanx> and carries a fresh <spanx style="verb">branchCreationNonce</spanx> for that single transition. An ordinary
-successor MUST NOT carry <spanx style="verb">branchCreationNonce</spanx>. A branch-capable profile MUST prevent downgrade by omission: a successor MUST NOT drop
-<spanx style="verb">branchId</spanx>.</t>
+<t>The position identifies causal order within the continuity rooted at the PCA ID. The root position and non-root positions MUST be
+unambiguous. A non-root advancement MUST have the position required by the selected continuity profile.</t>
 
-<ul empty="true"><li>
-  <t>A lineage created under a revocable profile remains revocable for its entire lifetime. A successor cannot downgrade it by omitting the
-profile or its revocation coordinates.</t>
-</li></ul>
+<t>The profile MUST reject missing, negative, fractional, non-canonical, overflowing, wrapping, or otherwise invalid positions. A profile MUST
+NOT introduce a second mandatory counter solely for revocation when the continuity profile already defines positions.</t>
 
 </section>
-<section anchor="verifier-hop-validation"><name>Verifier Hop Validation</name>
+<section anchor="causal-coordinate"><name>Causal Coordinate</name>
 
-<t>In addition to the hop checks of the <eref target="https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-prover-verifier-spec.md">PIC Prover and Verifier Specification</eref> (Section 3.3), a
-revocation-aware Verifier MUST, for each non-origin hop, reject the PCA unless all of the following hold against the already-validated
-predecessor:</t>
+<t>The native causal coordinate for current Profile 0.2 revocation is:</t>
 
 <figure><sourcecode type="text"><![CDATA[
-current.previousPcaHash   == H(predecessor)
-current.profile           == predecessor.profile
-current.lineageId         == predecessor.lineageId
-presence(current.grantId) == presence(predecessor.grantId)
-if grantId is present:      current.grantId == predecessor.grantId
-if originIssuer propagated:  current.originIssuer == predecessor.originIssuer
-current.lineageCounter     == predecessor.lineageCounter + 1
-
-if branch-capable, ordinary hop:      current.branchId == predecessor.branchId
-                                      current MUST NOT carry branchCreationNonce
-if branch-capable, branch creation:   current.branchId == H("PIC-Branch-v0" || current.previousPcaHash || current.branchCreationNonce)
-                                      AND valid branch-creation authorization (Section 2.4)
+(PCA ID, position)
 ]]></sourcecode></figure>
 
-<t>The Verifier MUST reject when <spanx style="verb">profile</spanx> is missing or unknown, when <spanx style="verb">current.profile != predecessor.profile</spanx>, when required revocation
-coordinates are omitted, or when a revocable lineage is presented under a non-revocable profile. The counter rule is exact: the Verifier
-MUST reject a <spanx style="verb">lineageCounter</spanx> that is missing, negative, fractional, non-canonical, less than or equal to the predecessor's, greater than
-<spanx style="verb">predecessor + 1</spanx>, or that overflows or wraps around.</t>
+<t>A causal suffix cutoff is:</t>
 
-<t>In a branch-capable profile <spanx style="verb">branchId</spanx> is unconditionally present in every PCA. The Verifier MUST also reject when <spanx style="verb">branchId</spanx> is missing or
-removed, when <spanx style="verb">branchId</spanx> changes without a valid, authorized branch-creation transition, when <spanx style="verb">branchId</spanx> does not recompute from
-<spanx style="verb">current.previousPcaHash</spanx> and <spanx style="verb">current.branchCreationNonce</spanx> at a claimed branch-creation transition, when <spanx style="verb">branchCreationNonce</spanx> is present at
-an ordinary hop or absent at a branch-creation hop, or when <spanx style="verb">branchId</spanx> or <spanx style="verb">branchCreationNonce</spanx> has a non-canonical representation or an
-invalid size. At a branch-creation transition the Verifier MUST apply the validation order of Section 2.4, evaluating the revocations and
-restrictions inherited from the predecessor's branch domain before accepting a new domain.</t>
+<figure><sourcecode type="text"><![CDATA[
+(PCA ID, fromPosition)
+]]></sourcecode></figure>
 
-<t>A valid signature is necessary but not sufficient: the Verifier validates the concrete transition <spanx style="verb">PCA[n-1] -&gt; PCA[n]</spanx>, not merely the
-signature of <spanx style="verb">PCA[n]</spanx>.</t>
+<t>It matches a presented continuity state when:</t>
+
+<figure><sourcecode type="text"><![CDATA[
+state.PCA_ID == target.PCA_ID
+AND state.position >= target.fromPosition
+]]></sourcecode></figure>
+
+<t>Whole-continuity revocation is the root-position case. The selected profile MUST define the root position used for that comparison.</t>
+
+<t>Knowledge of the PCA ID, the position, or both MUST NOT authorize revocation. Targeting and revocation authorization are separate.</t>
 
 </section>
-<section anchor="branch-identification"><name>Branch Identification</name>
+</section>
+<section anchor="revocation-semantics"><name>Revocation Semantics</name>
 
-<t>Branch-capable profiles add one fixed-size persistent field (<spanx style="verb">branchId</spanx>) to every revocable PCA, plus one fixed-size nonce
-(<spanx style="verb">branchCreationNonce</spanx>) that appears only in branch-creation transitions. They make <spanx style="verb">BRANCH-SUFFIX</spanx> (Section 3.1) a native strategy without
-carrying branch ancestry:</t>
+<t>This section is normative where BCP 14 language is used.</t>
 
-<figure><sourcecode type="text"><![CDATA[
-branchId             fixed-size branch-domain identifier, present in every PCA,
-                     propagated unchanged within the branch domain
-branchCreationNonce  fixed-size random value, present only in the PCA that creates a branch
-                     domain, where it lets that transition's Verifier recompute the derivation;
-                     never propagated to descendants
-]]></sourcecode></figure>
+<section anchor="causal-suffix"><name>Causal Suffix</name>
 
-<t>A PCA MUST NOT carry branch ancestry arrays, parent-branch lists, growing branch paths, full branch trees, or any unbounded branch metadata.
-The model stays three flat coordinates:</t>
+<t>A causal suffix cutoff invalidates the selected position and its causal future:</t>
 
 <figure><sourcecode type="text"><![CDATA[
-lineageId       identifies the overall execution lineage
-lineageCounter  identifies causal depth on one path
-branchId        identifies the current branch domain
+(PCA ID, fromPosition)
 ]]></sourcecode></figure>
 
-<t><strong><spanx style="verb">branchId</spanx> is a derived commitment, not a free choice.</strong> A freely chosen identifier would reintroduce, one level down, the
-intentional-collision problem the origin commitment removes for <spanx style="verb">lineageId</spanx>: branch identifiers travel in the clear, so a malicious executor
-at a different fan-out point of the same lineage could copy a victim branch's identifier and have a later <spanx style="verb">BRANCH-SUFFIX</spanx> strike the victim.
-A non-root <spanx style="verb">branchId</spanx> is therefore bound to its creation transition:</t>
+<t>A Verifier or PIC-X MUST reject a matching state when the authenticated revocation state contains an authorized suffix cutoff and:</t>
 
 <figure><sourcecode type="text"><![CDATA[
-branchId = H( "PIC-Branch-v0" || current.previousPcaHash || current.branchCreationNonce )
-
-current.previousPcaHash      the digest of the creation PCA's predecessor, already checked to equal
-                             H(predecessor) in the same hop procedure (Section 2.3)
-current.branchCreationNonce  fresh random value generated by the authorized successor creating the
-                             branch domain, present only in that creation PCA
+state.PCA_ID == target.PCA_ID
+AND state.position >= target.fromPosition
 ]]></sourcecode></figure>
 
-<t>This gives three properties:</t>
+<t>The exact wire representation and any concrete revocation-profile naming for this operation are profile-defined. This document defines only
+the semantic causal cutoff.</t>
+
+</section>
+<section anchor="whole-pca"><name>Whole PCA</name>
+
+<t>Whole-PCA revocation invalidates all continuity states rooted in the selected PCA ID. It is equivalent to a suffix revocation from the root
+position:</t>
 
 <figure><sourcecode type="text"><![CDATA[
-Locally verifiable    a Verifier holding the creation transition recomputes branchId from
-                      previousPcaHash and branchCreationNonce; no registry is needed for the
-                      immediate transition
-Creation-point-bound  reusing a branchId at a different fan-out point requires the same predecessor
-                      digest or a hash collision; a branchId cannot be transplanted across creation
-                      points
-Verifiable binding    the construction makes the nonce-to-domain binding checkable; sibling
-                      distinctness itself remains a Prover obligation — distinct nonces under one
-                      predecessor give distinct domains, and an identical nonce gives the SAME
-                      domain, not a collision between distinct domains
+(PCA ID, rootPosition)
 ]]></sourcecode></figure>
 
-<t><strong>Root branch.</strong> PCA0 carries the root branch domain identifier, derived from <spanx style="verb">lineageId</spanx>:</t>
+</section>
+<section anchor="optional-selectors"><name>Optional Selectors</name>
 
-<figure><sourcecode type="text"><![CDATA[
-rootBranchId = H( "PIC-Root-Branch-v0" || lineageId )
-]]></sourcecode></figure>
+<t>A revocation profile MAY define additional authenticated selectors, including:</t>
 
 <t><list style="symbols">
-  <t>No circularity: <spanx style="verb">lineageId</spanx> is already derived from <spanx style="verb">originCore</spanx>, which excludes the identifier and proof fields (Section 2.1).</t>
-  <t>No root nonce: the root domain is unique per lineage and has no siblings to distinguish.</t>
-  <t>Always present: <spanx style="verb">branchId</spanx> is unconditionally required in every PCA of a branch-capable profile, so the "required but missing" check is
-unconditional and the root domain is directly targetable by <spanx style="verb">BRANCH-SUFFIX</spanx>.</t>
-  <t>Uniform validation: PCA0 validation recomputes <spanx style="verb">rootBranchId</spanx> from the recomputed <spanx style="verb">lineageId</spanx>; every later hop uses the ordinary equality
-or creation-derivation check.</t>
+  <t>grant binding;</t>
+  <t>origin issuer;</t>
+  <t>key or verification method;</t>
+  <t>executor or delegate;</t>
+  <t>attestation;</t>
+  <t>policy;</t>
+  <t>resource, tenant, or security-domain selector;</t>
+  <t>another explicitly profile-defined authenticated selector.</t>
 </list></t>
 
-<t>Anyone can <em>compute</em> the <spanx style="verb">rootBranchId</spanx> of a known lineage; this is consistent with the rule that knowledge of <spanx style="verb">lineageId</spanx>, <spanx style="verb">branchId</spanx>, or
-<spanx style="verb">fromCounter</spanx> MUST NOT by itself authorize revocation (Section 5.1).</t>
+<t>These selectors are administrative or evidentiary criteria. They do not replace <spanx style="verb">(PCA ID, position)</spanx> when causal descendants must be
+invalidated.</t>
 
-<t><strong>Representation.</strong> The persistent added state is one hash-sized field, <spanx style="verb">branchId</spanx> (e.g. 32 bytes). <spanx style="verb">branchCreationNonce</spanx> appears only in
-creation transitions: it SHOULD contain at least 128 random bits, and 256 bits are RECOMMENDED (e.g. 16–32 bytes). The profile MUST define
-the canonical binary representation of both; no textual UUID representation is required. <spanx style="verb">branchId</spanx> (always) and <spanx style="verb">branchCreationNonce</spanx> (in a
-creation PCA) MUST be covered by the complete PCA signature.</t>
-
-<t><strong>Fan-out.</strong> At a fan-out point each new branch domain is created by an authorized successor, which generates its own fresh
-<spanx style="verb">branchCreationNonce</spanx>, hence a fresh derived <spanx style="verb">branchId</spanx>:</t>
-
-<figure><sourcecode type="text"><![CDATA[
-PCA100
- ├── PCA101-A  branchCreationNonce = nA  ->  branchId = H(dsep || H(PCA100) || nA)
- └── PCA101-B  branchCreationNonce = nB  ->  branchId = H(dsep || H(PCA100) || nB)
-]]></sourcecode></figure>
-
-<t>Each authorized successor creating a new branch domain MUST generate a fresh random <spanx style="verb">branchCreationNonce</spanx> and MUST NOT deliberately reuse
-another sibling's nonce. Sibling distinctness is a <strong>Prover obligation</strong>: a per-hop Verifier sees only one sibling per envelope and cannot
-compare siblings directly. In the open-continuation model the predecessor does not coordinate or mint its successors' PCAs; each continuing
-executor generates its own nonce. Cross-sibling detection beyond this construction requires fan-out-point evidence or shared state and is not
-a per-hop Verifier requirement.</t>
-
-<t><strong>Branch-domain creation is a restricted operation.</strong> This is the central rule of the branch profile. Without it, branch revocation is
-evadable in one hop: an executor inside a revoked branch domain could mint a fresh branch domain and escape <spanx style="verb">BRANCH-SUFFIX</spanx> — and, since the
-base profile carries no branch ancestry, no downstream Verifier could relate the new domain to the revoked one. Therefore creating a new
-branch domain MUST be an authorized, authenticated operation. The base profile MUST restrict branch creation to parties authorized by the
-execution contract, the origin, or the branch-domain creator's explicitly delegated authority. A nested continuation that is NOT authorized
-to create a new branch domain MUST inherit the current <spanx style="verb">branchId</spanx> and MUST NOT carry a <spanx style="verb">branchCreationNonce</spanx>. Inheriting is the default;
-minting is the exception.</t>
-
-<t>The <strong>branch-domain creator</strong> is the executor that issues the valid branch-creation PCA establishing a new <spanx style="verb">branchId</spanx>. It is not necessarily
-the predecessor executor, the origin issuer, or a coordinator aware of all sibling successors: in the open-continuation model each authorized
-successor may independently create its own branch domain when the applicable execution contract or delegated authority permits it.</t>
-
-<t>A branch-domain change is valid only at a transition that both recomputes as a correct derivation from the presented predecessor and carries
-the profile-defined branch-creation authorization:</t>
-
-<figure><sourcecode type="text"><![CDATA[
-branchId == H( "PIC-Branch-v0" || current.previousPcaHash || current.branchCreationNonce )
-AND  profile-defined branch-creation evidence is present and valid
-]]></sourcecode></figure>
-
-<t>The profile MUST define that evidence — for example a branch-creation permission in the predecessor <spanx style="verb">executionContract</spanx>, or a signed grant
-from the branch or origin authority.</t>
-
-<t><strong>Anti-escape validation order.</strong> A branch-creation transition is itself part of the causal future of the predecessor's branch domain. The
-Verifier MUST therefore evaluate inherited revocations and restrictions against the predecessor's domain, at the current counter, BEFORE
-accepting the creation:</t>
-
-<figure><sourcecode type="text"><![CDATA[
-1. validate the predecessor and the transition linkage
-   (previousPcaHash, profile, lineageId, grantId, originIssuer, lineageCounter);
-2. apply the revocations and restrictions inherited from the predecessor — evaluated against the
-   predecessor's branchId and the current lineageCounter — including LINEAGE-SUFFIX, BRANCH-SUFFIX,
-   GRANT, and applicable dynamic restrictions and effective execution-contract requirements;
-3. only if step 2 permits continuation, determine whether this transition claims branch creation;
-4. validate the branch-creation authorization;
-5. validate the branchId derivation and accept the new branch domain.
-]]></sourcecode></figure>
-
-<t>A <spanx style="verb">BRANCH-SUFFIX(lineageId, A, fromCounter)</spanx> therefore blocks any continuation from domain A at or beyond <spanx style="verb">fromCounter</spanx>, including a
-continuation that attempts to create a new branch domain: the creation transition is evaluated in the predecessor's domain before the new
-<spanx style="verb">branchId</spanx> exists for matching purposes. Branch creation cannot be used to exit a revoked domain.</t>
-
-<t><strong>Backstop (defense in depth).</strong> Beyond the validation order above, <spanx style="verb">LINEAGE-SUFFIX</spanx> remains the escape-resistant cutoff: it strikes every
-branch of the lineage from the selected counter onward, regardless of <spanx style="verb">branchId</spanx>. <spanx style="verb">BRANCH-SUFFIX</spanx> is as strong as the branch-domain creation
-policy; <spanx style="verb">LINEAGE-SUFFIX</spanx> does not depend on it.</t>
-
-<t><strong>Nested fan-out and the ancestry trade-off.</strong> By default a nested continuation inside an existing branch domain inherits the same <spanx style="verb">branchId</spanx>,
-and its children remain part of the same revocation domain — this is intentional:</t>
-
-<figure><sourcecode type="text"><![CDATA[
-branchId = A
- ├── child 1: branchId = A
- └── child 2: branchId = A
-]]></sourcecode></figure>
-
-<t>A profile MAY allow an <em>authorized</em> nested continuation to create fresh branch domains:</t>
-
-<figure><sourcecode type="text"><![CDATA[
-branchId = A
- ├── child C: branchId = C   (authorized creation)
- └── child D: branchId = D   (authorized creation)
-]]></sourcecode></figure>
-
-<t>The PCA still carries only the current <spanx style="verb">branchId</spanx>. The base profile MUST NOT require a <spanx style="verb">parentBranchId</spanx> field, a branch ancestry array, or a
-growing path. The base representation therefore keeps PCA state constant-size and directly supports revocation of the currently propagated
-branch domain; it does not carry recursive branch ancestry. When an authorized nested continuation creates a new branch domain, causal
-ancestry between the old and new branch identifiers requires authenticated historical resolution if revocation must cross that boundary —
-exactly as historical selectors require resolution into native cutoffs (Section 4). The derived <spanx style="verb">branchId</spanx> helps here: it commits to the
-digest of its creation-point PCA (its <spanx style="verb">previousPcaHash</spanx>). Proving that a new branch domain was created from an earlier one requires
-authenticating <strong>both</strong> the branch-creation PCA and its predecessor — or an authenticated record that binds <spanx style="verb">creationPCA.previousPcaHash</spanx> to
-the predecessor's <spanx style="verb">branchId</spanx> — and verifying:</t>
-
-<figure><sourcecode type="text"><![CDATA[
-creationPCA.previousPcaHash == H(predecessorPCA)
-predecessorPCA.branchId     == claimedParentBranchId
-creationPCA.branchId        == H( "PIC-Branch-v0" || creationPCA.previousPcaHash || creationPCA.branchCreationNonce )
-]]></sourcecode></figure>
-
-<t>An authenticated historical-index record MAY replace transport of the complete predecessor PCA only when it cryptographically binds
-<spanx style="verb">creationPCA.previousPcaHash</spanx>, <spanx style="verb">claimedParentBranchId</spanx>, <spanx style="verb">creationPCA.branchId</spanx>, and <spanx style="verb">creationPCA.branchCreationNonce</spanx> or its authenticated
-commitment. Complete-chain transport is not required, and recursive ancestry remains external and optional.</t>
+<t>Possession or knowledge of a selector value MUST NOT authorize revocation. For example, knowledge of a grant identifier, PCA ID, key
+identifier, issuer identifier, or position is not a revocation credential.</t>
 
 </section>
-</section>
-<section anchor="revocation-strategies"><name>Revocation Strategies</name>
+<section anchor="historical-selector-resolution"><name>Historical Selector Resolution</name>
 
-<t>This section is non-normative and illustrative. It shows the revocation targets expressible with PIC coordinates. The requirements these
-strategies must satisfy are normative in Sections 4 and 5: coordinates, authorization constraints, witness rules, materialization rules,
-monotonicity, and revocation-state requirements are already normative. The complete interoperable revocation-object format, its
-serialization, distribution endpoints, and status-retrieval protocol are defined by a later revision. All examples share one minimal format:</t>
-
-<figure><sourcecode type="json"><![CDATA[
-{
-  "type": "PIC-Revocation-v0",
-  "strategy": "…",
-  "target": { "…": "…" },
-  "issuedAt": "2026-07-18T10:00:00Z",
-  "issuer": "did:example:revocation-authority"
-}
-]]></sourcecode></figure>
-
-<t>The <spanx style="verb">proof</spanx> field is omitted for brevity. A valid revocation is signed by an authorized authority (Section 5.1); an object signed by an
-unauthorized party has no effect.</t>
-
-<section anchor="native-causal-revocations"><name>Native Causal Revocations</name>
-
-<t>These strategies are directly enforceable from the propagated coordinates in the received transition once the applicable authenticated and
-sufficiently fresh revocation state is available. Whole-lineage revocation is the degenerate suffix from the origin:
-<spanx style="verb">LINEAGE(lineageId) = LINEAGE-SUFFIX(lineageId, 0)</spanx>.</t>
-
-<t><strong><spanx style="verb">LINEAGE-SUFFIX</spanx></strong> — a position and everything causally after it.</t>
+<t>When a selector refers to historical evidence that is not present in every descendant continuity state, a profile that wants causal
+retroactive effect MUST resolve that selector to an authenticated affected position:</t>
 
 <figure><sourcecode type="text"><![CDATA[
-lineageId L,  fromCounter = 42
-
-PCA0 … PCA41 -> PCA42 -> PCA43 -> …
- keep  keep     X        X
+KEY / DELEGATE / ATTESTATION / ISSUER / other selector
+        |
+        v
+authenticated affected position
+        |
+        v
+(PCA ID, fromPosition)
 ]]></sourcecode></figure>
 
-<figure><sourcecode type="json"><![CDATA[
-{
-  "type": "PIC-Revocation-v0",
-  "strategy": "LINEAGE-SUFFIX",
-  "target": { "lineageId": "L1", "fromCounter": 42 },
-  "issuedAt": "2026-07-18T10:00:00Z",
-  "issuer": "did:example:revocation-authority"
-}
-]]></sourcecode></figure>
+<t>The resolver MUST authenticate the selector occurrence, the PCA ID, the position, the integrity of the evidence used for resolution, and the
+authority to materialize the resulting cutoff.</t>
 
-<figure><sourcecode type="text"><![CDATA[
-reject if:
-  PCA.lineageId == target.lineageId
-  AND PCA.lineageCounter >= target.fromCounter
-]]></sourcecode></figure>
+<t>A bare assertion that a selector occurred at a position MUST NOT be sufficient. A valid position witness MAY be an authenticated settled
+continuity artifact, an authenticated transition extract, an authenticated historical-index record, a checkpoint, a Merkle inclusion proof, a
+succinct proof, or another profile-defined authenticated witness.</t>
 
-<t><strong><spanx style="verb">GRANT</spanx></strong> — every lineage created from one grant.</t>
-
-<figure><sourcecode type="json"><![CDATA[
-{
-  "type": "PIC-Revocation-v0",
-  "strategy": "GRANT",
-  "target": { "grantId": "G1" },
-  "issuedAt": "2026-07-18T10:00:00Z",
-  "issuer": "did:example:grant-authority"
-}
-]]></sourcecode></figure>
-
-<figure><sourcecode type="text"><![CDATA[
-reject if:
-  PCA.grantId == target.grantId
-]]></sourcecode></figure>
-
-<t><strong><spanx style="verb">BRANCH-SUFFIX</spanx></strong> — one branch domain and everything causally after a position, in <strong>branch-capable</strong> profiles (Section 2.4).</t>
-
-<figure><sourcecode type="json"><![CDATA[
-{
-  "type": "PIC-Revocation-v0",
-  "strategy": "BRANCH-SUFFIX",
-  "target": {
-    "lineageId": "L1",
-    "branchId": "base64url-hash-value",
-    "fromCounter": 101
-  },
-  "issuedAt": "2026-07-18T10:00:00Z",
-  "issuer": "did:example:revocation-authority"
-}
-]]></sourcecode></figure>
-
-<figure><sourcecode type="text"><![CDATA[
-reject if:
-  PCA.lineageId          == target.lineageId
-  AND PCA.branchId       == target.branchId
-  AND PCA.lineageCounter >= target.fromCounter
-]]></sourcecode></figure>
-
-<t><spanx style="verb">LINEAGE-SUFFIX</spanx> revokes every branch of a lineage from a counter onward; <spanx style="verb">BRANCH-SUFFIX</spanx> revokes only the matching branch domain from a
-counter onward.</t>
-
-<figure><sourcecode type="text"><![CDATA[
-PCA100
- ├── PCA101-A  branchId=A   revoked by BRANCH-SUFFIX(L, A, 101)
- └── PCA101-B  branchId=B   remains valid
-]]></sourcecode></figure>
-
-<t>The root branch domain is directly targetable: its <spanx style="verb">branchId</spanx> is the derived <spanx style="verb">rootBranchId = H("PIC-Root-Branch-v0" || lineageId)</spanx>
-(Section 2.4), so <spanx style="verb">BRANCH-SUFFIX(lineageId, rootBranchId, fromCounter)</spanx> is a well-formed target like any other branch domain.</t>
-
-</section>
-<section anchor="identity-and-evidence-selectors"><name>Identity and Evidence Selectors</name>
-
-<t>These target <strong>hop-local evidence</strong> — a key, a delegate, an attestation, or a historical issuer. They have direct effect while the element is
-<em>presented</em>; they are not automatically retroactive over descendants that no longer carry it. Reaching those descendants is Section 4.</t>
-
-<figure><sourcecode type="text"><![CDATA[
-KEY          reject when the revoked verification method is present in the received transition
-DELEGATE     reject when the revoked executor is present in the received transition
-ATTESTATION  reject when the revoked attestation is presented as conformance evidence
-ISSUER       direct only if originIssuer or an equivalent propagated binding is available
-]]></sourcecode></figure>
-
-<t>When <spanx style="verb">originIssuer</spanx> is propagated (Section 2.1), issuer revocation is a <strong>direct, persistent</strong> selector — <spanx style="verb">PCA.originIssuer ==
-target.issuerId</spanx> — not hop-local. When it is not propagated, <spanx style="verb">ISSUER</spanx> is a historical selector and must be resolved into
-<spanx style="verb">LINEAGE-SUFFIX(lineageId, 0)</spanx> for the issuer's known lineages (Section 4).</t>
-
-<t><strong>Why "presented only".</strong> In the incremental profile a Verifier holds only the immediate transition — the predecessor and the current PCA:</t>
-
-<figure><sourcecode type="text"><![CDATA[
-+----------------+      |      +----------------+      |      +----------------+
-|  EXECUTOR n-1  |------|----->|   EXECUTOR n   |------|----->|  EXECUTOR n+1  |
-+----------------+      |      +----------------+      |      +----------------+
-      hop n-1                       hop n                        hop n+1
-]]></sourcecode></figure>
-
-<t>If Bob signs <spanx style="verb">PCA1</spanx>:</t>
-
-<figure><sourcecode type="text"><![CDATA[
-PCA0 --Alice--> PCA1 --Bob--> PCA2 --Carol--> PCA3 --Dave-->
-
-verifier at hop 2 sees [PCA0, PCA1] : Bob is current
-verifier at hop 3 sees [PCA1, PCA2] : Bob is predecessor
-verifier at hop 4 sees [PCA2, PCA3] : Bob is no longer visible
-]]></sourcecode></figure>
-
-<t>So a selector revocation has three reaches:</t>
-
-<figure><sourcecode type="text"><![CDATA[
-PREVENTIVE          the revoked party can no longer produce a newly accepted hop
-IN-TRANSIT          a transition carrying the revoked evidence (current or predecessor) is rejected
-CAUSAL-RETROACTIVE  existing descendants are invalidated only after the historical position
-                    is converted into a lineage cutoff (Section 4)
-]]></sourcecode></figure>
+<t>For a compromised-key revocation, a position witness authenticated only by the compromised key MUST NOT be sufficient evidence that the
+position was accepted into the continuity. The revocation authority MUST require corroboration independent of the revoked key, such as an
+authenticated index, a trusted validator record, a checkpoint, or another profile-defined proof.</t>
 
 </section>
 <section anchor="dynamic-restrictions"><name>Dynamic Restrictions</name>
 
-<t>These restrict <em>effective</em> authority without rewriting the signed chain. <spanx style="verb">AUTHORITY</spanx> removes operations; <spanx style="verb">EXECUTION-CONTRACT</spanx> restricts who
-or what may continue.</t>
+<t>A profile MAY define dynamic authority or execution-contract restrictions. Such restrictions are evaluated as external authenticated state
+against the presented PCA ID, position, and optional selectors.</t>
 
-<figure><sourcecode type="text"><![CDATA[
-signed operations    = { READ, WRITE }
-active restrictions  = { remove WRITE }
-effective operations = { READ }
-]]></sourcecode></figure>
+<t>Dynamic restrictions MUST be monotonic: they may only make effective authority or execution conformance equally or more restrictive. They
+MUST NOT rewrite the signed root PIC PCA JWT, mutate historical transitions, alter predecessor uniqueness, replace Proof of Relationship, or
+expand authority.</t>
 
-<t>A restriction may be scoped to a lineage suffix or a whole grant:</t>
-
-<figure><sourcecode type="json"><![CDATA[
-{ "strategy": "AUTHORITY", "target": { "lineageId": "L1", "fromCounter": 42, "operations": ["WRITE"] } }
-]]></sourcecode></figure>
-
-<figure><sourcecode type="json"><![CDATA[
-{ "strategy": "AUTHORITY", "target": { "grantId": "G1", "operations": ["WRITE"] } }
-]]></sourcecode></figure>
-
-<t>The normative rules for scope, matching, effective authority, and the empty case are in Section 5.2.</t>
-
-</section>
-<section anchor="retrospective-annotation"><name>Retrospective Annotation</name>
-
-<t><strong><spanx style="verb">AUDIT-RANGE</spanx></strong> marks a historical interval as compromised, for audit or incident response. It is <em>not</em> a forward-validity rule:</t>
-
-<figure><sourcecode type="text"><![CDATA[
-PCA0 -> PCA1 -> PCA2 -> PCA3 -> PCA4 -> PCA5
-                 [ affected incident interval ]
-]]></sourcecode></figure>
-
-<t>By Lemma 1 of the paper a PCA's validity is the composition of Proofs of Relationship back to PCA0, so no valid suffix can stand above an
-invalid segment. The forward consequence of flagging an interval from counter <spanx style="verb">k</spanx> is therefore <spanx style="verb">LINEAGE-SUFFIX(fromCounter = k)</spanx>.</t>
-
-</section>
-<section anchor="summary"><name>Summary</name>
-
-<texttable>
-      <ttcol align='left'>Category</ttcol>
-      <ttcol align='left'>Strategies</ttcol>
-      <ttcol align='left'>Direct meaning</ttcol>
-      <c>Native causal revocation</c>
-      <c><spanx style="verb">LINEAGE-SUFFIX</spanx>, <spanx style="verb">BRANCH-SUFFIX</spanx>, <spanx style="verb">GRANT</spanx></c>
-      <c>Directly enforceable from propagated execution coordinates and authenticated revocation state</c>
-      <c>Persistent issuer revocation</c>
-      <c>direct <spanx style="verb">ORIGIN-ISSUER</spanx>, when <spanx style="verb">originIssuer</spanx> is propagated</c>
-      <c>Directly enforceable from the propagated origin binding</c>
-      <c>Identity/evidence selector</c>
-      <c><spanx style="verb">KEY</spanx>, <spanx style="verb">DELEGATE</spanx>, <spanx style="verb">ATTESTATION</spanx>, resolved <spanx style="verb">ISSUER</spanx></c>
-      <c>Blocks presented evidence; historical causal effect requires authenticated resolution and authorized suffix materialization</c>
-      <c>Dynamic restriction</c>
-      <c><spanx style="verb">AUTHORITY</spanx>, <spanx style="verb">EXECUTION-CONTRACT</spanx></c>
-      <c>Restricts effective authority or conformance without rewriting the signed chain</c>
-      <c>Retrospective annotation</c>
-      <c><spanx style="verb">AUDIT-RANGE</spanx></c>
-      <c>Marks a historical incident interval; forward invalidity is represented by a suffix cutoff</c>
-</texttable>
+<t>The profile MUST define restriction scope, composition, conflict resolution, freshness, rollback protection, and unavailable-state behavior.</t>
 
 </section>
 </section>
-<section anchor="making-selectors-causal"><name>Making Selectors Causal</name>
-
-<t>This section is normative. It defines how an identity/evidence selector (Section 3.2) becomes causal cutoffs that reach descendants no longer
-carrying the evidence:</t>
-
-<figure><sourcecode type="text"><![CDATA[
-KEY / DELEGATE / ATTESTATION / ISSUER
-        |  authenticated historical resolution
-        v
-affected execution positions:
-
-    (lineageId, counter)
-    or, when branchId is authenticated:
-    (lineageId, branchId, counter)
-        |
-        v
-authorized native cutoff materialization:
-
-    LINEAGE-SUFFIX  or  BRANCH-SUFFIX
-        |
-        v
-O(1) downstream verification in lineage length
-]]></sourcecode></figure>
-
-<t>Historical resolution produces authenticated execution coordinates. A lineage-only position materializes <spanx style="verb">LINEAGE-SUFFIX</spanx>. A position that
-also carries an authenticated <spanx style="verb">branchId</spanx> MAY materialize <spanx style="verb">BRANCH-SUFFIX</spanx> when branch-selective revocation is authorized. The resolver falls
-back to <spanx style="verb">LINEAGE-SUFFIX</spanx> when branch identity is unavailable, unauthenticated, or when the entire causal future must be revoked.
-<spanx style="verb">LINEAGE-SUFFIX</spanx> crosses branch-domain changes; <spanx style="verb">BRANCH-SUFFIX</spanx> affects only the matching <spanx style="verb">branchId</spanx>.</t>
-
-<t>The ordinary incremental revocation check remains O(1) in lineage length, assuming the applicable revocation state is already authenticated
-and indexed. O(1) does not include network retrieval, revocation-state synchronization, historical resolution, batch generation, witness
-construction, or index construction. After materialization, the downstream check of <spanx style="verb">LINEAGE-SUFFIX</spanx>, <spanx style="verb">BRANCH-SUFFIX</spanx>, <spanx style="verb">GRANT</spanx>, and indexed
-restrictions is O(1) in lineage length.</t>
-
-<t>Three checks are kept separate throughout this section:</t>
-
-<figure><sourcecode type="text"><![CDATA[
-Position authenticity:       Did the selector actually occur at this lineage position?
-Cutoff authorization:        Is this authority allowed to invalidate the causal future?
-Native suffix verification:  Does the current PCA match the authorized lineage and counter cutoff?
-]]></sourcecode></figure>
-
-<t>A key controller is not, by that fact alone, a lineage revocation authority.</t>
-
-<section anchor="position-witness"><name>Position Witness</name>
-
-<t>A position is proven by a <strong>position witness</strong>; a bare <spanx style="verb">(lineageId, atCounter)</spanx> assertion is not a witness. When a position must be proven, a
-valid position witness MUST be one of: a complete signed PCA, an authenticated PCA extract, a snapshot attestation, an authenticated
-historical-index record, a Merkle inclusion proof against an authenticated commitment, or a succinct proof. The base illustrative form is a
-complete PCA or an authenticated extract:</t>
-
-<figure><sourcecode type="json"><![CDATA[
-{
-  "lineageId": "L1",
-  "atCounter": 7,
-  "positionWitness": {
-    "type": "SignedPCAExtract",
-    "pcaHash": "sha256:…",
-    "signedFields": {
-      "lineageId": "L1",
-      "lineageCounter": 7,
-      "branchId": "sha256:…",
-      "executor": "did:example:bob",
-      "verificationMethod": "did:example:bob#key-1"
-    },
-    "issuer": "did:example:bob",
-    "proof": { "…": "signature or authenticated inclusion proof" }
-  }
-}
-]]></sourcecode></figure>
-
-<t>The witness MUST cryptographically bind the selector, the <spanx style="verb">lineageId</spanx>, the <spanx style="verb">lineageCounter</spanx>, the PCA content or digest, the witness issuer,
-and its own integrity. The Verifier or materializer MUST verify that <spanx style="verb">witness.lineageId == position.lineageId</spanx>, <spanx style="verb">witness.lineageCounter ==
-position.atCounter</spanx>, the witness selector equals the revoked selector, the witness cryptographic integrity is valid, and the witness belongs
-to the claimed PCA or authenticated history. A hash accompanied by unauthenticated fields MUST NOT be accepted.</t>
-
-<t><strong>Branch binding.</strong> When a position witness is used to materialize <spanx style="verb">BRANCH-SUFFIX</spanx>, the witness MUST also cryptographically bind the
-<spanx style="verb">branchId</spanx> carried by the historical PCA at that position, and the Verifier or materializer MUST additionally verify <spanx style="verb">witness.branchId ==
-position.branchId</spanx>. A bare assertion that a known historical position belonged to a given branch domain MUST NOT be sufficient; the witness
-MUST prove that the selector occurred at the claimed position, that the position belonged to the claimed lineage, that it carried the claimed
-<spanx style="verb">branchId</spanx>, and that it belongs to the authenticated PCA or authenticated history. <spanx style="verb">branchId</spanx> is OPTIONAL in a position witness that supports
-only <spanx style="verb">LINEAGE-SUFFIX</spanx>, and mandatory when the result is <spanx style="verb">BRANCH-SUFFIX</spanx>.</t>
-
-<t><strong>Extract integrity.</strong> A <spanx style="verb">SignedPCAExtract</spanx> is not an arbitrary new object signed by the historical executor. It MUST be one of: a selective
-disclosure of fields covered by the original PCA signature, a proof derived from the original signed PCA, or an authenticated extract issued
-by a trusted historical index or snapshot authority. A <spanx style="verb">SignedPCAExtract</spanx> MUST prove that the disclosed fields were covered by the original
-PCA authentication; a new signature over reconstructed fields is not, by itself, proof that those fields appeared in the historical PCA. This
-rule applies even when the signing key is not compromised.</t>
-
-<t><strong>Compromised-key corroboration.</strong> For a <spanx style="verb">KEY</spanx> revocation caused by actual or suspected compromise, a position witness authenticated only by
-the revoked key MUST NOT be sufficient evidence that the claimed position was accepted into the lineage: an attacker controlling the
-compromised key could fabricate a PCA or <spanx style="verb">SignedPCAExtract</spanx> that claims an arbitrary <spanx style="verb">lineageId</spanx> and counter. Such a witness MUST be
-corroborated by evidence independent of the revoked key:</t>
-
-<figure><sourcecode type="text"><![CDATA[
-the valid successor PCA that references the claimed PCA through previousPcaHash,
-    where the successor is not authenticated solely by the compromised key
-an authenticated historical position index
-an authenticated snapshot or checkpoint
-a transparency-log inclusion proof
-an attestation from an independently trusted materialization authority
-an equivalent independent cryptographic proof
-]]></sourcecode></figure>
-
-<t>The simplest causal corroboration is <spanx style="verb">PCA[k+1].previousPcaHash == H(PCA[k])</spanx>. Corroboration proves that the claimed position was <em>accepted
-into the lineage</em> — whether the acceptance was caused by the legitimate holder or by the compromise adversary; in both cases the position is
-real and its causal future warrants the cutoff. Corroboration does not, and need not, prove that the position predates the compromise; that
-distinction requires trusted time (Section 5.5), not corroboration. It prevents cutoffs rooted in positions that were never part of the
-lineage at all.</t>
-
-<t>Independent corroboration is not universally mandatory. In the <strong>key-compromise case</strong> above it is mandatory. In the <strong>ordinary executor
-self-position case</strong>, an uncompromised executor proving its own current position to revoke its continuations MAY use its complete signed PCA
-or authenticated extract when the applicable policy recognizes that executor and its key as currently valid. In the <strong>delegate and
-attestation cases</strong>, a self-contained signed witness MAY be sufficient only when the signing key is not the evidence being treated as
-compromised, the profile accepts that issuer as authoritative for the claim, and the witness is cryptographically bound to the authenticated
-lineage. The selected profile MUST define the required independence assumptions.</t>
-
-</section>
-<section anchor="cutoff-authorization"><name>Cutoff Authorization</name>
-
-<t>Every derived cutoff requires two independent proofs:</t>
-
-<figure><sourcecode type="text"><![CDATA[
-1. POSITION AUTHENTICITY  — the selector actually appeared in the named lineage at the stated counter (Section 4.1)
-2. CUTOFF AUTHORIZATION    — the party materializing the suffix is authorized to invalidate the causal future from that position
-]]></sourcecode></figure>
-
-<t>The base profile MUST use the conservative model:</t>
-
-<figure><sourcecode type="text"><![CDATA[
-identity/evidence revocation
-  -> authenticated historical resolution
-  -> authorized lineage or grant authority
-  -> materialized LINEAGE-SUFFIX
-]]></sourcecode></figure>
-
-<t><strong>Conservative model (base).</strong> The final <spanx style="verb">LINEAGE-SUFFIX</spanx> is authorized directly by the lineage or grant authority. A position witness is
-RECOMMENDED as evidence <em>during</em> historical resolution and MAY be omitted from the final suffix object when the authorized materializing
-authority has independently established the position; that authority MUST NOT issue a cutoff from an untrusted or unauthenticated position
-assertion. The downstream Verifier checks the authorization and target of the resulting native <spanx style="verb">LINEAGE-SUFFIX</spanx> and does not need to
-re-evaluate the historical selector witness. The controller of a revoked key is <strong>not</strong> automatically a lineage revocation authority.</t>
-
-<t><strong>Advanced evidence-authority model.</strong> A profile MAY explicitly authorize a key controller, delegate authority, attestation issuer, or
-equivalent evidence authority to invalidate suffixes rooted in proven uses of the revoked evidence. Then a valid position witness MUST
-accompany or be cryptographically referenced by every derived cutoff, the witness MUST prove that the revoked selector appeared in the
-claimed lineage at the claimed counter, and the profile MUST explicitly define why that evidence authority is also authorized to invalidate
-the resulting causal suffix.</t>
-
-<t>In short: a position witness is <strong>mandatory</strong> when the authority to create the cutoff is derived from the proven historical use itself; it is
-<strong>recommended, but need not be carried in the final suffix record</strong>, when an independently authorized lineage or grant authority materializes
-the cutoff. The provenance of cutoff authorization MUST NOT be left implicit.</t>
-
-</section>
-<section anchor="known-positions"><name>Known Positions</name>
-
-<t>A selector MAY carry a bounded set of <spanx style="verb">knownPositions</spanx>. <spanx style="verb">knownPositions</spanx> MUST be OPTIONAL, MUST be bounded by the profile, MUST be used only
-for small sets, and MUST NOT be an unbounded array. Each entry MUST be authenticated or resolved through an authenticated process; an inline
-or referenced <spanx style="verb">positionWitness</spanx> (Section 4.1) MUST be present when the selected authorization model requires it (Section 4.2). Each authorized
-and verified position implies, by default:</t>
-
-<figure><sourcecode type="text"><![CDATA[
-LINEAGE-SUFFIX(lineageId = position.lineageId, fromCounter = position.atCounter)
-]]></sourcecode></figure>
-
-<t>When <spanx style="verb">position.branchId</spanx> is cryptographically authenticated, branch-selective materialization is supported by the profile, and the
-materializing authority is authorized to revoke that branch domain, the position MAY instead imply:</t>
-
-<figure><sourcecode type="text"><![CDATA[
-BRANCH-SUFFIX(lineageId = position.lineageId, branchId = position.branchId, fromCounter = position.atCounter)
-]]></sourcecode></figure>
-
-<t><spanx style="verb">LINEAGE-SUFFIX</spanx> is used when <spanx style="verb">branchId</spanx> is absent, unauthenticated, or unknown, or when every branch of the lineage must be invalidated;
-<spanx style="verb">BRANCH-SUFFIX</spanx> is used only when <spanx style="verb">branchId</spanx> is authenticated and the cutoff is intentionally limited to the selected branch domain. A bare or
-unauthenticated <spanx style="verb">branchId</spanx> MUST NOT justify branch-selective materialization. The position-witness requirements of Section 4.1 (including the
-branch binding for <spanx style="verb">BRANCH-SUFFIX</spanx>) and the cutoff-authorization requirements of Section 4.2 apply unchanged.</t>
-
-<t>Large sets MUST instead be published as separate <spanx style="verb">LINEAGE-SUFFIX</spanx> records, separate <spanx style="verb">BRANCH-SUFFIX</spanx> records, an authenticated paginable batch,
-or an authenticated revocation feed, depending on the authenticated coordinates and authorized scope of each position.</t>
-
-</section>
-<section anchor="historical-position-index"><name>Historical Position Index</name>
-
-<t>A deployment that needs retroactive causal revocation SHOULD keep a minimal index mapping a selector to the positions where it occurred:</t>
-
-<figure><sourcecode type="text"><![CDATA[
-bob#key-1
-  -> (L1, 1)
-  -> (L8, 27)
-  -> (L9, 4)
-]]></sourcecode></figure>
-
-<t>which yields <spanx style="verb">LINEAGE-SUFFIX(L1, 1)</spanx>, <spanx style="verb">LINEAGE-SUFFIX(L8, 27)</spanx>, <spanx style="verb">LINEAGE-SUFFIX(L9, 4)</spanx>. The index MUST be authenticated, MUST bind the
-selector to the position, and MUST have verifiable integrity; an unauthenticated log MUST NOT be treated as sufficient. It MAY be used to
-generate position witnesses. A deployment intending branch-selective materialization SHOULD also record the authenticated <spanx style="verb">branchId</spanx> of each
-position; an index that does not record it supports only lineage-wide cutoffs, because Section 4.1 requires an authenticated branch binding
-for <spanx style="verb">BRANCH-SUFFIX</spanx> materialization. It is not the full-chain profile, does not require keeping all PCA bytes, and keeps the ordinary
-downstream path O(1) after materialization. Retention, access control, and privacy are responsibilities of the deployment or the applicable profile.</t>
-
-</section>
-<section anchor="not-carrying-full-history"><name>Not Carrying Full History</name>
-
-<t>The base incremental profile does not require each PCA to carry the complete list of historical executors, keys, or attestations. Doing so
-would cause unbounded growth, larger messages and signatures, correlation, duplicate data, and complex canonicalization. A future extension
-MAY instead use a cryptographic accumulator, a Merkle proof, an authenticated index, a transparency log, a snapshot commitment, or a succinct
-proof to show historical membership without transporting a full array.</t>
-
-</section>
-</section>
-<section anchor="revocation-authorization-and-state"><name>Revocation Authorization and State</name>
+<section anchor="revocation-authorization"><name>Revocation Authorization</name>
 
 <t>This section is normative.</t>
 
-<section anchor="who-may-revoke"><name>Who May Revoke</name>
+<t>Every accepted revocation or dynamic restriction MUST be authenticated by an authorized revocation authority. A matching target coordinate is
+necessary for targeting but never sufficient for authorization.</t>
 
-<t>A revocation takes effect only if signed by an authorized issuer; an unauthorized object has no effect. There MUST be a <strong>verifiable
-binding</strong> between the revoker and the target — listing who may revoke is not enough, and the binding MUST be provable to the Verifier that
-receives the revocation.</t>
+<t>A profile MUST define how each revocation authority is proven. Possible authorities include:</t>
 
 <texttable>
       <ttcol align='left'>Revoker</ttcol>
-      <ttcol align='left'>May revoke</ttcol>
-      <ttcol align='left'>Binding proven by</ttcol>
-      <c>The origin issuer</c>
-      <c>its own lineage</c>
-      <c><spanx style="verb">AuthorizedLineageRevoker(lineageId, revocation.issuer, revocation.proof)</spanx></c>
-      <c>An executor at counter <spanx style="verb">k</spanx></c>
-      <c><spanx style="verb">fromCounter = k+1</spanx> (its own future); <spanx style="verb">fromCounter = k</spanx> only if policy allows</c>
-      <c>its own signed PCA or extract, or an authenticated index</c>
-      <c>The branch-domain creator</c>
-      <c>the branch it created, after its creation point</c>
-      <c>the branch-creation PCA as position witness + proven authority-continuity with the creator (Section 5.1)</c>
-      <c>The grant authority</c>
-      <c>the grant and its contract terms</c>
-      <c><spanx style="verb">AuthorizedGrantRevoker(grantId, issuer)</spanx></c>
-      <c>The key controller</c>
-      <c>that key</c>
-      <c>control of the verification method</c>
-      <c>The attestation issuer</c>
-      <c>that attestation</c>
-      <c>the attestation's issuer signature</c>
+      <ttcol align='left'>Scope</ttcol>
+      <ttcol align='left'>Required proof</ttcol>
+      <c>Root authority or PCA issuer</c>
+      <c>the PCA ID it is authorized to administer</c>
+      <c>profile-defined issuer authorization and revocation proof</c>
+      <c>Grant authority</c>
+      <c>continuities bound to that grant</c>
+      <c>authenticated grant binding and grant-authority proof</c>
+      <c>Origin issuer</c>
+      <c>continuities whose profile authenticates that issuer binding</c>
+      <c>issuer revocation authority proof</c>
+      <c>Executor at position <spanx style="verb">k</spanx></c>
+      <c>its own future, as permitted by policy</c>
+      <c>authenticated position proof and policy authority</c>
+      <c>Evidence authority</c>
+      <c>uses of a key, delegate, attestation, or issuer selector</c>
+      <c>selector proof plus authority to materialize a causal cutoff</c>
+      <c>Policy authority</c>
+      <c>dynamic policy or restriction state</c>
+      <c>authenticated policy authority proof</c>
 </texttable>
 
-<t><strong>Origin-issuer authorization.</strong> For the direct origin case, <spanx style="verb">AuthorizedLineageRevoker</spanx> requires both <spanx style="verb">revocation.issuer == PCA.originIssuer</spanx>
-and a <spanx style="verb">revocation.proof</spanx> that validates under a currently authorized revocation method for that origin issuer. An identifier match without a
-valid proof MUST NOT authorize revocation.</t>
+<t>An executor at position <spanx style="verb">k</spanx> MUST NOT revoke a position upstream of itself unless it separately holds root, grant, issuer, or other
+profile-defined revocation authority. A policy MAY allow an executor to revoke its own future from <spanx style="verb">k+1</spanx>, or from <spanx style="verb">k</spanx> when the current
+position itself must be invalidated.</t>
 
-<t><strong>Counter semantics.</strong> <spanx style="verb">fromCounter = k</spanx> revokes hop <spanx style="verb">k</spanx> <em>and</em> its future; <spanx style="verb">fromCounter = k+1</spanx> keeps hop <spanx style="verb">k</spanx> valid and blocks every
-continuation. An executor at counter <spanx style="verb">k</spanx> MUST NOT revoke a position upstream of itself unless it separately holds the origin, grant, or
-revocation authority, and its position MUST be proven by a position witness, a validated PCA, an authenticated historical index, a snapshot
-attestation, or an equivalent cryptographic proof — never by an unproven claim of "its position in the chain".</t>
-
-<t><strong>Executor self-position.</strong> An executor requesting revocation of its own continuations normally already holds the simplest valid evidence:
-the PCA it produced. It MAY prove its position by presenting its complete signed PCA, or an authenticated extract carrying the <spanx style="verb">lineageId</spanx>,
-<spanx style="verb">lineageCounter</spanx>, executor identity, and verification method. The proof MUST establish that the PCA is valid, that it belongs to the claimed
-lineage, that it carries the claimed counter, and that the revocation issuer controls the executor identity or signing method bound to it:</t>
-
-<figure><sourcecode type="json"><![CDATA[
-{
-  "type": "ExecutorPositionWitness",
-  "pca": {
-    "lineageId": "L1",
-    "lineageCounter": 42,
-    "proofOfRelationship": { "executor": "did:example:bob" },
-    "proof": { "verificationMethod": "did:example:bob#key-1", "signature": "…" }
-  }
-}
-]]></sourcecode></figure>
-
-<t>No external historical index or registry is required in this case; an authenticated index, snapshot, or equivalent proof remains valid when
-the original PCA is unavailable, or when another authority materializes the cutoff.</t>
-
-<t><strong>Grant revocation.</strong> A <spanx style="verb">GRANT</spanx> revocation MUST be accepted only when the Verifier can establish <spanx style="verb">AuthorizedGrantRevoker(target.grantId,
-revocation.issuer)</spanx>. The profile MUST define how this predicate is proven — for example a signed grant credential, a grant-authority field
-committed in PCA0, an authenticated grant registry, or a profile-defined grant commitment. Possession or knowledge of a <spanx style="verb">grantId</spanx> alone MUST
-NOT authorize its revocation.</t>
-
-<t><strong>Branch revocation.</strong> A <spanx style="verb">BRANCH-SUFFIX</spanx> MUST be accepted only when the revocation issuer is authorized to revoke the targeted branch domain,
-expressed as <spanx style="verb">AuthorizedBranchRevoker(lineageId, branchId, fromCounter, revocationIssuer, revocationProof)</spanx>. The profile MUST define how this
-binding is proven; possible authorities are the origin issuer (when policy grants branch-wide authority), the grant authority, the
-branch-domain creator, or an explicitly delegated branch revocation authority. Proof of branch creation consists of the branch-creation PCA
-itself: a valid PCA whose <spanx style="verb">branchId</spanx> correctly derives from its <spanx style="verb">previousPcaHash</spanx> and <spanx style="verb">branchCreationNonce</spanx>, whose signature verifies under
-the creator's key, and which carries valid branch-creation authorization (Section 2.4), serving as the position witness.</t>
-
-<t>Current control of the exact historical signing key is not the only permitted proof. The revocation issuer MUST prove continuity with the
-identity or authority that issued the branch-creation PCA, which MAY be established by current control of the original signing key, an
-authenticated key-rotation or key-successor proof accepted by the profile, a current verification method bound to the same executor identity,
-or an equivalent profile-defined authority-continuity proof. The proof MUST preserve continuity with the branch-domain creator. The nonce
-proves only that <spanx style="verb">branchId</spanx> was correctly derived from this creation transition; it proves nothing about who was authorized to perform it.
-Knowledge of <spanx style="verb">lineageId</spanx>, <spanx style="verb">branchId</spanx>, <spanx style="verb">branchCreationNonce</spanx>, or <spanx style="verb">fromCounter</spanx> MUST NOT by itself authorize branch revocation.</t>
+<t>Grant revocation MUST be accepted only when the Verifier can establish that the revocation issuer is authorized for the grant. Possession or
+knowledge of a grant identifier alone MUST NOT authorize revocation.</t>
 
 </section>
-<section anchor="dynamic-restriction-requirements"><name>Dynamic Restriction Requirements</name>
+<section anchor="revocation-state"><name>Revocation State</name>
 
-<t>A profile that supports dynamic restrictions MUST define the predicate <spanx style="verb">ApplicableRestriction(restriction, PCA, verificationContext)</spanx>,
-together with the restriction target syntax, the matching rules, the scope, the precedence, the authority of the restriction issuer, the
-composition of multiple restrictions, and the behavior on conflict. The minimal scopes are <spanx style="verb">lineageId</spanx>, <spanx style="verb">lineageId + fromCounter</spanx>, <spanx style="verb">grantId</spanx>,
-<spanx style="verb">originIssuer</spanx> (when supported), and resource or tenant in a resource-aware profile. A branch-capable profile that supports dynamic
-restrictions MUST additionally support <spanx style="verb">lineageId + branchId</spanx>, and SHOULD support <spanx style="verb">lineageId + branchId + fromCounter</spanx> for restrictions that
-begin at a specific causal position within the selected branch domain.</t>
+<t>This section is normative.</t>
 
-<t><strong><spanx style="verb">AUTHORITY</spanx>.</strong> Effective authority subtracts applicable restrictions from the signed authority:</t>
-
-<figure><sourcecode type="text"><![CDATA[
-effectiveAuthority(PCA) = signedAuthority(PCA) − ApplicableAuthorityRestrictions(PCA)
-]]></sourcecode></figure>
-
-<t>Non-expansion still compares the <em>signed</em> state — <spanx style="verb">signedAuthority(current) &lt;= signedAuthority(predecessor)</spanx> — so a PCA signed before a
-restriction does not become malformed; a PCA already attenuated to <spanx style="verb">{READ}</spanx> continues normally after <spanx style="verb">WRITE</spanx> is revoked. The concrete
-operation is authorized against <spanx style="verb">effectiveAuthority(current)</spanx>, downstream of chain validation, never as an input to the non-expansion check.
-When <spanx style="verb">effectiveAuthority</spanx> is <strong>empty</strong>, the base behavior is: the chain may remain cryptographically and semantically valid but authorizes no
-operation. A profile MAY require the hop to be rejected when effective authority is empty, but MUST declare this explicitly.</t>
-
-<t><strong><spanx style="verb">EXECUTION-CONTRACT</spanx>.</strong> The effective contract combines the signed contract with applicable restrictions; the profile MUST define the
-composition operator and the restrictiveness order.</t>
-
-<figure><sourcecode type="text"><![CDATA[
-signed executionModel = { deterministic, agentic }
-restriction removes   = { agentic }
-effective model       = { deterministic }
-]]></sourcecode></figure>
-
-<t>An agentic executor is rejected; a deterministic one may continue.</t>
-
-<t><strong>Branch-scoped restrictions.</strong> In a branch-capable profile a restriction MAY be scoped to a branch domain. It applies when:</t>
-
-<figure><sourcecode type="text"><![CDATA[
-PCA.lineageId    == restriction.target.lineageId
-AND PCA.branchId == restriction.target.branchId
-AND ( restriction.target.fromCounter is absent
-      OR PCA.lineageCounter >= restriction.target.fromCounter )
-]]></sourcecode></figure>
-
-<t>matching consistently with <spanx style="verb">ApplicableRestriction</spanx>. Both <spanx style="verb">AUTHORITY</spanx> and <spanx style="verb">EXECUTION-CONTRACT</spanx> MAY be branch-scoped:</t>
-
-<figure><sourcecode type="json"><![CDATA[
-{ "strategy": "AUTHORITY", "target": { "lineageId": "L1", "branchId": "B1", "fromCounter": 42, "operations": ["WRITE"] } }
-]]></sourcecode></figure>
-
-<figure><sourcecode type="json"><![CDATA[
-{ "strategy": "EXECUTION-CONTRACT", "target": { "lineageId": "L1", "branchId": "B1", "fromCounter": 42, "remove": { "executionModel": ["agentic"] } } }
-]]></sourcecode></figure>
-
-<t>The <spanx style="verb">remove</spanx> wrapper makes the restriction direction explicit: the named execution model is removed from the effective execution contract,
-not declared as allowed. (<spanx style="verb">AUTHORITY</spanx> needs no wrapper: its <spanx style="verb">operations</spanx> are, by definition, the values removed from effective authority.)</t>
-
-<t>The scopes differ in effect:</t>
-
-<figure><sourcecode type="text"><![CDATA[
-BRANCH-SUFFIX                     invalidates the selected branch domain from a position onward
-branch-scoped AUTHORITY           removes selected operations from the effective authority of the branch domain
-branch-scoped EXECUTION-CONTRACT  restricts which executors, environments, or execution models may continue
-                                  within the branch domain
-]]></sourcecode></figure>
-
-<t>Branch-scoped restrictions obey the same authorization, authentication, freshness, rollback-protection, composition, conflict-resolution,
-monotonicity, and availability requirements as all other dynamic restrictions. A branch-scoped restriction MUST NOT expand signed authority,
-modify the signed PCA, alter Proof of Relationship, alter predecessor uniqueness, or affect sibling branch domains carrying a different
-<spanx style="verb">branchId</spanx>. It is applied to effective authority or effective conformance only; signed-state non-expansion MUST continue to compare the
-signed current and predecessor states, not the dynamically restricted effective state.</t>
-
-<t><strong>Branch creation and restriction inheritance.</strong> When a transition creates a new branch domain, all restrictions applicable to the
-predecessor domain MUST be evaluated before branch creation, under the anti-escape validation order of Section 2.4. A branch-scoped
-restriction may therefore prevent the continuation itself, the use of an operation the transition requires, the selected executor or
-execution model, or the creation of a new branch domain, when the applicable effective authority or execution contract no longer permits it.</t>
-
-<t>A newly created branch domain carries a new <spanx style="verb">branchId</spanx>, so a restriction scoped only to the predecessor <spanx style="verb">branchId</spanx> does not automatically
-match the new domain after the branch-creation transition has been validly accepted. To restrict the new branch domain, the restriction MUST
-be materialized for the new <spanx style="verb">branchId</spanx>, expressed at lineage scope, expressed at grant scope, or inherited through an explicit
-profile-defined rule. Any profile-defined inheritance rule MUST be explicit, authenticated, deterministic, and monotonic, and MUST avoid
-introducing implicit or unbounded branch ancestry; the base profile SHOULD NOT imply recursive restriction inheritance across branch-domain
-changes. Branch-domain scope, lineage-wide scope, and grant-wide scope remain distinct, and sibling branches carrying a different <spanx style="verb">branchId</spanx>
-remain unaffected by a branch-scoped restriction unless another applicable lineage-, grant-, or sibling-specific restriction matches them.</t>
-
-<t>Unlike <spanx style="verb">BRANCH-SUFFIX</spanx>, which categorically rejects a matching creation transition under the anti-escape validation order of Section 2.4, a
-branch-scoped dynamic restriction affects branch creation through the resulting effective authority or effective execution contract. It may
-therefore prevent the transition when the restricted operation, executor, environment, execution model, or branch-creation permission is no
-longer allowed. If the creation transition remains permitted and is validly accepted, the new domain does not automatically inherit a
-restriction scoped only to the predecessor <spanx style="verb">branchId</spanx>, unless the restriction is separately materialized for the new <spanx style="verb">branchId</spanx> or inherited
-through an explicit profile-defined rule. This asymmetry is intentional: it follows from the selected restriction scope and from the absence
-of recursive branch ancestry in the base profile.</t>
-
-</section>
-<section anchor="monotonicity"><name>Monotonicity</name>
-
-<t>Security revocations and restrictions applied to an existing lineage or grant MUST be append-only and MUST become only equally or more
-restrictive over time:</t>
-
-<figure><sourcecode type="text"><![CDATA[
-effectiveRestrictions(t + 1) is at least as restrictive as effectiveRestrictions(t)
-]]></sourcecode></figure>
-
-<t>under the profile-defined restriction order. A relaxation MUST require a new grant, a new PCA0, and a new lineage. It MUST NOT be implemented
-by deleting an existing revocation, replaying an older revocation view, replacing the active state with a less restrictive state, or silently
-un-revoking an existing lineage. A temporary operational suspension MAY be defined by a separate profile, but it MUST NOT weaken or remove a
-security revocation.</t>
-
-</section>
-<section anchor="revocation-state-and-availability"><name>Revocation State and Availability</name>
-
-<t>Revocation state is append-only and identified by a monotonic version or commitment; it MAY be pulled by the Verifier or stapled by the
-Prover. A profile MUST specify how the revocation view is authenticated, how freshness is determined, who defines the minimum acceptable
-version and how that minimum is authenticated, how rollback is detected, and what happens when revocation state is unavailable. For
-unavailability the profile MUST choose one explicitly defined behavior — for example <strong>fail closed</strong>, accept only a fresh stapled proof,
-accept within a bounded offline window, or another explicitly defined behavior.</t>
-
-<ul empty="true"><li>
-  <t>Short per-hop expiry bounds the interval in which a newly issued revocation may not yet have reached a Verifier, but does not eliminate
-that interval.</t>
-</li></ul>
-
-</section>
-<section anchor="trusted-time-and-key-compromise"><name>Trusted Time and Key Compromise</name>
-
-<t>A self-declared <spanx style="verb">issuedAt</spanx> timestamp cannot prove that a signature was created before key compromise. Known historical positions are
-converted into suffix revocations (Section 4). Unknown or newly forged positions are blocked by the direct key-status check when the key is
-presented (Section 3.2), not by previously enumerated suffixes. A position witness offered as evidence for a compromised key MUST be
-corroborated by evidence independent of the revoked key (Section 4.1); such corroboration establishes that the position was accepted into the
-lineage, not that it predates the compromise. A future extension MAY use a trusted timestamp, a transparency log, hardware monotonic time, or
-forward-secure signatures.</t>
-
-</section>
-<section anchor="limitations"><name>Limitations</name>
+<t>Revocation state is external, authenticated, and append-only. A profile MUST specify:</t>
 
 <t><list style="symbols">
-  <t><strong>Branch domains.</strong> Branch-domain revocation is supported through one fixed-size derived <spanx style="verb">branchId</spanx> (Section 2.4). The base profile does
-not carry recursive branch ancestry. When an authorized nested continuation creates a new branch domain, causal ancestry between the old
-and new branch identifiers requires authenticated historical resolution if revocation must cross that boundary. Nested children that inherit
-the same <spanx style="verb">branchId</spanx> are intentionally revoked as one branch domain. <spanx style="verb">BRANCH-SUFFIX</spanx> is as strong as the branch-domain creation policy;
-<spanx style="verb">LINEAGE-SUFFIX</spanx> strikes every branch of the matching lineage from the selected counter onward and remains the escape-resistant cutoff.
-Sibling branches with different <spanx style="verb">branchId</spanx> values are not struck by a <spanx style="verb">BRANCH-SUFFIX</spanx>.</t>
-  <t><strong>Domain aliasing.</strong> An authorized successor that deliberately reuses another sibling's branch-creation nonce at the same fan-out point
-obtains the same <spanx style="verb">branchId</spanx> and thereby joins that sibling's branch domain, accepting its shared revocation fate. This is voluntary domain
-sharing, not a forgery: it requires branch-creation authorization and the same creation point, and harming the co-domain sibling still
-requires a separately authorized revocation of the shared domain. Deployments that need strict per-successor isolation should rely on
-per-branch authorization policy or <spanx style="verb">LINEAGE-SUFFIX</spanx> granularity.</t>
-  <t><strong>Restriction scope across domain creation.</strong> A dynamic restriction scoped only to one <spanx style="verb">branchId</spanx> does not automatically match descendants
-of a newly created branch domain. The creation transition remains subject to that restriction while it is evaluated in the predecessor
-domain and may be rejected when the resulting effective authority or execution contract does not permit it. If the transition is validly
-accepted, descendants in the new domain are not subject to the predecessor-domain restriction unless it is materialized for the new
-<spanx style="verb">branchId</spanx>, expressed at lineage or grant scope, or inherited through an explicit profile-defined rule (Section 5.2). This does not mean the
-new domain regains authority: it may still be constrained by signed attenuation, lineage-scoped restrictions, grant-scoped restrictions,
-other branch-specific restrictions, and execution-contract restrictions. Issuers that intend a restriction to cover the causal future across
-authorized domain changes SHOULD use lineage or grant scope, or define explicit authenticated inheritance.</t>
-  <t><strong>Privacy.</strong> In the incremental profile, historical executor identities do not travel with the lineage: a Verifier sees the identities and
-evidence of the <em>presented</em> transition — the current executor identity, the immediate predecessor identity, and the current transition
-evidence — together with the persistent execution coordinates the profile requires; older executor identities are not carried by default.
-<spanx style="verb">lineageId</spanx>, <spanx style="verb">grantId</spanx>, <spanx style="verb">originIssuer</spanx> (when propagated), and <spanx style="verb">branchId</spanx> (in branch-capable profiles) remain persistent correlators. A
-profile with unlinkability requirements MUST define a privacy-preserving representation or lookup mechanism without weakening revocation
-matching (for example pairwise or blinded identifiers, per-segment commitments, privacy-preserving lookup, or selective disclosure).
-Uniqueness is not mathematically absolute: the derived construction makes intentional cross-branch collision require a hash collision and
-makes accidental collision negligible under the selected security level, and copying a <spanx style="verb">branchCreationNonce</spanx> to a different creation point
-yields a different <spanx style="verb">branchId</spanx> (deliberate reuse at the <em>same</em> creation point is the domain-aliasing case above).</t>
-  <t><strong>Incremental visibility.</strong> Direct <spanx style="verb">KEY</spanx>, <spanx style="verb">DELEGATE</spanx>, and <spanx style="verb">ATTESTATION</spanx> see only the evidence in the received transition (Section 3.2);
-reaching the past requires Section 4.</t>
+  <t>how revocation state is authenticated;</t>
+  <t>how freshness is determined;</t>
+  <t>how rollback is detected;</t>
+  <t>who defines the minimum acceptable revocation-state version;</t>
+  <t>how that minimum is authenticated;</t>
+  <t>what happens when required revocation state is unavailable.</t>
 </list></t>
 
-</section>
-</section>
-<section anchor="counter-capacity"><name>Counter Capacity</name>
+<t>Unavailable-state behavior MUST be explicit. Examples include fail closed, accept only a fresh stapled proof, accept within a bounded offline
+window, or another profile-defined behavior.</t>
 
-<t>This appendix is non-normative. Exhausting <spanx style="verb">lineageCounter</spanx> requires completing that many <em>causal</em> hops on one path:</t>
+<t>Security revocations and restrictions applied to a PCA ID, position, grant, selector, or policy scope MUST be append-only and MUST become
+only equally or more restrictive over time:</t>
 
 <figure><sourcecode type="text"><![CDATA[
-secondsToOverflow = (2^64 − 1 − currentCounter) / R
-    where R = maximum accepted hops per second on one lineage path
+effectiveRevocationState(t + 1) is at least as restrictive as effectiveRevocationState(t)
+]]></sourcecode></figure>
+
+<t>A relaxation MUST require a new grant, a new trusted root authority context, a new PCA ID, or another profile-defined re-origination
+mechanism. It MUST NOT be implemented by deleting an existing revocation, replaying an older revocation view, replacing active state with
+less restrictive state, or silently un-revoking an existing cutoff.</t>
+
+</section>
+<section anchor="future-branch-capable-profiles"><name>Future Branch-Capable Profiles</name>
+
+<t>This section is non-normative.</t>
+
+<t>PIC can support branch-capable revocation in a future or separate profile, but branch-domain machinery is not part of the current
+centralized Profile 0.2 base coordinate. This document therefore does not define branch-domain fields, branch-suffix strategies,
+branch-creation evidence, parent branch ancestry, or branch-domain escape rules for Profile 0.2.</t>
+
+<t>A future branch-capable profile would need to define bounded authenticated branch coordinates, branch-creation authorization, anti-escape
+validation order, branch-selective cutoff authorization, historical resolution rules, and privacy properties. Those details are intentionally
+out of scope for this revision.</t>
+
+</section>
+<section anchor="position-capacity"><name>Position Capacity</name>
+
+<t>This appendix is non-normative. If a profile represents continuity position with a finite integer domain, exhausting that domain requires
+completing that many causal advancements on one path:</t>
+
+<figure><sourcecode type="text"><![CDATA[
+secondsToOverflow = (2^64 - 1 - currentPosition) / R
+    where R = maximum accepted advancements per second on one continuity path
 ]]></sourcecode></figure>
 
 <t>Each path is causally sequential; fan-out permits several paths but does not parallelize one path. A concrete <spanx style="verb">R</spanx> depends on hardware,
-network, and application logic and is not fixed here. Under any realistic per-lineage rate a <spanx style="verb">uint64</spanx> counter is practically inexhaustible,
-though a profile that wants the mathematically unbounded case MAY use a CBOR bignum. The normative point is only the one in Section 2.3:
-overflow and wraparound are rejected.</t>
-
-<t>The following values are approximate and illustrative, taken at <spanx style="verb">currentCounter = 0</spanx> on one causally sequential path and rounded:</t>
-
-<texttable>
-      <ttcol align='right'>Accepted hops per second on one path</ttcol>
-      <ttcol align='right'>Approximate time to exhaustion</ttcol>
-      <c>1</c>
-      <c>about 584 billion years</c>
-      <c>1,000</c>
-      <c>about 584 million years</c>
-      <c>1,000,000</c>
-      <c>about 584 thousand years</c>
-      <c>1,000,000,000</c>
-      <c>about 584 years</c>
-</texttable>
-
-<t>Even under extremely aggressive illustrative rates, the exhaustion horizon remains operationally remote. The table communicates scale, not a
-performance claim, and the rates are not deployment benchmarks.</t>
-
-<t>The propagated coordinates support the native predicates: <spanx style="verb">lineageId</spanx> and <spanx style="verb">lineageCounter</spanx> support lineage cutoffs, <spanx style="verb">branchId</spanx> supports
-branch-domain cutoffs, and <spanx style="verb">grantId</spanx> supports grant-wide revocation. A frontier accumulator remains an <em>optional</em> extension for membership
-proofs and cryptographic audit of the prefix.</t>
+network, and application logic and is not fixed here. Under any realistic per-path rate a <spanx style="verb">uint64</spanx> position is practically inexhaustible,
+though a profile that wants the mathematically unbounded case MAY use an unbounded integer encoding. The normative point is only that
+overflow and wraparound are rejected when the selected representation can overflow.</t>
 
 </section>
 <section anchor="contributors"><name>Contributors</name>
@@ -1268,15 +487,17 @@ Acknowledgements), which are incorporated into this specification by reference.<
   <t><strong>D.</strong> Acknowledgements,</t>
 </list></t>
 
-<t>are maintained in a single canonical document, the <strong><eref target="https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-legal.md">PIC Legal Appendices</eref></strong> (<spanx style="verb">draft/0.2/pic-legal.md</spanx>), and are
+<t>are maintained in a single canonical document, the
+<strong><eref target="https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-legal.md">PIC Legal Appendices</eref></strong> (<spanx style="verb">draft/0.2/pic-legal.md</spanx>), and are
 <strong>incorporated into this specification by reference</strong> as if fully set forth herein.</t>
 
 <t>In case of conflict between this document and the PIC Legal Appendices, the PIC Legal Appendices prevail for legal, governance, licensing,
 and attribution matters.</t>
 
-<t>This specification is subordinate to the <eref target="https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-spec.md">PIC Specification</eref>, which defines the normative semantics of the PIC Model and is
-the entry point of the specification set. This document does not introduce new conceptual authority, invariants, or authorship claims beyond
-those defined in the PIC Legal Appendices.</t>
+<t>This specification is subordinate to the
+<eref target="https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-spec.md">PIC Specification</eref>, which defines the normative semantics of the
+PIC Model and is the entry point of the specification set. This document does not introduce new conceptual authority, invariants, or
+authorship claims beyond those defined in the PIC Legal Appendices.</t>
 
 </section>
 <section anchor="references"><name>References</name>
@@ -1304,481 +525,156 @@ those defined in the PIC Legal Appendices.</t>
   </back>
 
 <!-- ##markdown-source:
-H4sIAAAAAAAAA829W3cb17Uu+F6/YrXyYAIuQCItX0J2shuiaJsjsqTWJU62
-hjsoAEWyogIKu6ogCom8Rx7Pc3ce+/n8sPySnte15qoqUEqOT++jYUskUJd1
-mWtevznnZDJJ2qIt81N37/nluXuRv6uWWVtUm3tJtljU+buBL1bVcpOt4ZZt
-sZzU/ovJg5MEfsqvq3p/6orNVZUU2/rUbapNnjS7xbpoGris3W9z/HqVb3P4
-a9MmTZttVn/KSrju1O3zJmnWWd3+6T92VZs3p+4qK5s82Ran7k1bLVPXVHVb
-51cN/LRf4w8/JSt47ak7eXDy1eTB15Pjb5Ik27U3VX2aODeBd8FTnk7dd1lZ
-VvCJczz8p8WyKjPzcVVf46dtXbnZdVEW7d69nNbTckrf5uusKGE6dNf0Gu/6
-PzZ4ccbXTpfVOkk2Vb2G5XgHz//rzwmugv19AuuNf8GitPmfHlfL3RpW4E8v
-26zdNUkyHj+vqz/ny/Z0PHa47PArzLkqwzfux3zRFDBduOLN7e3tFDdhK5dN
-YQY/Hd207bY5vX9/6Nv7I3iUvhef0d/D8fj3eY07hV8/mJ64o8d1dtXaGx0P
-mEa5W5TF0tElcMXlpsVdXbnXDQ3xUheg2mSlg312F++3eV3gUzKaFt7f3OQr
-vNrs4Hh8sSraqj5qRviN3St3NLRHOL6XbX6b1Su+YWAb4YpqVy958a6L9ma3
-wF27b1eJfmm2+fL+Cud0H1bgfmeR8NvpehVW+qOPWpTV4j7Qz+ajDx0Z+pgt
-ql37p1c3ReNJJUl+62TRZNHdP/72d/e0al2Gu7JZwfzH4+S3cB3e6Fa6ZfBz
-trHnrty7Vf4uL6stbBe+vbgqeCxuq5vissZt4TC66sq1N3lEk7SbOKcW/odL
-F/t40WEEvOzwUle0jaurMscHvozeJXs2pSFftu4GroDZu0Web1y2qrZtvkod
-DLmqG/wp28LyvsOfqtoMFN6OA7y8ePVt6i5f0N+zR6l78e25Y0qCD14+g78u
-zlP34xfw1/nTc7jqGSzH5WN497fVDlYPx0SPzjZ7V8Eja9fIsjYTWS9aTzhM
-2ab4i9yw25R5AyvsSmBFtXvHJ8jl77ewUQWuNTwF2Bk/8rZocj/hgucLmwNj
-TfFfPET1Jm/9hsqAYBdg2Qo4SLdV/RbWNF/jxuBI8YNic+2u62q3xav9oN2i
-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
-8OBY8ctPGSteN0r+P/72LnlMDwEA
+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
+SwAA
 
 -->
 

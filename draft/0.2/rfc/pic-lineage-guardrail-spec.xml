@@ -32,33 +32,33 @@
     <abstract>
 
 
-<?line 71?>
+<?line 86?>
 
 <t>This document is the <strong>PIC Sandboxed Execution Specification</strong>, a subordinate specification of the
 <eref target="https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-spec.md">PIC Specification</eref>. It retains its historical repository
 filename (<spanx style="verb">pic-lineage-guardrail-spec.md</spanx>).</t>
 
-<t>A <strong>Multi-Lineage Execution</strong> carries one or more independent PIC lineages together for one proposed transition. When such a transition must
-be validated and controlled by configured policy, that control is itself an execution — and PIC governs it the way it governs any other: as
-a lineage.</t>
+<t>A <strong>Composition Collection</strong> carries one or more independent PIC continuities together for one proposed transition. When such a transition
+must be validated and controlled by configured policy, that control is itself an execution, and PIC governs it the way it governs any other
+execution: as a continuity.</t>
 
-<t>A <strong>Sandboxed Execution</strong> places the Multi-Lineage Execution inside an ordinary outer PIC lineage. Each <strong>guardrail</strong> is a normal executor
-of that outer lineage: it verifies the outer continuation, verifies every carried inner lineage, applies the enforcement function, and — on
-permit — proves the next ordinary outer PCA.</t>
+<t>A <strong>Sandboxed Execution</strong> places the Composition Collection inside an ordinary outer PIC continuity. Each <strong>guardrail</strong> is a normal executor
+of that outer continuity: it verifies the outer continuity state, verifies every member continuity, applies the enforcement function, and —
+on permit — produces the next ordinary continuity advancement.</t>
 
-<t>No new PCA type is introduced, no trusted sandbox, and no external guardrail authority. The outer lineage is identified only by the
-operation <spanx style="verb">ENFORCE</spanx> and by one signed profile field, <spanx style="verb">multiLineage</spanx>, that carries the inner execution. The construction is recursive: a
-carried lineage may itself be a Sandboxed Execution.</t>
+<t>No new continuity primitive is introduced, no trusted sandbox, and no external guardrail authority. The outer continuity is identified by the
+operation <spanx style="verb">ENFORCE</spanx> and by a profile-defined authenticated binding to the exact Composition Collection being evaluated. The construction is
+recursive: a member continuity may itself be a Sandboxed Execution.</t>
 
 <ul empty="true"><li>
   <t>A Sandboxed Execution is PIC applied recursively: an outer PIC execution carries and governs an inner PIC execution.</t>
 </li></ul>
 
-<t>Guardrails build on the PCA format of the
+<t>Guardrails build on the continuity semantics of the
 <eref target="https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-prover-verifier-spec.md">PIC Prover and Verifier Specification</eref> and are
 consistent with the <eref target="https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-revocation-spec.md">PIC Revocation Specification</eref>;
-they do not alter Proof of Relationship, non-expansion, or the rule that every PCA continues exactly one predecessor. In case of conflict,
-the <strong>PIC Specification</strong> is authoritative.</t>
+they do not alter Proof of Relationship, non-expansion, or the rule that every non-root continuity advancement continues exactly one
+predecessor. In case of conflict, the <strong>PIC Specification</strong> is authoritative.</t>
 
 
 
@@ -82,8 +82,8 @@ the <strong>PIC Specification</strong> is authoritative.</t>
 <strong>Steward:</strong> Nitro Agility S.r.l.
 <strong>Source:</strong> <eref target="https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-lineage-guardrail-spec.md">github.com/pic-protocol/pic-spec/draft/0.2/pic-lineage-guardrail-spec.md</eref></t>
 
-<t>This revision defines the <strong>Sandboxed Execution</strong>: PIC applied recursively — an outer PIC lineage that carries and governs an inner
-Multi-Lineage Execution. It introduces no new PCA type and no trusted sandbox.</t>
+<t>This revision defines the <strong>Sandboxed Execution</strong>: PIC applied recursively — an outer PIC continuity that carries and governs an inner
+Composition Collection. It introduces no new continuity artifact type and no trusted sandbox.</t>
 
 
     </note>
@@ -121,10 +121,34 @@ regulatory approval, or standards-body recognition.</t>
     </note>
 
 
-    <note title="Editors">
+    <note title="Work In Progress">
 
 
 <?line 62?>
+
+<ul empty="true"><li>
+  <t><strong>Work in Progress — Experimental Design</strong></t>
+
+  <t>The Sandboxed Execution and Composition Collection model described in this document is under active development.</t>
+
+  <t>This model may change substantially before a later stable revision.</t>
+
+  <t>Implementers MUST NOT assume wire compatibility, semantic compatibility, or backward compatibility with future revisions.</t>
+
+  <t>Future drafts may introduce breaking changes to terminology, data structures, processing rules, profile bindings, and
+interoperability requirements.</t>
+
+  <t>The current text is published for design review, experimentation, and implementation feedback.</t>
+</li></ul>
+
+
+    </note>
+
+
+    <note title="Editors">
+
+
+<?line 77?>
 
 <t><list style="symbols">
   <t><strong>Nicola Gallo</strong> (Nitro Agility S.r.l.) Lead Editor</t>
@@ -138,7 +162,7 @@ regulatory approval, or standards-body recognition.</t>
     <note title="Contributors">
 
 
-<?line 67?>
+<?line 82?>
 
 <t><list style="symbols">
   <t><em>Add your name via pull request (individual or organization) — listing is subject to editor approval (see <xref target="contributors"></xref>).</em></t>
@@ -153,7 +177,7 @@ regulatory approval, or standards-body recognition.</t>
   <middle>
 
 
-<?line 97?>
+<?line 112?>
 
 <section anchor="introduction"><name>Introduction</name>
 
@@ -161,186 +185,189 @@ regulatory approval, or standards-body recognition.</t>
 carries PIC.</t>
 
 <figure><sourcecode type="text"><![CDATA[
-LINEAGE EXECUTION
------------------
-one origin; one predecessor per PCA; non-expansion
+PIC CONTINUITY
+--------------
+one root; one predecessor per non-root advancement; non-expansion
 
-MULTI-LINEAGE EXECUTION
------------------------
-n >= 1 independent Lineage Executions carried together
+COMPOSITION COLLECTION
+----------------------
+n >= 1 independent PIC continuities evaluated together
 
 SANDBOXED EXECUTION
 -------------------
-an outer PIC Lineage Execution carrying a Multi-Lineage Execution
+an outer PIC continuity carrying a Composition Collection
 ]]></sourcecode></figure>
 
 <t>The whole construction reduces to one picture:</t>
 
 <figure><sourcecode type="text"><![CDATA[
 Sandboxed Execution
-    = outer PIC lineage
+    = outer PIC continuity
       carrying
-      inner Multi-Lineage Execution
+      inner Composition Collection
 ]]></sourcecode></figure>
 
-<t>The outer lineage applies PIC recursively to the execution that validates and controls the inner execution.</t>
+<t>The outer continuity applies PIC recursively to the execution that validates and controls the inner execution.</t>
 
-<section anchor="lineage-execution"><name>Lineage Execution</name>
+<section anchor="pic-continuity"><name>PIC Continuity</name>
 
 <ul empty="true"><li>
-  <t>A <strong>Lineage Execution</strong> is a single-origin PIC execution in which every PCA continues exactly one predecessor under PoR, and authority
-remains bounded by the origin authority context.</t>
+  <t>A <strong>PIC Continuity</strong> is a single-root PIC execution in which every non-root continuity advancement continues exactly one predecessor
+under PoR, and authority remains bounded by the root authority context.</t>
 </li></ul>
 
 <t><list style="symbols">
-  <t>one origin, PCA0;</t>
-  <t>every later PCA continues exactly one predecessor, witnessed by PoR;</t>
+  <t>one trusted root authority context;</t>
+  <t>every later continuity advancement continues exactly one predecessor, witnessed by PoR;</t>
   <t>non-expansion at every hop, so authority only narrows;</t>
   <t>no authority is imported from another lineage;</t>
   <t>physical executor behavior is outside the protocol guarantee.</t>
 </list></t>
 
 <figure><sourcecode type="text"><![CDATA[
-PCA0-A { READ, BACKUP }
+root-A { READ, BACKUP }
    |
    | PoR + non-expansion
    v
-PCA1-A { BACKUP }
+transition-A[1] { BACKUP }
    |
    v
 NEXT EXECUTOR
 
-One origin. One predecessor per PCA. Authority only narrows.
+One root. One predecessor per advancement. Authority only narrows.
 ]]></sourcecode></figure>
 
-<t>The construction — PCA format, Prover, Verifier — is defined by the
+<t>The construction — root representation, continuity advancement, Prover, and Verifier — is defined by the
 <eref target="https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-prover-verifier-spec.md">PIC Prover and Verifier Specification</eref>;
 revocation by the <eref target="https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-revocation-spec.md">PIC Revocation Specification</eref>; the
 formal model and proofs by the PIC Model <xref target="references">[1]</xref>. This document restates none of them.</t>
 
 </section>
-<section anchor="multi-lineage-execution"><name>Multi-Lineage Execution</name>
+<section anchor="composition-collection"><name>Composition Collection</name>
 
 <ul empty="true"><li>
-  <t>A <strong>Multi-Lineage Execution</strong> carries one or more independent Lineage Executions together for one proposed transition, without merging
-their authorities.</t>
+  <t>A <strong>Composition Collection</strong> is a bounded collection of one or more independently verifiable PIC continuities evaluated together for one
+sandboxed or enforced execution, without merging their authorities.</t>
 </li></ul>
 
 <t><list style="symbols">
-  <t>it carries <spanx style="verb">n &gt;= 1</spanx> independent PIC lineages;</t>
-  <t>each lineage remains independently verifiable;</t>
+  <t>it carries <spanx style="verb">n &gt;= 1</spanx> independent PIC continuities;</t>
+  <t>each continuity remains independently verifiable;</t>
   <t>it has no combined authority of its own;</t>
-  <t>it is the execution input carried by the <spanx style="verb">multiLineage</spanx> field (Section 2.4).</t>
+  <t>it is the execution input bound to the outer <spanx style="verb">ENFORCE</spanx> advancement (Section 2.4).</t>
 </list></t>
 
 <figure><sourcecode type="text"><![CDATA[
 +========================================+
-| MULTI-LINEAGE EXECUTION                |
+| COMPOSITION COLLECTION                 |
 |                                        |
-| carried lineage A: PCA1-A { BACKUP }   |
-| carried lineage B: PCA0-B { WRITE-S3 } |
+| member continuity A: { BACKUP }        |
+| member continuity B: { WRITE-S3 }      |
 |                                        |
 | authorities remain separate            |
 +========================================+
 
-Distinct lineages, one proposed transition.
+Distinct continuities, one proposed transition.
 ]]></sourcecode></figure>
 
-<t>A <strong>carried lineage</strong> is an independently verifiable PIC lineage representation carried within a Multi-Lineage Execution for joint evaluation
-in one exact proposed transition. A carried lineage is not an execution step, workflow stage, route segment, child lineage, subordinate
-lineage, additional outer predecessor, or authority fragment.</t>
+<t>A <strong>composition member</strong> is an independently verifiable PIC continuity representation carried within a Composition Collection for joint
+evaluation in one exact proposed transition. A composition member is not an execution step, workflow stage, route segment, child continuity,
+subordinate continuity, additional outer predecessor, or authority fragment. In PIC Profile 0.2, each member is represented by an
+independently verifiable PIC Continuity JWT unless a more specific selected profile defines another representation.</t>
 
-<t>The Sandboxed Execution does not execute on or through its carried lineages. It carries and evaluates their joint participation while
-preserving each lineage's independent origin, authority context, predecessor relation, signature, execution contract, and revocation state.</t>
+<t>The Sandboxed Execution does not execute on or through its composition members. It carries and evaluates their joint participation while
+preserving each member's independent root PIC PCA JWT, PCA ID, position, effective authority, execution contract, and revocation
+state.</t>
 
-<t>A Multi-Lineage Execution is structurally composed of <spanx style="verb">carriedLineages</spanx>. The outer Sandboxed Execution remains a separate PIC lineage with
-its own origin, predecessor chain, authority <spanx style="verb">{ ENFORCE }</spanx>, execution contract, continuation, and revocation coordinates. The existence of
-carried lineages motivates the execution being evaluated, but the outer lineage does not derive authority from them.</t>
+<t>A Composition Collection is structurally composed of composition members. The outer Sandboxed Execution remains a separate PIC continuity with
+its own root, predecessor path, authority <spanx style="verb">{ ENFORCE }</spanx>, execution contract, continuation semantics, and revocation coordinates. The
+existence of composition members motivates the execution being evaluated, but the outer continuity does not derive authority from them.</t>
 
-<t>The name <spanx style="verb">carriedLineages</spanx> describes containment and transport within the Multi-Lineage Execution. It does not imply that the outer lineage
-is composed from, descended from, authorized by, or structurally continued from the carried lineages. The outer lineage is originated
-independently by an authorized sandbox origin; the carried lineages define the authenticated execution inputs being evaluated, not the
-authority source of the outer lineage.</t>
+<t>The term "collection member" describes membership in the Composition Collection. It does not imply that the outer continuity is composed
+from, descended from, authorized by, or structurally continued from the composition members. The outer continuity is rooted
+independently by an authorized sandbox origin; the composition members define the authenticated execution inputs being evaluated, not the
+authority source of the outer continuity.</t>
 
-<t>The <spanx style="verb">carriedLineages</spanx> are constitutive of the evaluated inner Multi-Lineage Execution. Without at least one carried lineage, there is no
-Multi-Lineage Execution and therefore no inner execution for this Sandboxed Execution profile to govern. The Sandboxed Execution exists to
-validate and control the proposed joint participation of its <spanx style="verb">carriedLineages</spanx>; in that functional sense, the carried lineages define the
+<t>The collection members are constitutive of the evaluated inner Composition Collection. Without at least one composition member, there is no
+Composition Collection and therefore no inner execution for this Sandboxed Execution profile to govern. The Sandboxed Execution exists to
+validate and control the proposed joint participation of its collection members; in that functional sense, the composition members define the
 subject matter and purpose of the outer execution.</t>
 
-<t>This dependency is semantic and structural, not an authority derivation. The outer lineage is not created from the authority of the carried
-lineages, is not their successor, and is not their union. It is independently originated by an authorized sandbox origin and carries only its
-own authority, <spanx style="verb">{ ENFORCE }</spanx>.</t>
+<t>This dependency is semantic and structural, not an authority derivation. The outer continuity is not created from the authority of the
+composition members, is not their successor, and is not their union. It is independently rooted by an authorized sandbox origin and carries only
+its own authority, <spanx style="verb">{ ENFORCE }</spanx>.</t>
 
 <figure><sourcecode type="text"><![CDATA[
-carriedLineages
-    constitute the inner Multi-Lineage Execution
+collection members
+    constitute the inner Composition Collection
 
-Multi-Lineage Execution
+Composition Collection
     constitutes the execution subject evaluated by the sandbox
 
 authorized sandbox origin
-    independently originates the outer lineage
+    independently roots the outer continuity
 
-outer lineage authority
+outer continuity authority
     remains only { ENFORCE }
 ]]></sourcecode></figure>
 
-<t>Removing all <spanx style="verb">carriedLineages</spanx> removes the execution subject of the Sandboxed Execution; it does not attenuate the outer authority or
-transform the outer lineage into an empty authority container. <spanx style="verb">multiLineage.carriedLineages</spanx> MUST contain at least one element; an empty
-<spanx style="verb">carriedLineages</spanx> array represents no Multi-Lineage Execution to evaluate and MUST be rejected.</t>
+<t>Removing all collection members removes the execution subject of the Sandboxed Execution; it does not attenuate the outer authority or
+transform the outer continuity into an empty authority container. A Composition Collection MUST contain at least one composition member; an
+empty collection-member set represents no Composition Collection to evaluate and MUST be rejected.</t>
 
 </section>
 <section anchor="sandboxed-execution"><name>Sandboxed Execution</name>
 
-<t>A <strong>Sandboxed Execution</strong> is a multi-hop outer PIC execution. Its executors are guardrails, and each guardrail continues exactly one
-predecessor under the ordinary PIC Proof of Relationship rules:</t>
+<t>A <strong>Sandboxed Execution</strong> is a multi-hop outer PIC execution. Its executors are guardrails, and each non-root guardrail advancement continues
+exactly one predecessor under the ordinary PIC Proof of Relationship rules:</t>
 
 <figure><sourcecode type="text"><![CDATA[
 OUTER SANDBOXED EXECUTION
 
 Guardrail n-1
-    produces PCA-G[n-1]
+    produces outer continuity state n-1
           |
-          | PCA-G[n-1] is presented as predecessor
+          | state n-1 is presented as predecessor
           | and verified by Guardrail n
           v
 Guardrail n
     verifies the outer predecessor
-    verifies the carried Multi-Lineage Execution
+    verifies the bound Composition Collection
     applies the enforcement function
-    produces PCA-G[n]
+    produces outer continuity advancement n
           |
-          | PCA-G[n] is presented as predecessor
+          | state n is presented as predecessor
           | and verified by Guardrail n+1
           v
 Guardrail n+1
 ]]></sourcecode></figure>
 
-<t>The guardrails are the executors of the outer Lineage Execution. They are not a parallel guardrail chain and do not use a separate
-continuity model. The executor at outer hop <spanx style="verb">n</spanx> produces <spanx style="verb">PCA-G[n]</spanx>; the executor at hop <spanx style="verb">n+1</spanx> verifies it as its received predecessor.
-Every non-origin PCA continues exactly one predecessor in its own lineage, and inner PCAs are never additional outer predecessors.</t>
+<t>The guardrails are the executors of the outer PIC continuity. They are not a parallel guardrail chain and do not use a separate continuity
+model. The executor at outer position <spanx style="verb">n</spanx> produces the profile-defined outer advancement; the executor at position <spanx style="verb">n+1</spanx> verifies the
+resulting state as its received predecessor. Every non-root advancement continues exactly one predecessor in its own continuity, and
+composition members are never additional outer predecessors.</t>
 
 <t>Each guardrail:</t>
 
 <t><list style="numbers" type="1">
-  <t>receives an ordinary outer PCA carrying <spanx style="verb">multiLineage</spanx>;</t>
+  <t>receives an ordinary outer continuity state bound to a Composition Collection;</t>
   <t>verifies the outer PIC continuation;</t>
-  <t>verifies every carried lineage;</t>
+  <t>verifies every composition member;</t>
   <t>applies the enforcement function;</t>
-  <t>on permit, proves the next ordinary outer PCA;</t>
+  <t>on permit, produces the next ordinary outer continuity advancement;</t>
   <t>on deny, produces no authorizing continuation for that crossing.</t>
 </list></t>
 
 <ul empty="true"><li>
-  <t>A <strong>guardrail</strong> is an executor of a Sandboxed Execution: it verifies the outer continuation, verifies the carried inner execution,
-applies the enforcement function, and, on permit, proves the next ordinary outer PCA.</t>
+  <t>A <strong>guardrail</strong> is an executor of a Sandboxed Execution: it verifies the outer continuation, verifies the bound inner execution,
+applies the enforcement function, and, on permit, produces the next ordinary outer continuity advancement.</t>
 </li></ul>
 
 <t>An execution is sandboxed not because a physical boundary forced guardrail invocation, but because the next conforming guardrail accepts and
-continues only a valid outer PCA.</t>
+continues only valid outer continuity state.</t>
 
 <ul empty="true"><li>
-  <t>The execution is sandboxed because it can continue <strong>as valid PIC state</strong> only through valid guardrail hops of the outer lineage.</t>
+  <t>The execution is sandboxed because it can continue <strong>as valid PIC state</strong> only through valid guardrail advancements of the outer continuity.</t>
 </li></ul>
 
 <t>This specification does not prevent a compromised or non-conforming executor from attempting local physical actions outside the signed
@@ -351,7 +378,7 @@ execution.</t>
 
 <t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
 "OPTIONAL" are to be interpreted as described in BCP 14 <xref target="references">[2]</xref> <xref target="references">[3]</xref> when, and only when, they appear in all capitals
-in normative text. The sections defining <spanx style="verb">multiLineage</spanx>, its canonical binding, sandbox origination, the Guardrail Prover and Verifier
+in normative text. The sections defining Composition Collection binding, its canonical binding, sandbox origination, the Guardrail Prover and Verifier
 profile, the operation profile, Acceptance, Bypass rejection behavior, materializing-guardrail requirements, and Recursion resource limits
 are normative. The Abstract, Introduction, explanatory diagrams, examples, deployment comparisons, the service-mesh explanation, and Security
 Boundary explanations are non-normative unless a requirement is explicitly expressed using BCP 14 keywords.</t>
@@ -364,48 +391,48 @@ Boundary explanations are non-normative unless a requirement is explicitly expre
 
 <figure><sourcecode type="text"><![CDATA[
 outer execution = Sandboxed Execution
-inner execution = Multi-Lineage Execution carried in multiLineage
+inner execution = Composition Collection bound to an ENFORCE advancement
 ]]></sourcecode></figure>
 
-<t>The outer execution is an ordinary Lineage Execution with its own PCA0, authority context, PoR chain, execution contract, continuation, and
-revocation coordinates. Every carried lineage independently has the same PIC structure.</t>
+<t>The outer execution is an ordinary PIC Continuity with its own trusted root, authority context, PoR-governed advancements, execution
+contract, continuation semantics, and revocation coordinates. Every composition member independently has the same PIC continuity structure.</t>
 
-<t>The outer execution does not absorb the inner lineages. It carries them as execution inputs and continues on its own authority, <spanx style="verb">ENFORCE</spanx>.</t>
+<t>The outer execution does not absorb the inner continuities. It carries them as execution inputs and continues on its own authority, <spanx style="verb">ENFORCE</spanx>.</t>
 
 <figure><sourcecode type="text"><![CDATA[
 Outer authority  = ENFORCE
-Inner lineages   = execution inputs carried for evaluation
+Composition members = execution inputs provided for evaluation
 Outer authority != union of inner authorities
 ]]></sourcecode></figure>
 
 </section>
 <section anchor="pic-carrying-pic-pic-of-pic"><name>PIC Carrying PIC (PIC of PIC)</name>
 
-<t>The inner execution is already represented by PIC. The execution that validates and controls it is therefore represented by another
-ordinary PIC lineage. This is PIC carrying PIC — informally, PIC of PIC.</t>
+<t>The inner execution is already represented by PIC. The execution that validates and controls it is therefore represented by another ordinary
+PIC continuity. This is PIC carrying PIC — informally, PIC of PIC.</t>
 
-<t>The guardrail process must itself be controlled, across guardrails not yet known, so the controlled Multi-Lineage Execution becomes the
-signed subject of that outer lineage — and the same construction can be nested again.</t>
+<t>The guardrail process must itself be controlled, across guardrails not yet known, so the controlled Composition Collection becomes the
+authenticated subject of that outer continuity — and the same construction can be nested again.</t>
 
 <figure><sourcecode type="text"><![CDATA[
-OUTER PIC LINEAGE
-PCA-G[n]
+OUTER PIC CONTINUITY STATE
+position n
 |
-+-- invariants.operations: [ENFORCE]
++-- materialized authority: [ENFORCE]
 +-- executionContract: required next-guardrail properties
-+-- multiLineage:
++-- authenticated Composition Collection binding
     |
-    +-- CARRIED PIC LINEAGE A
-    +-- CARRIED PIC LINEAGE B
+    +-- member PIC continuity A
+    +-- member PIC continuity B
     +-- ...
 ]]></sourcecode></figure>
 
 <figure><sourcecode type="text"><![CDATA[
-PCA-G[n-1] --> PCA-G[n] --> PCA-G[n+1]
-                   |
-                   +-- multiLineage
-                         |
-                         +-- independently verified carried lineages
+state n-1 --> advancement n --> state n --> advancement n+1
+                                |
+                                +-- exact Composition Collection binding
+                                      |
+                                      +-- independently verified member continuities
 ]]></sourcecode></figure>
 
 <ul empty="true"><li>
@@ -413,186 +440,188 @@ PCA-G[n-1] --> PCA-G[n] --> PCA-G[n+1]
 </li></ul>
 
 </section>
-<section anchor="recursive-multi-lineage-safety"><name>Recursive Multi-Lineage Safety</name>
+<section anchor="recursive-composition-collection-safety"><name>Recursive Composition Collection Safety</name>
 
-<t>Ordinary PIC prevents authority originating in one Lineage Execution from being represented as a valid continuation of another. Multi-Lineage
-Execution preserves this property by carrying independently valid lineages as separate carried lineages rather than creating their authority
+<t>Ordinary PIC prevents authority originating in one PIC Continuity from being represented as a valid continuation of another. Composition Collection
+Execution preserves this property by carrying independently valid continuities as separate composition members rather than creating their authority
 union.</t>
 
-<t>Sandboxed Execution applies PIC recursively to the process that evaluates their joint participation. The outer lineage carries only
-<spanx style="verb">ENFORCE</spanx>; every carried lineage retains its own origin authority.</t>
+<t>Sandboxed Execution applies PIC recursively to the process that evaluates their joint participation. The outer continuity carries only
+<spanx style="verb">ENFORCE</spanx>; every composition member retains its own root-bounded authority.</t>
 
 <figure><sourcecode type="text"><![CDATA[
 OUTER SANDBOXED EXECUTION
 authority: { ENFORCE }
 |
-+-- multiLineage
++-- Composition Collection
     |
-    +-- CARRIED LINEAGE A
-    |   origin: A
+    +-- COMPOSITION MEMBER A
+    |   root: A
     |   authority: { READ-ALL }
     |
-    +-- CARRIED LINEAGE B
-        origin: B
+    +-- COMPOSITION MEMBER B
+        root: B
         authority: { BACKUP }
 
 No authority union is created.
 ]]></sourcecode></figure>
 
-<t>Policy may permit carried lineage A and carried lineage B to participate in one concrete transition. Policy does not create
-<spanx style="verb">{ READ-ALL, BACKUP }</spanx> as a new lineage authority. Both of the following are rejected by ordinary PIC origin binding and non-expansion:</t>
+<t>Policy may permit composition member A and composition member B to participate in one concrete transition. Policy does not create
+<spanx style="verb">{ READ-ALL, BACKUP }</spanx> as a new continuity authority. Both of the following are rejected by ordinary PIC origin binding and non-expansion:</t>
 
 <figure><sourcecode type="text"><![CDATA[
 invalid outer authority:
 { ENFORCE, READ-ALL, BACKUP }
 
-invalid carried lineage B successor:
+invalid composition member B advancement:
 { BACKUP, READ-ALL }
 ]]></sourcecode></figure>
 
 <t>PIC eliminates cross-lineage authority composition from valid PIC state. Sandboxed Execution recursively protects the decision that
-determines whether independently valid lineages may participate in one exact transition.</t>
+determines whether independently valid continuities may participate in one exact transition.</t>
 
-<t>At every recursive level, the local lineage preserves its own origin-bounded authority, while nested executions are treated only as
+<t>At every recursive level, the local continuity preserves its own root-bounded authority, while nested executions are treated only as
 independently verified execution inputs.</t>
 
 <t>This is a guarantee about valid and accepted PIC state. It does not prove that a compromised executor cannot perform an unauthorized physical
 action locally.</t>
 
 </section>
-<section anchor="the-multilineage-pca-profile-field"><name>The <spanx style="verb">multiLineage</spanx> PCA Profile Field</name>
+<section anchor="composition-collection-binding"><name>Composition Collection Binding</name>
 
-<t><spanx style="verb">multiLineage</spanx> is a signed profile extension of an ordinary PCA, in the same extension style as the revocation coordinates of the
-<eref target="https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-revocation-spec.md">PIC Revocation Specification</eref>, Section 2. It carries
-one Multi-Lineage Execution; inside it, <spanx style="verb">carriedLineages</spanx> is the bounded list of independently verifiable PIC inputs.</t>
+<t>An ENFORCE advancement in a Sandboxed Execution MUST cryptographically bind the exact Composition Collection that the guardrail evaluated.
+This document uses <strong>Composition Collection</strong> and <strong>Composition Collection commitment</strong> as semantic names for that bound object and
+commitment. Their wire location, canonicalization, and serialization are defined by the selected Sandboxed Execution profile; they are not
+generic mandatory fields of every PIC Continuity JWT.</t>
 
-<figure><sourcecode type="json"><![CDATA[
-{
-  "multiLineage": {
-    "carriedLineages": [
-      {
-        "pca": { "...": "ordinary signed PCA" },
-        "predecessor": { "...": "when required by the selected validation profile" },
-        "role": "... authenticated, attested, or profile-derived ..."
-      }
-    ],
-    "context": {
-      "destination": "...",
-      "requestSetDigest": "sha256:...",
-      "payloadDigest": "sha256:...",
-      "freshness": "..."
-    }
-  }
-}
+<t>The bound Composition Collection carries one bounded list of independently verifiable PIC continuity inputs. In PIC Profile 0.2, each
+composition member is represented as a PIC Continuity JWT unless a more specific selected profile defines another independently verifiable
+representation.</t>
+
+<t>The following is a non-normative semantic view, not a wire schema and not a set of generic PIC Continuity JWT member names:</t>
+
+<figure><sourcecode type="text"><![CDATA[
+Composition Collection
+  members:
+    - continuity: <profile-defined independently verifiable PIC continuity representation>
+      role: <authenticated, attested, or profile-derived>
+  context:
+    destination: ...
+    requestSetDigest: sha256:...
+    payloadDigest: sha256:...
+    freshness: ...
 ]]></sourcecode></figure>
 
 <t>Semantics:</t>
 
 <t><list style="symbols">
-  <t>the whole <spanx style="verb">multiLineage</spanx> field is covered by the outer PCA's ordinary single signature;</t>
-  <t>every carried lineage is an ordinary PIC PCA, or the profile-selected proof representation of one;</t>
-  <t>each carried lineage keeps its own origin, predecessor relation, authority context, and revocation coordinates;</t>
-  <t>carried lineages are never merged;</t>
+  <t>the exact Composition Collection is authenticated or cryptographically bound by the outer continuity advancement representing the
+ENFORCE crossing;</t>
+  <t>every composition member is independently verifiable under its own selected PIC continuity representation;</t>
+  <t>each composition member keeps its own root, predecessor relation, authority context, and revocation coordinates;</t>
+  <t>composition members are never merged;</t>
   <t>the list is bounded by the profile;</t>
-  <t>a carried lineage MAY itself contain <spanx style="verb">multiLineage</spanx>; recursion has no special terminal depth in the model;</t>
+  <t>a composition member MAY itself be a Sandboxed Execution; recursion has no special terminal depth in the model;</t>
   <t>implementations MAY impose resource and maximum-depth limits; these are implementation and profile limits, not PIC-semantic changes.</t>
 </list></t>
 
-<t>The term <spanx style="verb">carriedLineages</spanx> does not require the complete historical chain to be embedded; the selected validation profile determines the
-independently verifiable representation carried for each lineage.</t>
+<t>The term "collection member" does not require the complete historical path to be embedded; the selected validation profile determines the
+independently verifiable representation for each member continuity.</t>
 
-<t><spanx style="verb">multiLineage</spanx> MUST NOT alter <spanx style="verb">previousPcaHash</spanx>, create additional predecessors, enter <spanx style="verb">invariants.operations</spanx>, import authority from its
-carried lineages, or replace PoR, any carried lineage's signature, or any carried lineage's validation.</t>
+<t>The Composition Collection binding MUST NOT alter the outer predecessor reference, create additional predecessors, enter the outer authority
+domain, import authority from composition members, or replace PoR, any composition member's authentication, or any composition member's validation.</t>
 
-<t>Exactness. The outer request binding commits to the complete presented <spanx style="verb">multiLineage</spanx>. The Verifier reconstructs the carried-lineage set and
-context from the presented objects and recomputes every supplied digest; an added, removed, or substituted carried lineage causes rejection.</t>
+<t>Exactness. The outer request binding commits to the complete presented Composition Collection. The Verifier reconstructs the collection-member
+set and context from the presented objects and recomputes every supplied digest; an added, removed, or substituted composition member causes
+rejection.</t>
 
 <ul empty="true"><li>
-  <t>Exactness applies to the authenticated Multi-Lineage Execution presented to the guardrail. Detecting inputs hidden before presentation
+  <t>Exactness applies to the authenticated Composition Collection presented to the guardrail. Detecting inputs hidden before presentation
 requires a profile-defined authenticated input manifest or observation source.</t>
 </li></ul>
 
 <t>Two distinct functions must not be confused:</t>
 
 <figure><sourcecode type="text"><![CDATA[
-multiLineage
+Composition Collection
     carries the complete inner execution
 
-proofOfRelationship.request
-    binds the concrete ENFORCE action to the exact multiLineage
+request/execution binding
+    binds the concrete ENFORCE action to the exact Composition Collection
 ]]></sourcecode></figure>
 
-<t>For every non-origin outer PCA, the ordinary <spanx style="verb">proofOfRelationship.request</spanx> MUST contain a cryptographic commitment to the complete canonical
-<spanx style="verb">multiLineage</spanx> field carried by that PCA. The request profile contains at least:</t>
+<t>For every non-root outer advancement that represents an ENFORCE crossing, the profile-defined request/execution binding MUST contain or
+cryptographically bind a commitment to the complete canonical Composition Collection. The binding includes at least the semantic values:</t>
 
 <figure><sourcecode type="text"><![CDATA[
-proofOfRelationship.request.operation
-proofOfRelationship.request.target
-proofOfRelationship.request.securityDomain       (when applicable)
-proofOfRelationship.request.multiLineageDigest
-proofOfRelationship.request.policyCommitment
-proofOfRelationship.request.inputsCommitment
-proofOfRelationship.request.semanticProfile      (when applicable)
-proofOfRelationship.request.enforcementResult
-proofOfRelationship.request.requestDigest
-proofOfRelationship.request.payloadDigest
+operation
+target
+securityDomain       (when applicable)
+Composition Collection commitment
+policyCommitment
+inputsCommitment
+semanticProfile      (when applicable)
+enforcementResult
+requestDigest
+payloadDigest
 ]]></sourcecode></figure>
 
 <t>This profile does not redefine the base request format
 (<eref target="https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-prover-verifier-spec.md">PIC Prover and Verifier Specification</eref>,
-Section 2.3); it extends the request binding. The PCA signature protects the complete <spanx style="verb">multiLineage</spanx> field as part of the PCA; the request
-commitment additionally pins the concrete <spanx style="verb">ENFORCE</spanx> operation to that exact inner execution under the executed-vs-signed rule.</t>
+Section 2.3); it requires an ENFORCE-specific request binding. The authenticated continuity advancement protects or binds the complete
+Composition Collection, and the request commitment pins the concrete <spanx style="verb">ENFORCE</spanx> operation to that exact inner execution under the
+executed-vs-signed rule.</t>
 
-<t><spanx style="verb">multiLineageDigest</spanx> is mandatory in every non-origin outer PCA and is computed as:</t>
+<t>A Composition Collection commitment is mandatory in every non-root ENFORCE advancement and is computed over the selected profile's canonical
+Composition Collection representation:</t>
 
 <figure><sourcecode type="text"><![CDATA[
-request.multiLineageDigest
-    ==
-H( "PIC-Multi-Lineage-v0" || canonical(PCA.multiLineage) )
+commitment == H( domainSeparator || canonical(Composition Collection) )
 ]]></sourcecode></figure>
 
-<t>The selected profile MUST define the canonical encoding, hash suite, domain separator, carried-lineage ordering and whether it is semantic,
-duplicate-carried-lineage handling, maximum carried-lineage count, treatment of optional fields, normalization rules, and included context
-fields. <spanx style="verb">requestDigest</spanx> and <spanx style="verb">payloadDigest</spanx> MAY bind additional material, but MUST NOT replace <spanx style="verb">multiLineageDigest</spanx>. The Verifier MUST reject
-a missing digest, an unknown canonicalization profile, a non-canonical field, a digest mismatch, an added, removed, or substituted carried
-lineage, a forbidden duplicate carried lineage, a semantically significant reordering, or a mismatch between the carried context and the
-committed context.</t>
+<t>The selected profile MUST define the concrete field placement, canonical encoding, hash suite, domain separator, collection-member ordering
+and whether it is semantic, duplicate-collection-member handling, maximum collection-member count, treatment of optional fields, normalization
+rules, and included context fields. <spanx style="verb">requestDigest</spanx> and <spanx style="verb">payloadDigest</spanx> MAY bind additional material, but MUST NOT replace the Composition
+Collection commitment. The Verifier MUST reject a missing digest, an unknown canonicalization profile, a non-canonical field, a digest
+mismatch, an added, removed, or substituted composition member, a forbidden duplicate composition member, a semantically significant reordering, or
+a mismatch between the presented context and the committed context.</t>
 
-<t>The decision is recorded only at <spanx style="verb">proofOfRelationship.request.enforcementResult</spanx>, where <spanx style="verb">enforcementResult</spanx> is <spanx style="verb">permit</spanx> or <spanx style="verb">deny</spanx>. It records
-the result for the exact <spanx style="verb">multiLineage</spanx>, destination, request, payload, policy, committed inputs, semantic profile, and crossing context
-bound by the same outer request. A <spanx style="verb">permit</spanx> MAY appear in an authorizing outer successor; a <spanx style="verb">deny</spanx> MUST NOT authorize continuation. A profile
-MAY record a denial for audit, but MUST NOT introduce a denial PCA type or interpret a deny-bearing PCA as permission to cross the governed
-boundary.</t>
+<t>The decision is recorded in the profile-defined request/execution binding as <spanx style="verb">permit</spanx> or <spanx style="verb">deny</spanx> or as an equivalent profile-defined value.
+It records the result for the exact Composition Collection, destination, request, payload, policy, committed inputs, semantic profile, and
+crossing context bound by the same outer request. A <spanx style="verb">permit</spanx> MAY appear in an authorizing outer advancement; a <spanx style="verb">deny</spanx> MUST NOT authorize
+continuation. A profile MAY record a denial for audit, but MUST NOT introduce a denial artifact that is interpreted as permission to cross
+the governed boundary.</t>
 
-<t>For every non-origin outer PCA, <spanx style="verb">operation</spanx>, <spanx style="verb">multiLineageDigest</spanx>, and <spanx style="verb">enforcementResult</spanx> are mandatory; other request fields follow the
-selected profile's optionality rules.</t>
+<t>For every non-root ENFORCE advancement, the operation, Composition Collection commitment, and enforcement result are mandatory semantic
+values; other request fields follow the selected profile's optionality rules.</t>
 
 <t>An audit representation of <spanx style="verb">deny</spanx> is not an execution-authorizing continuation. Unless a future profile explicitly defines denial-state
-progression, a denial MUST NOT be assumed to consume the predecessor continuation challenge, advance the authorizing outer lineage, or create
-an executable successor. The interoperable denial-recording format is out of scope for this revision.</t>
+progression, a denial MUST NOT be assumed to consume the predecessor continuation challenge, advance the authorizing outer continuity, or
+create an executable successor. The interoperable denial-recording format is out of scope for this revision.</t>
 
-<t>Evolution across hops. The outer PCA at hop <spanx style="verb">n</spanx> carries the exact inner execution evaluated by guardrail <spanx style="verb">n</spanx>. The next guardrail receives
-that signed object and MAY continue the same inner execution or evaluate a profile-valid successor Multi-Lineage Execution.</t>
+<t>Evolution across hops. The outer continuity state at position <spanx style="verb">n</spanx> is bound to the exact inner execution evaluated by guardrail <spanx style="verb">n</spanx>. The next
+guardrail receives that authenticated state and MAY continue the same inner execution or evaluate a profile-valid successor Composition
+Collection.</t>
 
 <ul empty="true"><li>
-  <t>A successor outer PCA MUST NOT silently mutate <spanx style="verb">multiLineage</spanx>. If the proposed inner execution changes, the successor request MUST bind the
-complete new <spanx style="verb">multiLineage</spanx>, and every changed carried lineage MUST independently validate as required by its own PIC lineage and the
-selected profile.</t>
+  <t>A successor outer advancement MUST NOT silently mutate the Composition Collection. If the proposed inner execution changes, the successor
+request MUST bind the complete new Composition Collection, and every changed composition member MUST independently validate as required by
+its own PIC continuity and the selected profile.</t>
 </li></ul>
 
-<t>An unchanged carried lineage may be re-carried unchanged. A carried lineage may continue only through its own valid PIC successor. Removing a
-carried lineage is not an attenuation of the outer authority; it is a change to the execution input and MUST be visible in the signed request
-binding. Inner authority is never silently added, removed, replaced, or imported.</t>
+<t>An unchanged composition member may be represented unchanged. A composition member may continue only through its own valid PIC continuity
+advancement. Removing a composition member is not an attenuation of the outer authority; it is a change to the execution input and MUST be
+visible in the authenticated request binding. Inner authority is never silently added, removed, replaced, or imported.</t>
 
 <t>The recursion is structural, not authority composition:</t>
 
 <figure><sourcecode type="text"><![CDATA[
-PCA
- +-- multiLineage
-      +-- carried lineage: PCA
-      +-- carried lineage: PCA
-      +-- carried lineage: PCA
-           +-- multiLineage
+outer continuity
+ +-- Composition Collection
+      +-- member continuity
+      +-- member continuity
+      +-- member continuity
+           +-- nested Composition Collection
                 +-- ...
 ]]></sourcecode></figure>
 
@@ -603,58 +632,66 @@ PCA
 
 <figure><sourcecode type="text"><![CDATA[
 proposing executor
-    proposes the inner Multi-Lineage Execution
+    proposes the inner Composition Collection
 
 authorized sandbox origin
-    originates the outer Sandboxed Execution
+    roots the outer Sandboxed Execution
 
 first guardrail
-    creates the first non-origin outer continuation
+    creates the first non-root outer advancement
 ]]></sourcecode></figure>
 
-<t>A Sandboxed Execution MUST begin with an ordinary origin PCA, <spanx style="verb">PCA0-G</spanx>, created by an authorized sandbox origin. The proposing executor MAY
-also be the sandbox origin only when the applicable origination policy explicitly authorizes it to originate that outer lineage. Possession
-of the inner PCAs does not authorize creation of <spanx style="verb">PCA0-G</spanx>, and the candidate first guardrail MUST NOT create its own <spanx style="verb">PCA0-G</spanx>.</t>
+<t>A Sandboxed Execution MUST begin with an ordinary trusted root continuity state, created by an authorized sandbox origin. The proposing
+executor MAY also be the sandbox origin only when the applicable origination policy explicitly authorizes it to root that outer continuity.
+Possession of the inner continuities does not authorize creation of the outer root, and the proposed first guardrail MUST NOT create its own
+outer root.</t>
 
 <t>The authorized sandbox origin may be the protected application, policy governance, a deployment authority, or another origin explicitly
 authorized by the applicable origin policy. No special guardrail key or separate guardrail authority is required.</t>
 
-<t>The selected Sandboxed Execution profile MUST define how authorization to originate <spanx style="verb">PCA0-G</spanx> is represented and verified. A valid origin
-signature identifies who created <spanx style="verb">PCA0-G</spanx>; it is not, by itself, proof that the issuer was authorized to originate a Sandboxed Execution under
-the applicable profile. The authorization evidence MAY be an origin trust policy, an authenticated application or deployment configuration, a
-signed origination grant, a policy-governance authorization, an attested origin role, or another profile-defined verifiable mechanism; this
-revision mandates none.</t>
+<t>The selected Sandboxed Execution profile MUST define how authorization to create the outer root is represented and verified. A valid root
+signature identifies who created the root representation; it is not, by itself, proof that the issuer was authorized to originate a Sandboxed
+Execution under the applicable profile. The authorization evidence MAY be an origin trust policy, an authenticated application or deployment
+configuration, a signed origination grant, a policy-governance authorization, an attested origin role, or another profile-defined verifiable
+mechanism; this revision mandates none.</t>
 
-<t><spanx style="verb">AuthorizedSandboxOrigin(PCA0-G)</spanx> means the issuer of <spanx style="verb">PCA0-G</spanx> is authorized, under the selected Sandboxed Execution profile and receiving
-deployment policy, to originate an outer lineage with the presented <spanx style="verb">ENFORCE</spanx> authority and execution contract.</t>
+<t><spanx style="verb">AuthorizedSandboxOrigin(root)</spanx> means the issuer of the outer root is authorized, under the selected Sandboxed Execution profile and
+receiving deployment policy, to originate an outer continuity with the presented <spanx style="verb">ENFORCE</spanx> authority and execution contract.</t>
 
-<t><spanx style="verb">PCA0-G</spanx> establishes the outer authority and the future guardrail contract; it does not evaluate the inner execution. It is an ordinary
-PCA0 — no predecessor, no PoR, signed by its authorized origin — containing at least:</t>
+<t>The outer root establishes the outer authority and the future guardrail contract; it does not evaluate the inner execution. It is an
+ordinary PIC root — no predecessor, no PoR, authenticated by its authorized origin.</t>
+
+<t>The following is a semantic illustration of the authority and bootstrap requirements of the outer root. It is not the Profile 0.2 logical
+PCA schema, is not the Profile 0.2 PIC PCA JWT wire representation, and is not the Indexed Authority Map representation.</t>
 
 <figure><sourcecode type="json"><![CDATA[
 {
-  "invariants": {
+  "authority": {
     "operations": ["ENFORCE"],
     "executionContract": { "...": "properties required of future guardrail executors" }
   },
-  "continuation": { "...": "challenge for the first guardrail" }
+  "challenge": { "...": "bootstrap challenge for the first guardrail, when used by the selected profile" }
 }
 ]]></sourcecode></figure>
 
-<t><spanx style="verb">PCA0-G</spanx> MAY carry an origin-level commitment identifying the execution proposal, but it MUST NOT contain a guardrail verdict.</t>
+<t>In PIC Profile 0.2, the outer root is represented by the trusted root PIC PCA JWT, and the bootstrap challenge is carried in that PIC PCA
+JWT. The first guardrail decision appears in the first applicable Continuity Transition JWT proposed for the outer continuity.</t>
 
-<t>The first guardrail receives <spanx style="verb">PCA0-G</spanx> and the proposed Multi-Lineage Execution, proves conformance to the <spanx style="verb">PCA0-G</spanx> execution contract,
-validates every carried lineage, applies the enforcement function, and — on permit — produces the ordinary successor <spanx style="verb">PCA1-G</spanx>.</t>
+<t>The outer root MAY carry an origin-level commitment identifying the execution proposal, but it MUST NOT contain a guardrail verdict.</t>
+
+<t>The first guardrail receives the outer root and the proposed Composition Collection, proves conformance to the root execution contract,
+validates every composition member, applies the enforcement function, and — on permit — produces the first ordinary outer continuity
+advancement.</t>
 
 <figure><sourcecode type="text"><![CDATA[
-PCA0-G
+outer root
   establishes ENFORCE authority
   establishes future guardrail contract
-  emits the first continuation challenge
+  carries the bootstrap challenge when used by the profile
 
-PCA1-G
+outer advancement 1
   is produced by the first guardrail
-  carries the evaluated multiLineage
+  binds the evaluated Composition Collection
   binds the concrete ENFORCE request
   records the permit result
 ]]></sourcecode></figure>
@@ -663,69 +700,68 @@ PCA1-G
 
 <figure><sourcecode type="text"><![CDATA[
 INNER EXECUTION PROPOSAL
-Multi-Lineage Execution
-[ carried lineage A | carried lineage B | ... ]
+Composition Collection
+[ composition member A | composition member B | ... ]
           |
           v
 AUTHORIZED SANDBOX ORIGIN
-PCA0-G
+outer root
   operations: [ENFORCE]
   executionContract: required guardrail properties
-  continuation: challenge for first guardrail
+  challenge: bootstrap challenge for first guardrail
           |
           | PoR
           v
 FIRST GUARDRAIL
-  verify PCA0-G
-  verify every carried lineage
+  verify outer root
+  verify every composition member
   apply enforcement function
           |
        permit
           |
           v
-PCA1-G
-  ordinary PIC successor
-  request.operation: ENFORCE
-  request.multiLineageDigest:
-    H("PIC-Multi-Lineage-v0" || canonical(multiLineage))
-  multiLineage: exact evaluated inner execution
-  request.enforcementResult: permit
-  continuation: challenge for next guardrail
+workload-signed candidate PIC Continuity JWT
+  carries exactly one continuity_transition_jwt
+  proposed operation: ENFORCE
+  binds the Composition Collection commitment
+  binds enforcementResult: permit
           |
-          | PoR
+          | PIC-X validates candidate and transition
           v
-NEXT GUARDRAIL
+settled outer PIC Continuity JWT 1
+  issued by PIC-X
+  contains no pending continuity_transition_jwt
 ]]></sourcecode></figure>
 
-<t><spanx style="verb">PCA1-G</spanx>, not <spanx style="verb">PCA0-G</spanx>, is the first outer PCA attributable to a guardrail decision. Subsequent guardrails produce <spanx style="verb">PCA2-G</spanx>, <spanx style="verb">PCA3-G</spanx>, and
-so on.</t>
+<t>The first outer advancement, not the outer root, is the first outer state attributable to a guardrail decision. Subsequent guardrails produce
+subsequent ordinary continuity advancements.</t>
 
 </section>
 <section anchor="guardrail-prover-and-verifier-profile"><name>Guardrail Prover and Verifier Profile</name>
 
-<t>A guardrail performs two nested verification levels over the existing ordinary PIC procedures, then — on permit — proves the next PCA. It
-MUST perform the phases in order.</t>
+<t>A guardrail performs two nested verification levels over the existing ordinary PIC procedures, then — on permit — produces the next outer
+continuity advancement. It MUST perform the phases in order.</t>
 
 <t><strong>Phase 1 — Outer PIC verification.</strong> The guardrail acts as an ordinary PIC Verifier for the outer execution:</t>
 
 <t><list style="numbers" type="1">
-  <t>validate the outer predecessor;</t>
-  <t>verify <spanx style="verb">previousPcaHash</spanx>;</t>
-  <t>verify the predecessor continuation challenge;</t>
+  <t>validate the outer predecessor continuity state;</t>
+  <t>verify the profile-defined predecessor cryptographic reference;</t>
+  <t>verify challenge continuity when the selected profile uses challenges;</t>
   <t>verify the guardrail executor attestation;</t>
   <t>verify execution-contract conformance;</t>
   <t>verify outer non-expansion;</t>
   <t>verify time, freshness, profile, and revocation requirements;</t>
   <t>verify the outer request operation is <spanx style="verb">ENFORCE</spanx>;</t>
-  <t>recompute and verify the request commitment to the complete <spanx style="verb">multiLineage</spanx>.</t>
+  <t>recompute and verify the request commitment to the complete Composition Collection.</t>
 </list></t>
 
-<t><strong>Phase 2 — Inner PIC verification.</strong> Only after Phase 1 succeeds, for every carried lineage:</t>
+<t><strong>Phase 2 — Inner PIC verification.</strong> Only after Phase 1 succeeds, for every composition member:</t>
 
 <t><list style="numbers" type="1">
-  <t>validate the carried lineage using the selected ordinary PIC validation profile;</t>
-  <t>verify its origin or immediate predecessor as required;</t>
-  <t>verify signature and PoR;</t>
+  <t>validate the composition member using the selected ordinary PIC validation profile;</t>
+  <t>verify its root, immediate predecessor, or equivalent proof as required;</t>
+  <t>verify artifact authentication and PoR;</t>
   <t>verify predecessor binding;</t>
   <t>verify non-expansion;</t>
   <t>verify request binding and executed-vs-signed requirements;</t>
@@ -734,7 +770,7 @@ MUST perform the phases in order.</t>
   <t>verify revocation coordinates and active revocation state.</t>
 </list></t>
 
-<t>Any invalid outer check or carried lineage produces deny before policy evaluation.</t>
+<t>Any invalid outer check or composition member produces deny before policy evaluation.</t>
 
 <t><strong>Phase 3 — Enforcement function.</strong> Over the validated inner execution and the exact crossing context, the guardrail evaluates the
 profile-defined enforcement function. A PDP is only one possible implementation.</t>
@@ -744,71 +780,78 @@ profile-defined enforcement function. A PDP is only one possible implementation.
 process boundary, or deployment topology.</t>
 </li></ul>
 
-<t>Every carried-lineage-describing input used by the enforcement function MUST be cryptographically or operationally bound to the corresponding
-carried lineage by a mechanism not under the unilateral control of the proposing executor. This includes, when used, <spanx style="verb">role</spanx>,
+<t>Every collection-member-describing input used by the enforcement function MUST be cryptographically or operationally bound to the corresponding
+composition member by a mechanism not under the unilateral control of the proposing executor. This includes, when used, <spanx style="verb">role</spanx>,
 semantic scopes, labels, data classifications, tenant or security-domain claims, accountable-party claims, environment claims, application
 identity, purpose or intent metadata, policy-selection metadata, and translation or semantic-profile identifiers. Accepted binding mechanisms
-MAY include origin-bound signed metadata, signed declarations from an accepted authority, trusted derivation from validated PCA contents,
+MAY include root-bound signed metadata, signed declarations from an accepted authority, trusted derivation from validated continuity contents,
 policy-controlled mappings, authenticated deployment configuration, attested execution context, verified external attributes, or
 profile-defined authenticated manifests.</t>
 
 <t>An untrusted executor's claim alone MUST NOT be sufficient as an enforcement input. The enforcement function MUST evaluate only inputs whose
 source, binding, interpretation profile, and integrity satisfy the selected Sandboxed Execution profile. An input required by policy that is
-unauthenticated, ambiguously bound, semantically unmapped, inconsistent with the presented PCA, unavailable, or controlled only by the
+unauthenticated, ambiguously bound, semantically unmapped, inconsistent with the presented continuity state, unavailable, or controlled only by the
 proposing executor MUST produce deny or indeterminate-deny.</t>
 
 <t>Failure, unavailable policy, indeterminate result, inconsistent semantic mapping, or missing committed inputs produce deny.</t>
 
-<t><strong>Phase 4 — Outer proving.</strong> On permit, the guardrail produces the next ordinary outer PCA under the standard PIC Prover procedure. It MUST:</t>
+<t><strong>Phase 4 — Outer proving.</strong> On permit, the guardrail produces or proposes the next ordinary outer continuity advancement under the standard
+PIC Prover procedure. It MUST:</t>
 
 <t><list style="numbers" type="1">
   <t>identify exactly one outer predecessor;</t>
   <t>produce valid PoR;</t>
   <t>retain or attenuate <spanx style="verb">ENFORCE</spanx>;</t>
   <t>preserve or strengthen the execution contract;</t>
-  <t>carry the exact evaluated <spanx style="verb">multiLineage</spanx>;</t>
+  <t>bind the exact evaluated Composition Collection;</t>
   <t>bind its canonical digest in the request;</t>
   <t>bind the enforcement inputs and permit result;</t>
-  <t>emit a fresh continuation;</t>
-  <t>sign the complete PCA once.</t>
+  <t>emit the next profile-defined challenge or freshness value when required;</t>
+  <t>authenticate the complete advancement under the selected profile.</t>
 </list></t>
 
 <t>No additional approval signature is created. The next guardrail repeats the same procedure — and that repetition is the sandbox.</t>
 
+<t>In the current PIC Profile 0.2 / PIC-X realization, the guardrail or workload creates a workload-signed Continuity Transition JWT, places it
+as the single <spanx style="verb">continuity_transition_jwt</spanx> in a workload-signed candidate PIC Continuity JWT, and submits the candidate for PIC-X validation.
+PIC-X validates the outer continuity, <spanx style="verb">ENFORCE</spanx> authority, Composition Collection commitment, PoR/key binding, predecessor hash, challenge
+continuity, attenuation, revocation, and local/profile policy. On success, PIC-X issues the next settled outer PIC Continuity JWT with no
+pending <spanx style="verb">continuity_transition_jwt</spanx>. This is ordinary Profile 0.2 continuity advancement, not a sandbox-specific protocol.</t>
+
 <figure><sourcecode type="text"><![CDATA[
-receive outer PCA
+receive outer continuity state
       |
 Phase 1: validate outer PIC continuation
       |
-Phase 2: validate every carried lineage
+Phase 2: validate every composition member
       |
 Phase 3: apply enforcement function
       |
    permit?
    /    \
  no      yes
- X       Phase 4: build and sign next ordinary outer PCA
+ X       Phase 4: build candidate and obtain next settled outer continuity
 ]]></sourcecode></figure>
 
-<t><strong>Hop-specific result.</strong> An enforcement result is hop-specific. A <spanx style="verb">permit</spanx> in <spanx style="verb">PCA-G[n]</spanx> applies only to the exact execution bound by that
-PCA — its <spanx style="verb">multiLineage</spanx>, destination, requests, payload commitments, policy commitment, input commitment, semantic profile, and crossing
-context. It does not authorize <spanx style="verb">PCA-G[n+1]</spanx>, a later crossing, a changed destination, a changed payload, a changed policy, a modified
-<spanx style="verb">multiLineage</spanx>, or any physical action not bound by the request.</t>
+<t><strong>Hop-specific result.</strong> An enforcement result is hop-specific. A <spanx style="verb">permit</spanx> in the outer advancement at position <spanx style="verb">n</spanx> applies only to the exact
+execution bound by that advancement: its Composition Collection, destination, requests, payload commitments, policy commitment, input
+commitment, semantic profile, and crossing context. It does not authorize position <spanx style="verb">n+1</spanx>, a later crossing, a changed destination, a changed
+payload, a changed policy, a modified Composition Collection, or any physical action not bound by the request.</t>
 
 <figure><sourcecode type="text"><![CDATA[
-PCA-G[n]
+outer advancement n
 permit for exact crossing X
         |
         v
 does not imply
         |
         v
-PCA-G[n+1]
+outer advancement n+1
 permit for crossing Y
 ]]></sourcecode></figure>
 
-<t>Every later guardrail MUST verify the received outer continuation, verify the exact carried inner execution, evaluate the enforcement
-function applicable to that hop, produce its own signed result, and produce a new ordinary outer continuation only on permit.</t>
+<t>Every later guardrail MUST verify the received outer continuity state, verify the exact Composition Collection, evaluate the enforcement
+function applicable to that hop, produce its own authenticated result, and produce a new ordinary outer advancement only on permit.</t>
 
 </section>
 <section anchor="operation-profile"><name>Operation Profile</name>
@@ -816,13 +859,14 @@ function applicable to that hop, produce its own signed result, and produce a ne
 <t>This revision uses one operation class, <spanx style="verb">ENFORCE</spanx>:</t>
 
 <t><list style="symbols">
-  <t>it means: validate the carried Multi-Lineage Execution, apply the enforcement function, and decide whether the outer execution may
+  <t>it means: validate the bound Composition Collection, apply the enforcement function, and decide whether the outer execution may
 continue;</t>
-  <t>it grants none of the authority of the carried lineages;</t>
-  <t>it is subject to ordinary PIC non-expansion: the outer lineage MAY retain or attenuate it, never add broader operations.</t>
+  <t>it grants none of the authority of the composition members;</t>
+  <t>it is subject to ordinary PIC non-expansion: the outer continuity MAY retain or attenuate it, never add broader operations.</t>
 </list></t>
 
-<t>Future revisions MAY define additional recursive-control operation classes, using the same ordinary PCA, PoR, and profile-extension model.</t>
+<t>Future revisions MAY define additional recursive-control operation classes, using the same ordinary PIC continuity, PoR, and
+profile-extension model.</t>
 
 </section>
 </section>
@@ -831,65 +875,60 @@ continue;</t>
 <t>Two checks are separate: <spanx style="verb">ENFORCE</spanx> must belong to the outer authority context, and the concrete executed request must be <spanx style="verb">ENFORCE</spanx>.</t>
 
 <figure><sourcecode type="text"><![CDATA[
-ENFORCE in PCA-G[n].invariants.operations                    (authority)
-PCA-G[n].proofOfRelationship.request.operation == ENFORCE    (executed action)
+ENFORCE in materialized outer authority        (authority)
+bound request/execution operation == ENFORCE   (executed action)
 ]]></sourcecode></figure>
 
-<t>For every non-origin outer hop, both MUST hold. A conforming guardrail or receiving outer executor MUST accept the outer continuation only
+<t>For every non-root outer advancement, both MUST hold. A conforming guardrail or receiving outer executor MUST accept the outer continuity only
 if:</t>
 
 <figure><sourcecode type="text"><![CDATA[
-ValidOuterPIC(PCA-G[n-1], PCA-G[n])
-AND ValidSandboxOrigin(PCA0-G)
-AND ENFORCE in PCA-G[n].invariants.operations
-AND PCA-G[n].proofOfRelationship.request.operation == ENFORCE
-AND PCA-G[n].proofOfRelationship.request.multiLineageDigest
-      == H(
-           "PIC-Multi-Lineage-v0"
-           ||
-           canonical(PCA-G[n].multiLineage)
-         )
-AND ValidMultiLineage(PCA-G[n].multiLineage)
+ValidOuterContinuity(predecessorState, currentAdvancement)
+AND ValidSandboxOrigin(outerRoot)
+AND ENFORCE in materialized outer authority
+AND bound request/execution operation == ENFORCE
+AND bound Composition Collection commitment matches the presented Composition Collection
+AND ValidCompositionCollection(presented Composition Collection)
 AND ExactPresentedExecutionBinding
-AND PCA-G[n].proofOfRelationship.request.enforcementResult == permit
+AND bound enforcementResult == permit
 AND Fresh
 AND NotRevoked
 ]]></sourcecode></figure>
 
-<t>For <spanx style="verb">PCA0-G</spanx>, the ordinary PCA0 origin validation, the presence of <spanx style="verb">ENFORCE</spanx> in its origin authority context, and the sandbox-origin
-authorization defined below apply; it has no PoR request.</t>
+<t>For the outer root, ordinary root validation, the presence of <spanx style="verb">ENFORCE</spanx> in its root authority context, and the sandbox-origin authorization
+defined below apply; it has no PoR request.</t>
 
 <t>Origin authorization is part of acceptance:</t>
 
 <figure><sourcecode type="text"><![CDATA[
-ValidSandboxOrigin(PCA0-G)
+ValidSandboxOrigin(outerRoot)
     =
-ValidOrdinaryPCA0(PCA0-G)
-AND AuthorizedSandboxOrigin(PCA0-G)
+ValidOrdinaryRoot(outerRoot)
+AND AuthorizedSandboxOrigin(outerRoot)
 ]]></sourcecode></figure>
 
-<t><spanx style="verb">ValidSandboxOrigin(PCA0-G)</spanx> is established according to the selected chain-validation profile. A full-chain Verifier may establish it
+<t><spanx style="verb">ValidSandboxOrigin(outerRoot)</spanx> is established according to the selected continuity-validation profile. A full-history Verifier may establish it
 directly; an incremental Verifier may rely on authenticated validation state, checkpoints, Trust Plane validation, an approved succinct
-proof, or another mechanism permitted by that profile. Not every incremental receiver carries <spanx style="verb">PCA0-G</spanx>.</t>
+proof, or another mechanism permitted by that profile. Not every incremental receiver carries the complete root representation.</t>
 
 <t>A receiving deployment MAY restrict the sandbox origins it accepts and MAY require a minimum outer execution contract. Such restrictions
 narrow acceptance; they do not create outer authority.</t>
 
-<t><spanx style="verb">ValidMultiLineage</spanx> means that <spanx style="verb">multiLineage.carriedLineages</spanx> contains at least one element and every carried lineage in it validates
-independently under its own PIC lineage and the selected validation profile. Validation of one carried lineage does not validate another. A
-carried lineage is never an additional predecessor of the outer PCA. A carried lineage may itself contain <spanx style="verb">multiLineage</spanx>, enabling recursive
-composition to arbitrary finite depth. An empty <spanx style="verb">carriedLineages</spanx> array is invalid under this profile.</t>
+<t><spanx style="verb">ValidCompositionCollection</spanx> means that the presented Composition Collection contains at least one composition member and every composition member validates
+independently under its own PIC continuity and the selected validation profile. Validation of one composition member does not validate another. A
+composition member is never an additional predecessor of the outer continuity. A composition member may itself be a Sandboxed Execution, enabling
+recursive composition to arbitrary finite depth. An empty collection-member set is invalid under this profile.</t>
 
-<t><spanx style="verb">ExactPresentedExecutionBinding</spanx> means that the complete presented carried-lineage set and crossing context are reconstructed from the
+<t><spanx style="verb">ExactPresentedExecutionBinding</spanx> means that the complete presented collection-member set and crossing context are reconstructed from the
 presented objects, every supplied digest is recomputed, and the result matches the signed outer request commitments under the exactness and
 canonical-binding rules of this specification.</t>
 
 <figure><sourcecode type="text"><![CDATA[
 ExactPresentedExecutionBinding
     =
-PresentedCarriedLineageSetMatchesCommitment
+PresentedCollectionMemberSetMatchesCommitment
 AND PresentedContextMatchesCommitment
-AND RecomputedMultiLineageDigestMatches
+AND RecomputedCompositionCollectionCommitmentMatches
 AND RecomputedRequestAndPayloadCommitmentsMatch
 AND NoHiddenSubstitutionWithinPresentedObjects
 ]]></sourcecode></figure>
@@ -899,41 +938,42 @@ profile-defined authenticated input manifest, observation source, attested conte
 specification. The two predicates remain distinct:</t>
 
 <figure><sourcecode type="text"><![CDATA[
-ValidMultiLineage
-    validates every carried lineage independently
+ValidCompositionCollection
+    validates every composition member independently
 
 ExactPresentedExecutionBinding
     validates completeness and exact binding
-    of the presented multi-lineage execution
+    of the presented composition-collection execution
     and its crossing context
 ]]></sourcecode></figure>
 
 <t>The receiving component MUST recompute all digests and MUST reject:</t>
 
 <t><list style="symbols">
-  <t>a missing <spanx style="verb">multiLineage</spanx>;</t>
-  <t>an invalid outer continuation;</t>
-  <t>an invalid carried lineage;</t>
-  <t>an added, removed, or substituted presented carried lineage;</t>
+  <t>a missing Composition Collection binding;</t>
+  <t>an invalid outer continuity;</t>
+  <t>an invalid composition member;</t>
+  <t>an added, removed, or substituted presented composition member;</t>
   <t>a mismatched request, destination, or payload;</t>
   <t>an invalid policy or input commitment;</t>
   <t>a non-permit decision;</t>
   <t>stale, replayed, or revoked state.</t>
 </list></t>
 
-<t>This profile adds no second signature system: guardrail approval is the ordinary outer PCA signature, nothing else. Each <spanx style="verb">permit</spanx> is
-hop-specific: it authorizes only the exact crossing bound by its own outer PCA, never a later hop or a changed crossing.</t>
+<t>This profile adds no second signature system: guardrail approval is the ordinary authentication of the outer continuity advancement, nothing
+else. Each <spanx style="verb">permit</spanx> is hop-specific: it authorizes only the exact crossing bound by its own outer advancement, never a later hop or a changed
+crossing.</t>
 
 </section>
 <section anchor="bypass"><name>Bypass</name>
 
 <t>A sender may physically present the inner execution without a valid outer continuation. The next conforming guardrail rejects it because the
-required Sandboxed Execution lineage is absent or invalid.</t>
+required Sandboxed Execution continuity is absent or invalid.</t>
 
 <figure><sourcecode type="text"><![CDATA[
 BYPASS ATTEMPT
 
-sender ---- inner Multi-Lineage only ----> next conforming guardrail
+sender ---- inner Composition Collection only ----> next conforming guardrail
                                            reject:
                                            no valid outer continuation
 ]]></sourcecode></figure>
@@ -945,21 +985,30 @@ sender ---- inner Multi-Lineage only ----> next conforming guardrail
 <section anchor="non-pic-aware-target"><name>Non-PIC-Aware Target</name>
 
 <t>A non-PIC-aware target cannot verify the outer Sandboxed Execution. For such a target, the final hop of the Sandboxed Execution is the
-<strong>materializing guardrail</strong> — an ordinary executor of the outer lineage that performs the exact physical action permitted by its own bound
+<strong>materializing guardrail</strong> — an ordinary executor of the outer continuity that performs the exact physical action permitted by its own bound
 outer request.</t>
 
-<t>It MUST produce and sign its ordinary outer successor PCA for the exact materialized action; it MUST NOT complete or mutate an already-signed
-PCA. The materializing guardrail:</t>
+<t>It MUST follow the selected ordinary PIC advancement profile for the exact materialized action; it MUST NOT complete or mutate an
+already-authenticated advancement. The materializing guardrail:</t>
 
 <t><list style="numbers" type="1">
   <t>verifies its outer predecessor;</t>
-  <t>verifies every carried lineage;</t>
+  <t>verifies every composition member;</t>
   <t>evaluates the enforcement function;</t>
-  <t>constructs its own ordinary outer successor PCA;</t>
+  <t>constructs the ordinary outer continuity advancement or advancement proposal required by the selected profile;</t>
   <t>binds the exact physical action, destination, payload, participants, policy inputs, and context;</t>
-  <t>signs the complete successor PCA;</t>
-  <t>performs exactly the bound physical action.</t>
+  <t>authenticates the complete advancement or proposal as required by the selected profile;</t>
+  <t>follows any profile-required settlement or acceptance rules for treating the continuation as valid;</t>
+  <t>performs exactly the bound physical action according to the selected materialization profile and its ordering rules.</t>
 </list></t>
+
+<t>For current PIC Profile 0.2, the materializing guardrail or workload validates the outer predecessor, validates every Composition Collection
+member, evaluates enforcement, constructs and signs the Continuity Transition JWT, constructs and signs the candidate PIC Continuity JWT, and
+submits the candidate through the ordinary PIC-X advancement flow. PIC-X validates the candidate and transition and, on success, issues the
+next settled outer PIC Continuity JWT. The settled token is signed by PIC-X and contains no pending <spanx style="verb">continuity_transition_jwt</spanx>.</t>
+
+<t>This document does not define the exact temporal ordering between PIC-X settlement and the final irreversible physical side effect against a
+non-PIC-aware target. That ordering is profile-defined or deployment-defined.</t>
 
 <t>After the decision, control of that concrete materialized target operation does not return to the proposing executor; this concerns the
 materialized operation, not ownership of unrelated application workflow.</t>
@@ -967,20 +1016,27 @@ materialized operation, not ownership of unrelated application workflow.</t>
 <figure><sourcecode type="text"><![CDATA[
 proposing executor
       |
-      | proposed Multi-Lineage Execution
+      | proposed Composition Collection
       v
 materializing guardrail
       |
       | validates outer PIC
-      | validates carried lineages
+      | validates composition members
       | evaluates enforcement
-      | physically performs exact permitted action
+      | builds Profile 0.2 candidate
+      | binds exact target operation
       v
-non-PIC-aware target
+  +-------- PIC-X validates candidate and transition
+  |         and issues settled outer continuity
+  |
+  +-------- non-PIC-aware target receives only
+            the exact bound permitted action
+
+The timing between PIC-X settlement and irreversible physical action is profile-defined.
 ]]></sourcecode></figure>
 
-<t>The materializing guardrail is not a new trusted authority, a special PCA type, a required service mesh, a universal gateway, or a
-protocol-level physical sandbox; it remains an ordinary executor of the outer PIC lineage. For a non-PIC-aware target, ensuring that the
+<t>The materializing guardrail is not a new trusted authority, a special continuity artifact type, a required service mesh, a universal gateway,
+or a protocol-level physical sandbox; it remains an ordinary executor of the outer PIC continuity. For a non-PIC-aware target, ensuring that the
 target cannot also be reached through unrelated credentials, alternate routes, direct network access, or other physical paths remains a
 deployment responsibility, addressed by the
 <eref target="https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-architecture-deployment-spec.md">PIC Architecture and Deployment Specification</eref>.</t>
@@ -1000,7 +1056,7 @@ Deployment path boundary:
 <section anchor="relationship-to-service-meshes-and-deployment-infrastructure"><name>Relationship to Service Meshes and Deployment Infrastructure</name>
 
 <t>A Sandboxed Execution does not require a service mesh, sidecar, proxy, gateway, network-interception layer, or physical sandbox. The validity
-of guardrail traversal derives from the outer PIC lineage: ordinary Proof of Relationship, exactly-one-predecessor continuity,
+of guardrail traversal derives from the outer PIC continuity: ordinary Proof of Relationship, exactly-one-predecessor continuity,
 non-expansion, request binding, executor conformance, revocation checks, and verification by the next conforming outer executor.</t>
 
 <t>A service mesh MAY transport, route, encrypt, observe, load-balance, or operationally restrict a Sandboxed Execution. It is not the source of
@@ -1015,16 +1071,16 @@ provides:                          may provide:
 - guardrail-to-guardrail PoR;      - service discovery;
 - exact request binding;           - routing;
 - authority non-expansion;         - observability;
-- independent lineage checks;      - load balancing;
+- independent continuity checks;      - load balancing;
 - recursive validation;            - rate limiting;
 - rejection of an invalid          - network policy;
   outer continuation.              - operational path restriction;
                                    - resilience and availability.
 ]]></sourcecode></figure>
 
-<t>A service mesh does not make an invalid PCA valid, does not replace PIC verification, and does not create a Sandboxed Execution merely by
-forcing traffic through a proxy. Conversely, PIC does not replace networking, transport confidentiality, availability engineering, service
-discovery, or physical path control. It is unnecessary only as the source of the cryptographic and lineage-based sandboxing guarantee.</t>
+<t>A service mesh does not make invalid continuity state valid, does not replace PIC verification, and does not create a Sandboxed Execution
+merely by forcing traffic through a proxy. Conversely, PIC does not replace networking, transport confidentiality, availability engineering, service
+discovery, or physical path control. It is unnecessary only as the source of the cryptographic and continuity-based sandboxing guarantee.</t>
 
 <ul empty="true"><li>
   <t>A service mesh may carry the sandbox, but it is not the sandbox.</t>
@@ -1047,51 +1103,51 @@ already documented by that specification (Section 6.8). Sandboxed Execution intr
 <t>The model is recursively closed. No special root guardrail object exists, and no new trust primitive appears at deeper levels.</t>
 
 <figure><sourcecode type="text"><![CDATA[
-PCA outer
- +-- multiLineage
-      +-- PCA inner A
-      +-- PCA inner B
-           +-- multiLineage
+outer continuity
+ +-- Composition Collection
+      +-- inner continuity A
+      +-- inner continuity B
+           +-- nested Composition Collection
                 +-- deeper PIC execution
 ]]></sourcecode></figure>
 
 <t>At every level:</t>
 
 <t><list style="symbols">
-  <t>the same ordinary PCA structure is reused;</t>
+  <t>the same ordinary PIC continuity semantics are reused;</t>
   <t>the same PoR semantics are reused;</t>
   <t>the same non-expansion semantics are reused;</t>
   <t>validation recursively invokes the appropriate PIC Verifier profile;</t>
-  <t>each level has exactly one predecessor in its own lineage;</t>
-  <t>an inner PCA is never an additional predecessor of the outer PCA;</t>
-  <t>no authority flows upward from inner lineages.</t>
+  <t>each level has exactly one predecessor in its own continuity;</t>
+  <t>an inner continuity is never an additional predecessor of the outer continuity;</t>
+  <t>no authority flows upward from inner continuities.</t>
 </list></t>
 
-<t>At every recursive level the same separation holds: one predecessor in the local lineage, origin-bounded authority, ordinary PoR, ordinary
+<t>At every recursive level the same separation holds: one predecessor in the local continuity, root-bounded authority, ordinary PoR, ordinary
 non-expansion, exact request binding, and independent revocation.</t>
 
 <figure><sourcecode type="text"><![CDATA[
 LEVEL 0
-outer PCA { ENFORCE }
+outer continuity { ENFORCE }
 |
-+-- multiLineage
++-- Composition Collection
     |
-    +-- LEVEL 1 / Carried Lineage A
-    |   PCA { READ }
+    +-- LEVEL 1 / Composition Member A
+    |   continuity { READ }
     |
-    +-- LEVEL 1 / Carried Lineage B
-        PCA { ENFORCE }
+    +-- LEVEL 1 / Composition Member B
+        continuity { ENFORCE }
         |
-        +-- multiLineage
+        +-- Composition Collection
             |
-            +-- LEVEL 2 / Carried Lineage C
-                PCA { WRITE }
+            +-- LEVEL 2 / Composition Member C
+                continuity { WRITE }
 ]]></sourcecode></figure>
 
 <t>Nesting adds execution structure. It does not create authority inheritance between recursive levels.</t>
 
 <t>The model is recursively composable to arbitrary finite depth — not literal infinite execution. Implementations MUST bound maximum recursion
-depth, carried-lineage count, encoded size, and total validation work. Resource limits cause rejection or indeterminate-deny according to the
+depth, collection-member count, encoded size, and total validation work. Resource limits cause rejection or indeterminate-deny according to the
 profile;
 they do not change PIC semantics.</t>
 
@@ -1104,10 +1160,10 @@ they do not change PIC semantics.</t>
 
 <t><list style="symbols">
   <t>an outer hop without valid PoR cannot continue;</t>
-  <t>an unauthorized guardrail cannot become a valid successor;</t>
+  <t>an unauthorized guardrail cannot become a valid continuity advancement;</t>
   <t>the outer authority cannot expand beyond <spanx style="verb">ENFORCE</spanx>;</t>
-  <t>an invalid inner PCA causes rejection;</t>
-  <t>a different inner execution cannot be substituted without invalidating the signed binding;</t>
+  <t>an invalid inner continuity causes rejection;</t>
+  <t>a different inner execution cannot be substituted without invalidating the authenticated binding;</t>
   <t>skipping guardrails cannot produce a valid outer continuation.</t>
 </list></t>
 
@@ -1137,20 +1193,20 @@ does not prove that a human policy or its interpretation is correct.</t>
 <section anchor="model-summary"><name>Model Summary</name>
 
 <figure><sourcecode type="text"><![CDATA[
-LINEAGE EXECUTION
-one origin;
-one predecessor per PCA;
+PIC CONTINUITY
+one root;
+one predecessor per non-root advancement;
 authority never expands.
 
-MULTI-LINEAGE EXECUTION
-one or more carried lineages constitute
+COMPOSITION COLLECTION
+one or more composition members constitute
 the inner execution being evaluated;
 each remains independently rooted and verified;
 their authorities are never merged.
 
 SANDBOXED EXECUTION
-an outer ENFORCE lineage carries the Multi-Lineage Execution;
-each guardrail verifies and continues that outer lineage.
+an outer ENFORCE continuity carries the Composition Collection;
+each guardrail verifies and advances that outer continuity.
 
 PIC CARRYING PIC — PIC OF PIC
 the execution that validates PIC execution
@@ -1165,8 +1221,8 @@ one authority state, and the evaluation process itself continues only as valid P
 <t>Physical executor behavior, alternate physical paths, implementation failure, cryptographic compromise, unavailable authenticated history,
 and policy-semantic error remain at the stated boundaries of the model.</t>
 
-<t>Without at least one carried lineage, there is no inner Multi-Lineage Execution for this profile to evaluate. This does not make the carried
-lineages authority parents of the outer lineage.</t>
+<t>Without at least one composition member, there is no inner Composition Collection for this profile to evaluate. This does not make the member
+continuities authority parents of the outer continuity.</t>
 
 </section>
 <section anchor="contributors"><name>Contributors</name>
@@ -1241,346 +1297,373 @@ those defined in the PIC Legal Appendices.</t>
   </back>
 
 <!-- ##markdown-source:
-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
-1lnr7/e//mLjWvHLx6wVx+26/wvaGh39FMgAAA==
+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
+894AAA==
 
 -->
 
