@@ -555,14 +555,42 @@ The root authority context (Section 1.8) granted `READ-ALL` and `BACKUP`. The ba
 The order that decides "more restrictive" is defined by the profile (Section 4): here `operations` uses subset inclusion and the
 `executionContract` fields use the reference profile's order.
 
-In PIC Profile 0.2, the PIC PCA JWT carries an Indexed Authority Map with flattened canonical sections `principal`, `attributes`,
-`invariants`, and `execution_contract`. Logical `execution.contract` maps to the canonical `execution_contract` section. Removal attenuation
-applies only to `attenuations.principal.remove_bitmap`, `attenuations.attributes.remove_bitmap`, and
-`attenuations.invariants.remove_bitmap`, each evaluated against the section-local numeric indexes of its own map section.
-Execution-contract restriction does not use a removal bitmap; accepted restrictions are carried as
-`attenuations.execution_contract.additions`, validated by PIC-X as canonical `key`/`value` entries for the `execution_contract` section, and
-assigned the next section-local numeric indexes in the materialized/effective `execution_contract` section. Existing execution-contract
-constraints are not removed, replaced, or weakened; accepted constraints accumulate with logical AND.
+In PIC Profile 0.2, the PIC PCA JWT `context_of_authority` carries an Indexed Authority Map, not the normalized Logical Context of
+Authority directly. The canonical sections are `principal`, `attributes`, `invariants`, and `execution_contract`; logical
+`execution.contract` maps to `execution_contract`.
+
+Section-local numeric indexes start at `0`. Bitmap identity is `(section, numeric index)`, for example `principal/0` or `invariants/1`;
+JSON object member order has no protocol meaning.
+
+Indexed Authority Map entries use compact tuples. Tuple element order is normative:
+
+- `principal`: `[key, value]`;
+- `attributes`: `[key, value]`;
+- `execution_contract`: `[key, value]`;
+- `invariants`: `[scope, operation, resourceType, resourceId]`.
+
+Scalar logical values become one indexed tuple. Set or list membership is denormalized into independently indexed boolean membership tuples,
+for example `["roles:payment-approver", true]`. This document defines no false-valued membership semantics for Profile 0.2.
+
+Removal attenuation applies only to `attenuations.principal.remove_bitmap`, `attenuations.attributes.remove_bitmap`, and
+`attenuations.invariants.remove_bitmap`, each evaluated against the section-local numeric indexes of its own map section. Removal never adds
+authority, and a removed entry cannot reappear later in the same continuity.
+
+Execution-contract restriction does not use a removal bitmap. Accepted restrictions are carried as
+`attenuations.execution_contract.additions`. Each proposed addition is a `[key, value]` tuple for the `execution_contract` section; the
+workload MUST NOT assign its numeric index. PIC-X validates accepted additions and assigns the next section-local numeric indexes in the
+materialized/effective `execution_contract` section. Existing execution-contract constraints are not removed, replaced, or weakened; accepted
+constraints accumulate with logical AND.
+
+Canonical serialization of an already indexed Profile 0.2 authority map is separate from initial index assignment. For serialization and
+authority-state hashing, sections are serialized in the profile-defined section order `principal`, `attributes`, `invariants`,
+`execution_contract`, and entries within each indexed section are serialized by ascending numeric index. A JWT artifact hash in Profile 0.2,
+such as `context_of_authority.root.pca_jwt_hash` or `predecessor_hash`, is computed over the compact serialized JWT bytes. An
+authority-state hash, when a profile defines one, is computed over the canonical/materialized authority representation. These are separate
+domains.
+
+This document does not define the deterministic initial index-assignment algorithm for converting a Logical Context of Authority into an
+Indexed Authority Map. Implementations MUST NOT infer initial indexes from JSON object member order.
 
 ## Continuity Advancement Construction
 

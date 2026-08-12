@@ -2041,14 +2041,44 @@ or extend the validity period. <em>What is dropped at a hop is lost:</em> no lat
 </div>
 <p id="section-2.4-6">The order that decides "more restrictive" is defined by the profile (Section 4): here <code>operations</code> uses subset inclusion and the
 <code>executionContract</code> fields use the reference profile's order.<a href="#section-2.4-6" class="pilcrow">¶</a></p>
-<p id="section-2.4-7">In PIC Profile 0.2, the PIC PCA JWT carries an Indexed Authority Map with flattened canonical sections <code>principal</code>, <code>attributes</code>,
-<code>invariants</code>, and <code>execution_contract</code>. Logical <code>execution.contract</code> maps to the canonical <code>execution_contract</code> section. Removal attenuation
-applies only to <code>attenuations.principal.remove_bitmap</code>, <code>attenuations.attributes.remove_bitmap</code>, and
-<code>attenuations.invariants.remove_bitmap</code>, each evaluated against the section-local numeric indexes of its own map section.
-Execution-contract restriction does not use a removal bitmap; accepted restrictions are carried as
-<code>attenuations.execution_contract.additions</code>, validated by PIC-X as canonical <code>key</code>/<code>value</code> entries for the <code>execution_contract</code> section, and
-assigned the next section-local numeric indexes in the materialized/effective <code>execution_contract</code> section. Existing execution-contract
-constraints are not removed, replaced, or weakened; accepted constraints accumulate with logical AND.<a href="#section-2.4-7" class="pilcrow">¶</a></p>
+<p id="section-2.4-7">In PIC Profile 0.2, the PIC PCA JWT <code>context_of_authority</code> carries an Indexed Authority Map, not the normalized Logical Context of
+Authority directly. The canonical sections are <code>principal</code>, <code>attributes</code>, <code>invariants</code>, and <code>execution_contract</code>; logical
+<code>execution.contract</code> maps to <code>execution_contract</code>.<a href="#section-2.4-7" class="pilcrow">¶</a></p>
+<p id="section-2.4-8">Section-local numeric indexes start at <code>0</code>. Bitmap identity is <code>(section, numeric index)</code>, for example <code>principal/0</code> or <code>invariants/1</code>;
+JSON object member order has no protocol meaning.<a href="#section-2.4-8" class="pilcrow">¶</a></p>
+<p id="section-2.4-9">Indexed Authority Map entries use compact tuples. Tuple element order is normative:<a href="#section-2.4-9" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-2.4-10.1">
+            <p id="section-2.4-10.1.1"><code>principal</code>: <code>[key, value]</code>;<a href="#section-2.4-10.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-2.4-10.2">
+            <p id="section-2.4-10.2.1"><code>attributes</code>: <code>[key, value]</code>;<a href="#section-2.4-10.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-2.4-10.3">
+            <p id="section-2.4-10.3.1"><code>execution_contract</code>: <code>[key, value]</code>;<a href="#section-2.4-10.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-2.4-10.4">
+            <p id="section-2.4-10.4.1"><code>invariants</code>: <code>[scope, operation, resourceType, resourceId]</code>.<a href="#section-2.4-10.4.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-2.4-11">Scalar logical values become one indexed tuple. Set or list membership is denormalized into independently indexed boolean membership tuples,
+for example <code>["roles:payment-approver", true]</code>. This document defines no false-valued membership semantics for Profile 0.2.<a href="#section-2.4-11" class="pilcrow">¶</a></p>
+<p id="section-2.4-12">Removal attenuation applies only to <code>attenuations.principal.remove_bitmap</code>, <code>attenuations.attributes.remove_bitmap</code>, and
+<code>attenuations.invariants.remove_bitmap</code>, each evaluated against the section-local numeric indexes of its own map section. Removal never adds
+authority, and a removed entry cannot reappear later in the same continuity.<a href="#section-2.4-12" class="pilcrow">¶</a></p>
+<p id="section-2.4-13">Execution-contract restriction does not use a removal bitmap. Accepted restrictions are carried as
+<code>attenuations.execution_contract.additions</code>. Each proposed addition is a <code>[key, value]</code> tuple for the <code>execution_contract</code> section; the
+workload MUST NOT assign its numeric index. PIC-X validates accepted additions and assigns the next section-local numeric indexes in the
+materialized/effective <code>execution_contract</code> section. Existing execution-contract constraints are not removed, replaced, or weakened; accepted
+constraints accumulate with logical AND.<a href="#section-2.4-13" class="pilcrow">¶</a></p>
+<p id="section-2.4-14">Canonical serialization of an already indexed Profile 0.2 authority map is separate from initial index assignment. For serialization and
+authority-state hashing, sections are serialized in the profile-defined section order <code>principal</code>, <code>attributes</code>, <code>invariants</code>,
+<code>execution_contract</code>, and entries within each indexed section are serialized by ascending numeric index. A JWT artifact hash in Profile 0.2,
+such as <code>context_of_authority.root.pca_jwt_hash</code> or <code>predecessor_hash</code>, is computed over the compact serialized JWT bytes. An
+authority-state hash, when a profile defines one, is computed over the canonical/materialized authority representation. These are separate
+domains.<a href="#section-2.4-14" class="pilcrow">¶</a></p>
+<p id="section-2.4-15">This document does not define the deterministic initial index-assignment algorithm for converting a Logical Context of Authority into an
+Indexed Authority Map. Implementations MUST NOT infer initial indexes from JSON object member order.<a href="#section-2.4-15" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="continuity-advancement-construction">

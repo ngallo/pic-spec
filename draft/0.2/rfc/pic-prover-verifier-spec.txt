@@ -131,35 +131,35 @@ Table of Contents
      2.3.  Proof of Relationship . . . . . . . . . . . . . . . . . .  14
      2.4.  Invariant Monotonicity  . . . . . . . . . . . . . . . . .  17
      2.5.  Continuity Advancement Construction . . . . . . . . . . .  19
-   3.  Verifier Requirements . . . . . . . . . . . . . . . . . . . .  19
-     3.1.  Verifier Procedure  . . . . . . . . . . . . . . . . . . .  20
-     3.2.  Root Validation . . . . . . . . . . . . . . . . . . . . .  21
-     3.3.  Advancement Validation  . . . . . . . . . . . . . . . . .  21
-   4.  Authority Domains and Attenuation Profiles  . . . . . . . . .  23
-     4.1.  Authority as an Abstract Domain . . . . . . . . . . . . .  23
-     4.2.  Attenuation Profiles  . . . . . . . . . . . . . . . . . .  23
-     4.3.  Policy Decision Point (PDP) Integration . . . . . . . . .  24
-   5.  Continuity Representations  . . . . . . . . . . . . . . . . .  25
-     5.1.  Current Profile 0.2 Representation  . . . . . . . . . . .  25
-     5.2.  Self-Contained Transition Graphs  . . . . . . . . . . . .  26
-     5.3.  Incremental, Checkpointed, or Referenced History  . . . .  26
-     5.4.  Succinct Proofs . . . . . . . . . . . . . . . . . . . . .  27
-   6.  Security Considerations . . . . . . . . . . . . . . . . . . .  27
-     6.1.  Freshness, Replay, and Fan-out  . . . . . . . . . . . . .  27
-     6.2.  Origin Trust Boundary . . . . . . . . . . . . . . . . . .  28
-     6.3.  Temporal Rules and Per-Hop Expiry . . . . . . . . . . . .  29
-     6.4.  Canonicalization and Cryptographic Agility  . . . . . . .  29
-     6.5.  Formal Scope  . . . . . . . . . . . . . . . . . . . . . .  30
-     6.6.  Proof of Possession (Optional)  . . . . . . . . . . . . .  30
-     6.7.  Transport Separation and Confidentiality  . . . . . . . .  30
-     6.8.  Incremental Verification and Trusted Hops . . . . . . . .  31
-   7.  Deployment Models . . . . . . . . . . . . . . . . . . . . . .  31
-   8.  Zero Trust  . . . . . . . . . . . . . . . . . . . . . . . . .  33
-   9.  Contributors  . . . . . . . . . . . . . . . . . . . . . . . .  34
-   10. Acknowledgement . . . . . . . . . . . . . . . . . . . . . . .  34
-   11. Legal Notices . . . . . . . . . . . . . . . . . . . . . . . .  34
-   12. References  . . . . . . . . . . . . . . . . . . . . . . . . .  35
-   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .  36
+   3.  Verifier Requirements . . . . . . . . . . . . . . . . . . . .  20
+     3.1.  Verifier Procedure  . . . . . . . . . . . . . . . . . . .  21
+     3.2.  Root Validation . . . . . . . . . . . . . . . . . . . . .  22
+     3.3.  Advancement Validation  . . . . . . . . . . . . . . . . .  23
+   4.  Authority Domains and Attenuation Profiles  . . . . . . . . .  24
+     4.1.  Authority as an Abstract Domain . . . . . . . . . . . . .  24
+     4.2.  Attenuation Profiles  . . . . . . . . . . . . . . . . . .  25
+     4.3.  Policy Decision Point (PDP) Integration . . . . . . . . .  25
+   5.  Continuity Representations  . . . . . . . . . . . . . . . . .  26
+     5.1.  Current Profile 0.2 Representation  . . . . . . . . . . .  26
+     5.2.  Self-Contained Transition Graphs  . . . . . . . . . . . .  27
+     5.3.  Incremental, Checkpointed, or Referenced History  . . . .  27
+     5.4.  Succinct Proofs . . . . . . . . . . . . . . . . . . . . .  28
+   6.  Security Considerations . . . . . . . . . . . . . . . . . . .  28
+     6.1.  Freshness, Replay, and Fan-out  . . . . . . . . . . . . .  28
+     6.2.  Origin Trust Boundary . . . . . . . . . . . . . . . . . .  29
+     6.3.  Temporal Rules and Per-Hop Expiry . . . . . . . . . . . .  30
+     6.4.  Canonicalization and Cryptographic Agility  . . . . . . .  30
+     6.5.  Formal Scope  . . . . . . . . . . . . . . . . . . . . . .  31
+     6.6.  Proof of Possession (Optional)  . . . . . . . . . . . . .  31
+     6.7.  Transport Separation and Confidentiality  . . . . . . . .  31
+     6.8.  Incremental Verification and Trusted Hops . . . . . . . .  32
+   7.  Deployment Models . . . . . . . . . . . . . . . . . . . . . .  32
+   8.  Zero Trust  . . . . . . . . . . . . . . . . . . . . . . . . .  34
+   9.  Contributors  . . . . . . . . . . . . . . . . . . . . . . . .  35
+   10. Acknowledgement . . . . . . . . . . . . . . . . . . . . . . .  35
+   11. Legal Notices . . . . . . . . . . . . . . . . . . . . . . . .  35
+   12. References  . . . . . . . . . . . . . . . . . . . . . . . . .  36
+   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .  37
 
 
 
@@ -979,26 +979,26 @@ Gallo                         Informational                    [Page 17]
    (Section 4): here operations uses subset inclusion and the
    executionContract fields use the reference profile's order.
 
-   In PIC Profile 0.2, the PIC PCA JWT carries an Indexed Authority Map
-   with flattened canonical sections principal, attributes, invariants,
-   and execution_contract.  Logical execution.contract maps to the
-   canonical execution_contract section.  Removal attenuation applies
-   only to attenuations.principal.remove_bitmap,
-   attenuations.attributes.remove_bitmap, and
-   attenuations.invariants.remove_bitmap, each evaluated against the
-   section-local numeric indexes of its own map section.  Execution-
-   contract restriction does not use a removal bitmap; accepted
-   restrictions are carried as
-   attenuations.execution_contract.additions, validated by PIC-X as
-   canonical key/value entries for the execution_contract section, and
-   assigned the next section-local numeric indexes in the materialized/
-   effective execution_contract section.  Existing execution-contract
-   constraints are not removed, replaced, or weakened; accepted
-   constraints accumulate with logical AND.
+   In PIC Profile 0.2, the PIC PCA JWT context_of_authority carries an
+   Indexed Authority Map, not the normalized Logical Context of
+   Authority directly.  The canonical sections are principal,
+   attributes, invariants, and execution_contract; logical
+   execution.contract maps to execution_contract.
 
+   Section-local numeric indexes start at 0.  Bitmap identity is
+   (section, numeric index), for example principal/0 or invariants/1;
+   JSON object member order has no protocol meaning.
 
+   Indexed Authority Map entries use compact tuples.  Tuple element
+   order is normative:
 
+   *  principal: [key, value];
 
+   *  attributes: [key, value];
+
+   *  execution_contract: [key, value];
+
+   *  invariants: [scope, operation, resourceType, resourceId].
 
 
 
@@ -1010,6 +1010,47 @@ Gallo                         Informational                    [Page 18]
                          PIC Prover and Verifier               July 2026
 
 
+   Scalar logical values become one indexed tuple.  Set or list
+   membership is denormalized into independently indexed boolean
+   membership tuples, for example ["roles:payment-approver", true].
+   This document defines no false-valued membership semantics for
+   Profile 0.2.
+
+   Removal attenuation applies only to
+   attenuations.principal.remove_bitmap,
+   attenuations.attributes.remove_bitmap, and
+   attenuations.invariants.remove_bitmap, each evaluated against the
+   section-local numeric indexes of its own map section.  Removal never
+   adds authority, and a removed entry cannot reappear later in the same
+   continuity.
+
+   Execution-contract restriction does not use a removal bitmap.
+   Accepted restrictions are carried as
+   attenuations.execution_contract.additions.  Each proposed addition is
+   a [key, value] tuple for the execution_contract section; the workload
+   MUST NOT assign its numeric index.  PIC-X validates accepted
+   additions and assigns the next section-local numeric indexes in the
+   materialized/effective execution_contract section.  Existing
+   execution-contract constraints are not removed, replaced, or
+   weakened; accepted constraints accumulate with logical AND.
+
+   Canonical serialization of an already indexed Profile 0.2 authority
+   map is separate from initial index assignment.  For serialization and
+   authority-state hashing, sections are serialized in the profile-
+   defined section order principal, attributes, invariants,
+   execution_contract, and entries within each indexed section are
+   serialized by ascending numeric index.  A JWT artifact hash in
+   Profile 0.2, such as context_of_authority.root.pca_jwt_hash or
+   predecessor_hash, is computed over the compact serialized JWT bytes.
+   An authority-state hash, when a profile defines one, is computed over
+   the canonical/materialized authority representation.  These are
+   separate domains.
+
+   This document does not define the deterministic initial index-
+   assignment algorithm for converting a Logical Context of Authority
+   into an Indexed Authority Map. Implementations MUST NOT infer initial
+   indexes from JSON object member order.
+
 2.5.  Continuity Advancement Construction
 
    The Prover assembles the next continuity advancement from the PoR of
@@ -1017,6 +1058,13 @@ Gallo                         Informational                    [Page 18]
    binding required by the profile, and the profile-defined freshness
    material for the next step.  The profile defines the signed artifact
    that protects those values.
+
+
+
+Gallo                         Informational                    [Page 19]
+
+                         PIC Prover and Verifier               July 2026
+
 
    In PIC Profile 0.2, a PIC Continuity Transition JWT contains
    position, predecessor_hash, challenge.previous_challenge,
@@ -1057,21 +1105,22 @@ Gallo                         Informational                    [Page 18]
    2.  validate the concrete continuity representation selected by the
        profile;
 
-
-
-
-
-Gallo                         Informational                    [Page 19]
-
-                         PIC Prover and Verifier               July 2026
-
-
    3.  validate every required causal advancement or equivalent proof
        representation;
 
    4.  materialize the current authority;
 
    5.  accept only if every required check succeeds; otherwise reject.
+
+
+
+
+
+
+Gallo                         Informational                    [Page 20]
+
+                         PIC Prover and Verifier               July 2026
+
 
    The authority a Verifier may authorize at the current hop is the
    current materialized authority.  By monotonicity (Section 2.4), it is
@@ -1108,20 +1157,33 @@ Gallo                         Informational                    [Page 19]
 
    11.  accept the materialized current authority.
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Gallo                         Informational                    [Page 21]
+
+                         PIC Prover and Verifier               July 2026
+
+
    For PIC Profile 0.2, ordinary verification of a settled artifact
    includes verifying the PIC-X-issued PIC Continuity JWT signature,
    verifying the profile, verifying the nested root PIC PCA JWT at
    context_of_authority.root.pca_jwt, verifying
    context_of_authority.root.pca_jwt_hash, and confirming that the
    artifact is settled and contains no pending
-
-
-
-Gallo                         Informational                    [Page 20]
-
-                         PIC Prover and Verifier               July 2026
-
-
    continuity_transition_jwt.  When revocation is enabled for a
    revocable Profile 0.2 continuity, the Verifier also validates the
    authenticated PCA ID and authenticated continuity position required
@@ -1164,19 +1226,19 @@ Gallo                         Informational                    [Page 20]
    Transition JWT.  The hash of the compact signed PIC PCA JWT is
    carried as context_of_authority.root.pca_jwt_hash.
 
+
+
+
+Gallo                         Informational                    [Page 22]
+
+                         PIC Prover and Verifier               July 2026
+
+
 3.3.  Advancement Validation
 
    For each non-root continuity advancement, the Verifier MUST perform
    the following checks and MUST reject the continuity state if any
    fails:
-
-
-
-
-Gallo                         Informational                    [Page 21]
-
-                         PIC Prover and Verifier               July 2026
-
 
    1.  *integrity* — the advancement artifact or proof is valid under
        the profile's canonical encoding and cryptographic suite
@@ -1219,6 +1281,15 @@ Gallo                         Informational                    [Page 21]
    the signature verified.  The Verifier does *not* trust that the
    Prover already performed these checks; it repeats them independently.
 
+
+
+
+
+Gallo                         Informational                    [Page 23]
+
+                         PIC Prover and Verifier               July 2026
+
+
    *Executed-vs-signed, always.* Independently of the profile - open
    continuation included - a verified continuity state authorizes the
    signed or otherwise bound action and no other.  The reference monitor
@@ -1226,13 +1297,6 @@ Gallo                         Informational                    [Page 21]
    digests actually executed match those bound by the request/execution
    commitment, and MUST refuse any action that differs.  Signing one
    request and executing another is always a violation.
-
-
-
-Gallo                         Informational                    [Page 22]
-
-                         PIC Prover and Verifier               July 2026
-
 
    This is where the cross-lineage composition of Section 1.4 fails:
    authority absent from the predecessor fails non-expansion (6), and a
@@ -1270,6 +1334,18 @@ Gallo                         Informational                    [Page 22]
    profile inherits the guarantee exactly to the extent that its order
    refines its denotation order.
 
+
+
+
+
+
+
+
+Gallo                         Informational                    [Page 24]
+
+                         PIC Prover and Verifier               July 2026
+
+
 4.2.  Attenuation Profiles
 
    Every profile that introduces an authority representation or an
@@ -1282,13 +1358,6 @@ Gallo                         Informational                    [Page 22]
    requiredCompliance: current ⊇ predecessor
    executionModel:     current ⊆ predecessor
    expiresAt:          current ≤ predecessor
-
-
-
-Gallo                         Informational                    [Page 23]
-
-                         PIC Prover and Verifier               July 2026
-
 
    The core uses the abstract relation Attenuates(current, predecessor,
    profile); a Verifier MUST reject a PCA whose profile is unknown or
@@ -1325,26 +1394,19 @@ Gallo                         Informational                    [Page 23]
    PDP.  It does *not inherit the Lean proof* [2] (Section 12): the
    proof covers non-expansion of the _abstract_ order only; semantic
    monotonicity of a concrete vocabulary is a separate proof obligation
+
+
+
+Gallo                         Informational                    [Page 25]
+
+                         PIC Prover and Verifier               July 2026
+
+
    that PIC does not discharge.  This is the same boundary the model
    already draws for heterogeneous translation, and it is a natural
    point of standardization — label vocabularies with provably semantic-
    monotone orders, and the PIC↔PDP interface that carries the
    obligation.
-
-
-
-
-
-
-
-
-
-
-
-Gallo                         Informational                    [Page 24]
-
-                         PIC Prover and Verifier               July 2026
-
 
 5.  Continuity Representations
 
@@ -1391,13 +1453,7 @@ Gallo                         Informational                    [Page 24]
 
 
 
-
-
-
-
-
-
-Gallo                         Informational                    [Page 25]
+Gallo                         Informational                    [Page 26]
 
                          PIC Prover and Verifier               July 2026
 
@@ -1453,7 +1509,7 @@ Gallo                         Informational                    [Page 25]
 
 
 
-Gallo                         Informational                    [Page 26]
+Gallo                         Informational                    [Page 27]
 
                          PIC Prover and Verifier               July 2026
 
@@ -1509,7 +1565,7 @@ Gallo                         Informational                    [Page 26]
 
 
 
-Gallo                         Informational                    [Page 27]
+Gallo                         Informational                    [Page 28]
 
                          PIC Prover and Verifier               July 2026
 
@@ -1565,7 +1621,7 @@ Gallo                         Informational                    [Page 27]
 
 
 
-Gallo                         Informational                    [Page 28]
+Gallo                         Informational                    [Page 29]
 
                          PIC Prover and Verifier               July 2026
 
@@ -1621,7 +1677,7 @@ Gallo                         Informational                    [Page 28]
 
 
 
-Gallo                         Informational                    [Page 29]
+Gallo                         Informational                    [Page 30]
 
                          PIC Prover and Verifier               July 2026
 
@@ -1677,7 +1733,7 @@ Gallo                         Informational                    [Page 29]
 
 
 
-Gallo                         Informational                    [Page 30]
+Gallo                         Informational                    [Page 31]
 
                          PIC Prover and Verifier               July 2026
 
@@ -1733,7 +1789,7 @@ Gallo                         Informational                    [Page 30]
 
 
 
-Gallo                         Informational                    [Page 31]
+Gallo                         Informational                    [Page 32]
 
                          PIC Prover and Verifier               July 2026
 
@@ -1789,7 +1845,7 @@ Gallo                         Informational                    [Page 31]
 
 
 
-Gallo                         Informational                    [Page 32]
+Gallo                         Informational                    [Page 33]
 
                          PIC Prover and Verifier               July 2026
 
@@ -1845,7 +1901,7 @@ Gallo                         Informational                    [Page 32]
 
 
 
-Gallo                         Informational                    [Page 33]
+Gallo                         Informational                    [Page 34]
 
                          PIC Prover and Verifier               July 2026
 
@@ -1901,7 +1957,7 @@ Gallo                         Informational                    [Page 33]
 
 
 
-Gallo                         Informational                    [Page 34]
+Gallo                         Informational                    [Page 35]
 
                          PIC Prover and Verifier               July 2026
 
@@ -1957,7 +2013,7 @@ Gallo                         Informational                    [Page 34]
 
 
 
-Gallo                         Informational                    [Page 35]
+Gallo                         Informational                    [Page 36]
 
                          PIC Prover and Verifier               July 2026
 
@@ -2013,4 +2069,4 @@ Author's Address
 
 
 
-Gallo                         Informational                    [Page 36]
+Gallo                         Informational                    [Page 37]
