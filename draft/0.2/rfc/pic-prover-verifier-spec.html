@@ -1738,8 +1738,8 @@ authority context that establishes the upper bound for the lineage. The root PCA
 to relate to. Every later continuity advancement continues, and may only attenuate, the authority established by the root.<a href="#section-1.8-1" class="pilcrow">¶</a></p>
 <p id="section-1.8-2">This specification does not require every hop to create a new signed PCA. A profile defines the concrete signed root representation and the
 concrete continuity-advancement representation. In PIC Profile 0.2, the trusted root is represented by a <strong>PIC PCA JWT</strong>. A workload
-proposes one advancement by signing a <strong>Continuity Transition JWT</strong> and placing it in a workload-signed candidate <strong>PIC Continuity JWT</strong>.
-PIC-X validates the candidate and issues the next settled <strong>PIC Continuity JWT</strong>.<a href="#section-1.8-2" class="pilcrow">¶</a></p>
+proposes one advancement by signing a <strong>PIC Continuity Transition JWT</strong> and placing it in a workload-signed candidate
+<strong>PIC Continuity JWT</strong>. PIC-X validates the candidate and issues the next settled <strong>PIC Continuity JWT</strong>.<a href="#section-1.8-2" class="pilcrow">¶</a></p>
 <p id="section-1.8-3">The examples represent authority as an <code>operations</code> set — the reference profile, matching the operation-resource privileges of the model
 <span><a href="#references" class="internal xref">[1]</a> (<a href="#references" class="auto internal xref">Section 12</a>)</span>. PIC does not require this representation, nor does it define the application's authorization vocabulary; Section 4
 covers authority as an abstract domain (roles, labels, scopes, policy references) and its relationship to a Policy Decision Point.<a href="#section-1.8-3" class="pilcrow">¶</a></p>
@@ -1889,9 +1889,9 @@ produce next continuity advancement
 emit updated continuity state
 </pre><a href="#section-2.1-3" class="pilcrow">¶</a>
 </div>
-<p id="section-2.1-4">At the abstract level, the advancement is not required to be a PCA. In PIC Profile 0.2, the proposed advancement artifact is a Continuity
-Transition JWT carried as <code>continuity_transition_jwt</code> in a workload-signed candidate PIC Continuity JWT. PIC-X validates that candidate and
-issues the next settled PIC Continuity JWT with no pending <code>continuity_transition_jwt</code>.<a href="#section-2.1-4" class="pilcrow">¶</a></p>
+<p id="section-2.1-4">At the abstract level, the advancement is not required to be a PCA. The PIC Continuity Transition JWT is the proposed Profile 0.2
+advancement artifact. It is carried as <code>continuity_transition_jwt</code> in a workload-signed candidate PIC Continuity JWT. PIC-X validates that
+candidate and issues the next settled PIC Continuity JWT with no pending <code>continuity_transition_jwt</code>.<a href="#section-2.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="predecessor-validation">
@@ -1927,9 +1927,8 @@ the PoR required by the selected profile. The PoR establishes:<a href="#section-
             <p id="section-2.3-2.5.1">conformance evidence where the profile requires executor conformance.<a href="#section-2.3-2.5.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-2.3-3">For PIC Profile 0.2, <code>proof_of_relationship</code> is carried inside the Continuity Transition JWT. Key binding is part of that PoR; this
-specification does not define a separate generic <code>key_binding</code> field. The predecessor hash for the current centralized Profile 0.2
-realization is:<a href="#section-2.3-3" class="pilcrow">¶</a></p>
+<p id="section-2.3-3">For PIC Profile 0.2, the PIC Continuity Transition JWT carries <code>proof_of_relationship</code>. Key binding is part of that PoR; this specification
+does not define a separate generic <code>key_binding</code> field. The predecessor hash for the current centralized Profile 0.2 realization is:<a href="#section-2.3-3" class="pilcrow">¶</a></p>
 <div class="lang-text sourcecode" id="section-2.3-4">
 <pre>
 predecessor_hash = hash(compact previous trusted PIC Continuity JWT N)
@@ -2042,12 +2041,14 @@ or extend the validity period. <em>What is dropped at a hop is lost:</em> no lat
 </div>
 <p id="section-2.4-6">The order that decides "more restrictive" is defined by the profile (Section 4): here <code>operations</code> uses subset inclusion and the
 <code>executionContract</code> fields use the reference profile's order.<a href="#section-2.4-6" class="pilcrow">¶</a></p>
-<p id="section-2.4-7">In PIC Profile 0.2, the PIC PCA JWT carries an Indexed Authority Map. Removal attenuation applies only to
-<code>attenuations.principal.remove_bitmap</code>, <code>attenuations.attributes.remove_bitmap</code>, and <code>attenuations.invariants.remove_bitmap</code>, each evaluated
-against the section-local numeric indexes of its own map section. Execution-contract restriction does not use a removal bitmap; accepted
-contract restrictions are carried as <code>attenuations.contract.additions</code>, validated by PIC-X as canonical contract <code>key</code>/<code>value</code> entries, and
-assigned the next section-local numeric indexes in the materialized effective contract map. Existing contract constraints are not removed,
-replaced, or weakened; accepted constraints accumulate with logical AND.<a href="#section-2.4-7" class="pilcrow">¶</a></p>
+<p id="section-2.4-7">In PIC Profile 0.2, the PIC PCA JWT carries an Indexed Authority Map with flattened canonical sections <code>principal</code>, <code>attributes</code>,
+<code>invariants</code>, and <code>execution_contract</code>. Logical <code>execution.contract</code> maps to the canonical <code>execution_contract</code> section. Removal attenuation
+applies only to <code>attenuations.principal.remove_bitmap</code>, <code>attenuations.attributes.remove_bitmap</code>, and
+<code>attenuations.invariants.remove_bitmap</code>, each evaluated against the section-local numeric indexes of its own map section.
+Execution-contract restriction does not use a removal bitmap; accepted restrictions are carried as
+<code>attenuations.execution_contract.additions</code>, validated by PIC-X as canonical <code>key</code>/<code>value</code> entries for the <code>execution_contract</code> section, and
+assigned the next section-local numeric indexes in the materialized/effective <code>execution_contract</code> section. Existing execution-contract
+constraints are not removed, replaced, or weakened; accepted constraints accumulate with logical AND.<a href="#section-2.4-7" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="continuity-advancement-construction">
@@ -2058,7 +2059,7 @@ replaced, or weakened; accepted constraints accumulate with logical AND.<a href=
 <p id="section-2.5-1">The Prover assembles the next continuity advancement from the PoR of Section 2.3, the attenuation of Section 2.4, the request or execution
 binding required by the profile, and the profile-defined freshness material for the next step. The profile defines the signed artifact that
 protects those values.<a href="#section-2.5-1" class="pilcrow">¶</a></p>
-<p id="section-2.5-2">In PIC Profile 0.2, a Continuity Transition JWT contains <code>position</code>, <code>predecessor_hash</code>, <code>challenge.previous_challenge</code>,
+<p id="section-2.5-2">In PIC Profile 0.2, a PIC Continuity Transition JWT contains <code>position</code>, <code>predecessor_hash</code>, <code>challenge.previous_challenge</code>,
 <code>challenge.next_challenge</code>, <code>attenuations</code>, and <code>proof_of_relationship</code>. It is carried only by the workload-produced candidate PIC
 Continuity JWT for the current exchange. PIC-X validates the candidate and, if the advancement is accepted, issues the next settled PIC
 Continuity JWT with no pending <code>continuity_transition_jwt</code>. Decoded JSON views of those JWTs are illustrative only; the wire representation
@@ -2158,9 +2159,10 @@ continuity position required by the PIC Revocation Specification before evaluati
 does not assign concrete settled-token fields or placement for those revocation coordinates. Ordinary Profile 0.2 Verifiers are not required
 to replay a transported transition history.<a href="#section-3.1-3" class="pilcrow">¶</a></p>
 <p id="section-3.1-4">When PIC-X processes an advancement candidate, it additionally verifies the previous trusted settled PIC Continuity JWT, the workload-signed
-candidate PIC Continuity JWT, the single <code>continuity_transition_jwt</code>, the Continuity Transition JWT signature, PoR/key binding,
-<code>predecessor_hash</code>, position increment, challenge continuity, attenuation, contract additions, non-expansion, revocation, and local/profile
-policy. If validation succeeds, PIC-X issues the next settled PIC Continuity JWT with no pending transition.<a href="#section-3.1-4" class="pilcrow">¶</a></p>
+candidate PIC Continuity JWT, the single <code>continuity_transition_jwt</code>, the PIC Continuity Transition JWT signature, PoR/key binding,
+<code>predecessor_hash</code>, position increment, challenge continuity, attenuation including <code>attenuations.execution_contract.additions</code>,
+non-expansion, revocation, and local/profile policy. If validation succeeds, PIC-X issues the next settled PIC Continuity JWT with no
+pending transition.<a href="#section-3.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="root-validation">
@@ -2185,7 +2187,7 @@ reference, because there is no predecessor. The Verifier MUST:<a href="#section-
 </li>
         </ul>
 <p id="section-3.2-3">In PIC Profile 0.2, the root representation is a PIC PCA JWT carried at <code>context_of_authority.root.pca_jwt</code> by the settled PIC Continuity
-JWT. The PIC PCA JWT carries the root Indexed Authority Map and <code>challenge.next_challenge</code>, which initializes the first Continuity
+JWT. The PIC PCA JWT carries the root Indexed Authority Map and <code>challenge.next_challenge</code>, which initializes the first PIC Continuity
 Transition JWT. The hash of the compact signed PIC PCA JWT is carried as <code>context_of_authority.root.pca_jwt_hash</code>.<a href="#section-3.2-3" class="pilcrow">¶</a></p>
 </section>
 </div>
@@ -2379,9 +2381,9 @@ trusted PIC-X-issued settled PIC Continuity JWT N+1
 </pre><a href="#section-5.1-2" class="pilcrow">¶</a>
 </div>
 <p id="section-5.1-3">The candidate is not a trusted settled continuity artifact. PIC-X validates the previous settled continuity, the candidate outer signature,
-the single Continuity Transition JWT, PoR/key binding, predecessor hash, position increment, challenge continuity, attenuation,
-non-expansion, revocation, and local/profile policy. If validation succeeds, PIC-X issues the next settled PIC Continuity JWT with no
-pending transition.<a href="#section-5.1-3" class="pilcrow">¶</a></p>
+the single PIC Continuity Transition JWT, PoR/key binding, predecessor hash, position increment, challenge continuity, attenuation including
+<code>attenuations.execution_contract.additions</code>, non-expansion, revocation, and local/profile policy. If validation succeeds, PIC-X issues the
+next settled PIC Continuity JWT with no pending transition.<a href="#section-5.1-3" class="pilcrow">¶</a></p>
 <p id="section-5.1-4">Profile 0.2 does not transport a replayable transition graph in the settled PIC Continuity JWT. Any settled-token placement for
 materialized authority state or post-initial challenge material is defined by the selected Profile 0.2 schema; this document does not invent
 a current-authority field or challenge field.<a href="#section-5.1-4" class="pilcrow">¶</a></p>

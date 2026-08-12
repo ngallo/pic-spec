@@ -306,8 +306,8 @@ to relate to. Every later continuity advancement continues, and may only attenua
 
 This specification does not require every hop to create a new signed PCA. A profile defines the concrete signed root representation and the
 concrete continuity-advancement representation. In PIC Profile 0.2, the trusted root is represented by a **PIC PCA JWT**. A workload
-proposes one advancement by signing a **Continuity Transition JWT** and placing it in a workload-signed candidate **PIC Continuity JWT**.
-PIC-X validates the candidate and issues the next settled **PIC Continuity JWT**.
+proposes one advancement by signing a **PIC Continuity Transition JWT** and placing it in a workload-signed candidate
+**PIC Continuity JWT**. PIC-X validates the candidate and issues the next settled **PIC Continuity JWT**.
 
 The examples represent authority as an `operations` set — the reference profile, matching the operation-resource privileges of the model
 [[1]](#references). PIC does not require this representation, nor does it define the application's authorization vocabulary; Section 4
@@ -425,9 +425,9 @@ produce next continuity advancement
 emit updated continuity state
 ~~~
 
-At the abstract level, the advancement is not required to be a PCA. In PIC Profile 0.2, the proposed advancement artifact is a Continuity
-Transition JWT carried as `continuity_transition_jwt` in a workload-signed candidate PIC Continuity JWT. PIC-X validates that candidate and
-issues the next settled PIC Continuity JWT with no pending `continuity_transition_jwt`.
+At the abstract level, the advancement is not required to be a PCA. The PIC Continuity Transition JWT is the proposed Profile 0.2
+advancement artifact. It is carried as `continuity_transition_jwt` in a workload-signed candidate PIC Continuity JWT. PIC-X validates that
+candidate and issues the next settled PIC Continuity JWT with no pending `continuity_transition_jwt`.
 
 ## Predecessor Validation
 
@@ -445,9 +445,8 @@ the PoR required by the selected profile. The PoR establishes:
 - request or execution binding where applicable;
 - conformance evidence where the profile requires executor conformance.
 
-For PIC Profile 0.2, `proof_of_relationship` is carried inside the Continuity Transition JWT. Key binding is part of that PoR; this
-specification does not define a separate generic `key_binding` field. The predecessor hash for the current centralized Profile 0.2
-realization is:
+For PIC Profile 0.2, the PIC Continuity Transition JWT carries `proof_of_relationship`. Key binding is part of that PoR; this specification
+does not define a separate generic `key_binding` field. The predecessor hash for the current centralized Profile 0.2 realization is:
 
 ~~~text
 predecessor_hash = hash(compact previous trusted PIC Continuity JWT N)
@@ -556,12 +555,14 @@ The root authority context (Section 1.8) granted `READ-ALL` and `BACKUP`. The ba
 The order that decides "more restrictive" is defined by the profile (Section 4): here `operations` uses subset inclusion and the
 `executionContract` fields use the reference profile's order.
 
-In PIC Profile 0.2, the PIC PCA JWT carries an Indexed Authority Map. Removal attenuation applies only to
-`attenuations.principal.remove_bitmap`, `attenuations.attributes.remove_bitmap`, and `attenuations.invariants.remove_bitmap`, each evaluated
-against the section-local numeric indexes of its own map section. Execution-contract restriction does not use a removal bitmap; accepted
-contract restrictions are carried as `attenuations.contract.additions`, validated by PIC-X as canonical contract `key`/`value` entries, and
-assigned the next section-local numeric indexes in the materialized effective contract map. Existing contract constraints are not removed,
-replaced, or weakened; accepted constraints accumulate with logical AND.
+In PIC Profile 0.2, the PIC PCA JWT carries an Indexed Authority Map with flattened canonical sections `principal`, `attributes`,
+`invariants`, and `execution_contract`. Logical `execution.contract` maps to the canonical `execution_contract` section. Removal attenuation
+applies only to `attenuations.principal.remove_bitmap`, `attenuations.attributes.remove_bitmap`, and
+`attenuations.invariants.remove_bitmap`, each evaluated against the section-local numeric indexes of its own map section.
+Execution-contract restriction does not use a removal bitmap; accepted restrictions are carried as
+`attenuations.execution_contract.additions`, validated by PIC-X as canonical `key`/`value` entries for the `execution_contract` section, and
+assigned the next section-local numeric indexes in the materialized/effective `execution_contract` section. Existing execution-contract
+constraints are not removed, replaced, or weakened; accepted constraints accumulate with logical AND.
 
 ## Continuity Advancement Construction
 
@@ -569,7 +570,7 @@ The Prover assembles the next continuity advancement from the PoR of Section 2.3
 binding required by the profile, and the profile-defined freshness material for the next step. The profile defines the signed artifact that
 protects those values.
 
-In PIC Profile 0.2, a Continuity Transition JWT contains `position`, `predecessor_hash`, `challenge.previous_challenge`,
+In PIC Profile 0.2, a PIC Continuity Transition JWT contains `position`, `predecessor_hash`, `challenge.previous_challenge`,
 `challenge.next_challenge`, `attenuations`, and `proof_of_relationship`. It is carried only by the workload-produced candidate PIC
 Continuity JWT for the current exchange. PIC-X validates the candidate and, if the advancement is accepted, issues the next settled PIC
 Continuity JWT with no pending `continuity_transition_jwt`. Decoded JSON views of those JWTs are illustrative only; the wire representation
@@ -631,9 +632,10 @@ does not assign concrete settled-token fields or placement for those revocation 
 to replay a transported transition history.
 
 When PIC-X processes an advancement candidate, it additionally verifies the previous trusted settled PIC Continuity JWT, the workload-signed
-candidate PIC Continuity JWT, the single `continuity_transition_jwt`, the Continuity Transition JWT signature, PoR/key binding,
-`predecessor_hash`, position increment, challenge continuity, attenuation, contract additions, non-expansion, revocation, and local/profile
-policy. If validation succeeds, PIC-X issues the next settled PIC Continuity JWT with no pending transition.
+candidate PIC Continuity JWT, the single `continuity_transition_jwt`, the PIC Continuity Transition JWT signature, PoR/key binding,
+`predecessor_hash`, position increment, challenge continuity, attenuation including `attenuations.execution_contract.additions`,
+non-expansion, revocation, and local/profile policy. If validation succeeds, PIC-X issues the next settled PIC Continuity JWT with no
+pending transition.
 
 ## Root Validation
 
@@ -646,7 +648,7 @@ reference, because there is no predecessor. The Verifier MUST:
 - extract the root authority and any root bootstrap challenge or equivalent freshness material.
 
 In PIC Profile 0.2, the root representation is a PIC PCA JWT carried at `context_of_authority.root.pca_jwt` by the settled PIC Continuity
-JWT. The PIC PCA JWT carries the root Indexed Authority Map and `challenge.next_challenge`, which initializes the first Continuity
+JWT. The PIC PCA JWT carries the root Indexed Authority Map and `challenge.next_challenge`, which initializes the first PIC Continuity
 Transition JWT. The hash of the compact signed PIC PCA JWT is carried as `context_of_authority.root.pca_jwt_hash`.
 
 ## Advancement Validation
@@ -788,9 +790,9 @@ trusted PIC-X-issued settled PIC Continuity JWT N+1
 ~~~
 
 The candidate is not a trusted settled continuity artifact. PIC-X validates the previous settled continuity, the candidate outer signature,
-the single Continuity Transition JWT, PoR/key binding, predecessor hash, position increment, challenge continuity, attenuation,
-non-expansion, revocation, and local/profile policy. If validation succeeds, PIC-X issues the next settled PIC Continuity JWT with no
-pending transition.
+the single PIC Continuity Transition JWT, PoR/key binding, predecessor hash, position increment, challenge continuity, attenuation including
+`attenuations.execution_contract.additions`, non-expansion, revocation, and local/profile policy. If validation succeeds, PIC-X issues the
+next settled PIC Continuity JWT with no pending transition.
 
 Profile 0.2 does not transport a replayable transition graph in the settled PIC Continuity JWT. Any settled-token placement for
 materialized authority state or post-initial challenge material is defined by the selected Profile 0.2 schema; this document does not invent

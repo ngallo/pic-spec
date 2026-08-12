@@ -56,20 +56,20 @@ informative: {}
 >
 > Current project information and published specifications are available at `https://www.pic-protocol.org/`.
 
---- note_Work_In_Progress
+--- to_be_removed_note_Work_In_Progress
 
-> **Work in Progress — Experimental Design**
->
-> The deployment and architecture model described in this document is under active development.
->
-> This model may change substantially before a later stable revision.
->
-> Implementers MUST NOT assume wire compatibility, semantic compatibility, or backward compatibility with future revisions.
->
-> Future drafts may introduce breaking changes to terminology, data structures, processing rules, profile bindings, and
-> interoperability requirements.
->
-> The current text is published for design review, experimentation, and implementation feedback.
+**Work in Progress — Experimental Design**
+
+The deployment and architecture model described in this document is under active development.
+
+This model may change substantially before a later stable revision.
+
+Implementers MUST NOT assume wire compatibility, semantic compatibility, or backward compatibility with future revisions.
+
+Future drafts may introduce breaking changes to terminology, data structures, processing rules, profile bindings, and
+interoperability requirements.
+
+The current text is published for design review, experimentation, and implementation feedback.
 
 --- note_Editors
 
@@ -146,9 +146,9 @@ PIC-X-issued settled PIC Continuity JWT N+1
         `-- no continuity_transition_jwt
 ~~~
 
-PIC-X validates the workload-signed candidate and Continuity Transition JWT. PIC-X does not centrally sign the Continuity Transition JWT; it
-signs the next settled PIC Continuity JWT. PIC-X is a concrete implementation and profile realization, not a required component of the
-abstract PIC model.
+PIC-X validates the workload-signed candidate and PIC Continuity Transition JWT. PIC-X does not centrally sign the PIC Continuity Transition
+JWT; it signs the next settled PIC Continuity JWT. PIC-X is a concrete implementation and profile realization, not a required component of
+the abstract PIC model.
 
 ~~~text
 +--------+        +--------+        +--------+

@@ -90,21 +90,21 @@ Gallo                         Informational                     [Page 1]
 
 Work In Progress
 
-      *Work in Progress — Experimental Design*
+   This note is to be removed before publishing as an RFC.
 
-      The deployment and architecture model described in this document
-      is under active development.
+   *Work in Progress — Experimental Design*
 
-      This model may change substantially before a later stable
-      revision.
+   The deployment and architecture model described in this document is
+   under active development.
 
-      Implementers MUST NOT assume wire compatibility, semantic
-      compatibility, or backward compatibility with future revisions.
+   This model may change substantially before a later stable revision.
 
-      Future drafts may introduce breaking changes to terminology, data
-      structures, processing rules, profile bindings, and
-      interoperability requirements.
+   Implementers MUST NOT assume wire compatibility, semantic
+   compatibility, or backward compatibility with future revisions.
 
+   Future drafts may introduce breaking changes to terminology, data
+   structures, processing rules, profile bindings, and interoperability
+   requirements.
 
 
 
@@ -114,8 +114,8 @@ Gallo                         Informational                     [Page 2]
                      PIC Architecture and Deployment         August 2026
 
 
-      The current text is published for design review, experimentation,
-      and implementation feedback.
+   The current text is published for design review, experimentation, and
+   implementation feedback.
 
 Editors
 
@@ -226,8 +226,8 @@ Gallo                         Informational                     [Page 4]
                      PIC Architecture and Deployment         August 2026
 
 
-   PIC-X validates the workload-signed candidate and Continuity
-   Transition JWT.  PIC-X does not centrally sign the Continuity
+   PIC-X validates the workload-signed candidate and PIC Continuity
+   Transition JWT.  PIC-X does not centrally sign the PIC Continuity
    Transition JWT; it signs the next settled PIC Continuity JWT.  PIC-X
    is a concrete implementation and profile realization, not a required
    component of the abstract PIC model.

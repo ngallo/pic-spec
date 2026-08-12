@@ -84,28 +84,28 @@ Gallo                         Informational                     [Page 1]
 
 Work In Progress
 
-      *Work in Progress — Experimental Design*
+   This note is to be removed before publishing as an RFC.
 
-      The revocation model described in this document is under active
-      development.
+   *Work in Progress — Experimental Design*
 
-      This model may change substantially before a later stable
-      revision.
+   The revocation model described in this document is under active
+   development.
 
-      Implementers MUST NOT assume wire compatibility, semantic
-      compatibility, or backward compatibility with future revisions.
+   This model may change substantially before a later stable revision.
 
-      Future drafts may introduce breaking changes to terminology, data
-      structures, processing rules, profile bindings, and
-      interoperability requirements.
+   Implementers MUST NOT assume wire compatibility, semantic
+   compatibility, or backward compatibility with future revisions.
 
-      The current text is published for design review, experimentation,
-      and implementation feedback.
+   Future drafts may introduce breaking changes to terminology, data
+   structures, processing rules, profile bindings, and interoperability
+   requirements.
+
+   The current text is published for design review, experimentation, and
+   implementation feedback.
 
 Editors
 
    *  *Nicola Gallo* (Nitro Agility S.r.l.)  Lead Editor
-
 
 
 

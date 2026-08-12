@@ -116,23 +116,24 @@ Gallo                         Informational                     [Page 2]
 
 Work In Progress
 
-      *Work in Progress — Experimental Design*
+   This note is to be removed before publishing as an RFC.
 
-      The Sandboxed Execution and Composition Collection model described
-      in this document is under active development.
+   *Work in Progress — Experimental Design*
 
-      This model may change substantially before a later stable
-      revision.
+   The Sandboxed Execution and Composition Collection model described in
+   this document is under active development.
 
-      Implementers MUST NOT assume wire compatibility, semantic
-      compatibility, or backward compatibility with future revisions.
+   This model may change substantially before a later stable revision.
 
-      Future drafts may introduce breaking changes to terminology, data
-      structures, processing rules, profile bindings, and
-      interoperability requirements.
+   Implementers MUST NOT assume wire compatibility, semantic
+   compatibility, or backward compatibility with future revisions.
 
-      The current text is published for design review, experimentation,
-      and implementation feedback.
+   Future drafts may introduce breaking changes to terminology, data
+   structures, processing rules, profile bindings, and interoperability
+   requirements.
+
+   The current text is published for design review, experimentation, and
+   implementation feedback.
 
 Editors
 
@@ -161,7 +162,6 @@ Table of Contents
      2.5.  Originating the Sandboxed Execution . . . . . . . . . . .  15
      2.6.  Guardrail Prover and Verifier Profile . . . . . . . . . .  18
      2.7.  Operation Profile . . . . . . . . . . . . . . . . . . . .  22
-   3.  Acceptance  . . . . . . . . . . . . . . . . . . . . . . . . .  22
 
 
 
@@ -170,6 +170,7 @@ Gallo                         Informational                     [Page 3]
                          PIC Sandboxed Execution               July 2026
 
 
+   3.  Acceptance  . . . . . . . . . . . . . . . . . . . . . . . . .  22
    4.  Bypass  . . . . . . . . . . . . . . . . . . . . . . . . . . .  25
      4.1.  Non-PIC-Aware Target  . . . . . . . . . . . . . . . . . .  25
      4.2.  Relationship to Service Meshes and Deployment
@@ -214,7 +215,6 @@ Gallo                         Informational                     [Page 3]
 
    The outer continuity applies PIC recursively to the execution that
    validates and controls the inner execution.
-
 
 
 
@@ -909,7 +909,7 @@ Gallo                         Informational                    [Page 16]
    In PIC Profile 0.2, the outer root is represented by the trusted root
    PIC PCA JWT, and the bootstrap challenge is carried in that PIC PCA
    JWT.  The first guardrail decision appears in the first applicable
-   Continuity Transition JWT proposed for the outer continuity.
+   PIC Continuity Transition JWT proposed for the outer continuity.
 
    The outer root MAY carry an origin-level commitment identifying the
    execution proposal, but it MUST NOT contain a guardrail verdict.
@@ -1131,16 +1131,16 @@ Gallo                         Informational                    [Page 20]
    repeats the same procedure — and that repetition is the sandbox.
 
    In the current PIC Profile 0.2 / PIC-X realization, the guardrail or
-   workload creates a workload-signed Continuity Transition JWT, places
-   it as the single continuity_transition_jwt in a workload-signed
-   candidate PIC Continuity JWT, and submits the candidate for PIC-X
-   validation.  PIC-X validates the outer continuity, ENFORCE authority,
-   Composition Collection commitment, PoR/key binding, predecessor hash,
-   challenge continuity, attenuation, revocation, and local/profile
-   policy.  On success, PIC-X issues the next settled outer PIC
-   Continuity JWT with no pending continuity_transition_jwt.  This is
-   ordinary Profile 0.2 continuity advancement, not a sandbox-specific
-   protocol.
+   workload creates a workload-signed PIC Continuity Transition JWT,
+   places it as the single continuity_transition_jwt in a workload-
+   signed candidate PIC Continuity JWT, and submits the candidate for
+   PIC-X validation.  PIC-X validates the outer continuity, ENFORCE
+   authority, Composition Collection commitment, PoR/key binding,
+   predecessor hash, challenge continuity, attenuation, revocation, and
+   local/profile policy.  On success, PIC-X issues the next settled
+   outer PIC Continuity JWT with no pending continuity_transition_jwt.
+   This is ordinary Profile 0.2 continuity advancement, not a sandbox-
+   specific protocol.
 
    receive outer continuity state
          |
@@ -1411,7 +1411,7 @@ Gallo                         Informational                    [Page 25]
    For current PIC Profile 0.2, the materializing guardrail or workload
    validates the outer predecessor, validates every Composition
    Collection member, evaluates enforcement, constructs and signs the
-   Continuity Transition JWT, constructs and signs the candidate PIC
+   PIC Continuity Transition JWT, constructs and signs the candidate PIC
    Continuity JWT, and submits the candidate through the ordinary PIC-X
    advancement flow.  PIC-X validates the candidate and transition and,
    on success, issues the next settled outer PIC Continuity JWT.  The

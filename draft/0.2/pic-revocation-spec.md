@@ -56,20 +56,20 @@ informative: {}
 >
 > Current project information and published specifications are available at `https://www.pic-protocol.org/`.
 
---- note_Work_In_Progress
+--- to_be_removed_note_Work_In_Progress
 
-> **Work in Progress — Experimental Design**
->
-> The revocation model described in this document is under active development.
->
-> This model may change substantially before a later stable revision.
->
-> Implementers MUST NOT assume wire compatibility, semantic compatibility, or backward compatibility with future revisions.
->
-> Future drafts may introduce breaking changes to terminology, data structures, processing rules, profile bindings, and
-> interoperability requirements.
->
-> The current text is published for design review, experimentation, and implementation feedback.
+**Work in Progress — Experimental Design**
+
+The revocation model described in this document is under active development.
+
+This model may change substantially before a later stable revision.
+
+Implementers MUST NOT assume wire compatibility, semantic compatibility, or backward compatibility with future revisions.
+
+Future drafts may introduce breaking changes to terminology, data structures, processing rules, profile bindings, and
+interoperability requirements.
+
+The current text is published for design review, experimentation, and implementation feedback.
 
 --- note_Editors
 

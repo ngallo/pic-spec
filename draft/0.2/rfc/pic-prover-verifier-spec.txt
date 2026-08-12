@@ -130,14 +130,14 @@ Table of Contents
      2.2.  Predecessor Validation  . . . . . . . . . . . . . . . . .  14
      2.3.  Proof of Relationship . . . . . . . . . . . . . . . . . .  14
      2.4.  Invariant Monotonicity  . . . . . . . . . . . . . . . . .  17
-     2.5.  Continuity Advancement Construction . . . . . . . . . . .  18
+     2.5.  Continuity Advancement Construction . . . . . . . . . . .  19
    3.  Verifier Requirements . . . . . . . . . . . . . . . . . . . .  19
      3.1.  Verifier Procedure  . . . . . . . . . . . . . . . . . . .  20
      3.2.  Root Validation . . . . . . . . . . . . . . . . . . . . .  21
-     3.3.  Advancement Validation  . . . . . . . . . . . . . . . . .  22
+     3.3.  Advancement Validation  . . . . . . . . . . . . . . . . .  21
    4.  Authority Domains and Attenuation Profiles  . . . . . . . . .  23
      4.1.  Authority as an Abstract Domain . . . . . . . . . . . . .  23
-     4.2.  Attenuation Profiles  . . . . . . . . . . . . . . . . . .  24
+     4.2.  Attenuation Profiles  . . . . . . . . . . . . . . . . . .  23
      4.3.  Policy Decision Point (PDP) Integration . . . . . . . . .  24
    5.  Continuity Representations  . . . . . . . . . . . . . . . . .  25
      5.1.  Current Profile 0.2 Representation  . . . . . . . . . . .  25
@@ -550,10 +550,10 @@ Gallo                         Informational                     [Page 9]
    PCA.  A profile defines the concrete signed root representation and
    the concrete continuity-advancement representation.  In PIC Profile
    0.2, the trusted root is represented by a *PIC PCA JWT*. A workload
-   proposes one advancement by signing a *Continuity Transition JWT* and
-   placing it in a workload-signed candidate *PIC Continuity JWT*. PIC-X
-   validates the candidate and issues the next settled *PIC Continuity
-   JWT*.
+   proposes one advancement by signing a *PIC Continuity Transition JWT*
+   and placing it in a workload-signed candidate *PIC Continuity JWT*.
+   PIC-X validates the candidate and issues the next settled *PIC
+   Continuity JWT*.
 
 
 
@@ -748,11 +748,11 @@ Gallo                         Informational                    [Page 13]
    emit updated continuity state
 
    At the abstract level, the advancement is not required to be a PCA.
-   In PIC Profile 0.2, the proposed advancement artifact is a Continuity
-   Transition JWT carried as continuity_transition_jwt in a workload-
-   signed candidate PIC Continuity JWT.  PIC-X validates that candidate
-   and issues the next settled PIC Continuity JWT with no pending
-   continuity_transition_jwt.
+   The PIC Continuity Transition JWT is the proposed Profile 0.2
+   advancement artifact.  It is carried as continuity_transition_jwt in
+   a workload-signed candidate PIC Continuity JWT.  PIC-X validates that
+   candidate and issues the next settled PIC Continuity JWT with no
+   pending continuity_transition_jwt.
 
 2.2.  Predecessor Validation
 
@@ -786,8 +786,8 @@ Gallo                         Informational                    [Page 14]
                          PIC Prover and Verifier               July 2026
 
 
-   For PIC Profile 0.2, proof_of_relationship is carried inside the
-   Continuity Transition JWT.  Key binding is part of that PoR; this
+   For PIC Profile 0.2, the PIC Continuity Transition JWT carries
+   proof_of_relationship.  Key binding is part of that PoR; this
    specification does not define a separate generic key_binding field.
    The predecessor hash for the current centralized Profile 0.2
    realization is:
@@ -979,27 +979,27 @@ Gallo                         Informational                    [Page 17]
    (Section 4): here operations uses subset inclusion and the
    executionContract fields use the reference profile's order.
 
-   In PIC Profile 0.2, the PIC PCA JWT carries an Indexed Authority Map.
-   Removal attenuation applies only to
-   attenuations.principal.remove_bitmap,
+   In PIC Profile 0.2, the PIC PCA JWT carries an Indexed Authority Map
+   with flattened canonical sections principal, attributes, invariants,
+   and execution_contract.  Logical execution.contract maps to the
+   canonical execution_contract section.  Removal attenuation applies
+   only to attenuations.principal.remove_bitmap,
    attenuations.attributes.remove_bitmap, and
    attenuations.invariants.remove_bitmap, each evaluated against the
    section-local numeric indexes of its own map section.  Execution-
-   contract restriction does not use a removal bitmap; accepted contract
-   restrictions are carried as attenuations.contract.additions,
-   validated by PIC-X as canonical contract key/value entries, and
-   assigned the next section-local numeric indexes in the materialized
-   effective contract map.  Existing contract constraints are not
-   removed, replaced, or weakened; accepted constraints accumulate with
-   logical AND.
+   contract restriction does not use a removal bitmap; accepted
+   restrictions are carried as
+   attenuations.execution_contract.additions, validated by PIC-X as
+   canonical key/value entries for the execution_contract section, and
+   assigned the next section-local numeric indexes in the materialized/
+   effective execution_contract section.  Existing execution-contract
+   constraints are not removed, replaced, or weakened; accepted
+   constraints accumulate with logical AND.
 
-2.5.  Continuity Advancement Construction
 
-   The Prover assembles the next continuity advancement from the PoR of
-   Section 2.3, the attenuation of Section 2.4, the request or execution
-   binding required by the profile, and the profile-defined freshness
-   material for the next step.  The profile defines the signed artifact
-   that protects those values.
+
+
+
 
 
 
@@ -1010,8 +1010,16 @@ Gallo                         Informational                    [Page 18]
                          PIC Prover and Verifier               July 2026
 
 
-   In PIC Profile 0.2, a Continuity Transition JWT contains position,
-   predecessor_hash, challenge.previous_challenge,
+2.5.  Continuity Advancement Construction
+
+   The Prover assembles the next continuity advancement from the PoR of
+   Section 2.3, the attenuation of Section 2.4, the request or execution
+   binding required by the profile, and the profile-defined freshness
+   material for the next step.  The profile defines the signed artifact
+   that protects those values.
+
+   In PIC Profile 0.2, a PIC Continuity Transition JWT contains
+   position, predecessor_hash, challenge.previous_challenge,
    challenge.next_challenge, attenuations, and proof_of_relationship.
    It is carried only by the workload-produced candidate PIC Continuity
    JWT for the current exchange.  PIC-X validates the candidate and, if
@@ -1049,14 +1057,6 @@ Gallo                         Informational                    [Page 18]
    2.  validate the concrete continuity representation selected by the
        profile;
 
-   3.  validate every required causal advancement or equivalent proof
-       representation;
-
-   4.  materialize the current authority;
-
-   5.  accept only if every required check succeeds; otherwise reject.
-
-
 
 
 
@@ -1065,6 +1065,13 @@ Gallo                         Informational                    [Page 19]
 
                          PIC Prover and Verifier               July 2026
 
+
+   3.  validate every required causal advancement or equivalent proof
+       representation;
+
+   4.  materialize the current authority;
+
+   5.  accept only if every required check succeeds; otherwise reject.
 
    The authority a Verifier may authorize at the current hop is the
    current materialized authority.  By monotonicity (Section 2.4), it is
@@ -1101,19 +1108,12 @@ Gallo                         Informational                    [Page 19]
 
    11.  accept the materialized current authority.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+   For PIC Profile 0.2, ordinary verification of a settled artifact
+   includes verifying the PIC-X-issued PIC Continuity JWT signature,
+   verifying the profile, verifying the nested root PIC PCA JWT at
+   context_of_authority.root.pca_jwt, verifying
+   context_of_authority.root.pca_jwt_hash, and confirming that the
+   artifact is settled and contains no pending
 
 
 
@@ -1122,12 +1122,6 @@ Gallo                         Informational                    [Page 20]
                          PIC Prover and Verifier               July 2026
 
 
-   For PIC Profile 0.2, ordinary verification of a settled artifact
-   includes verifying the PIC-X-issued PIC Continuity JWT signature,
-   verifying the profile, verifying the nested root PIC PCA JWT at
-   context_of_authority.root.pca_jwt, verifying
-   context_of_authority.root.pca_jwt_hash, and confirming that the
-   artifact is settled and contains no pending
    continuity_transition_jwt.  When revocation is enabled for a
    revocable Profile 0.2 continuity, the Verifier also validates the
    authenticated PCA ID and authenticated continuity position required
@@ -1140,12 +1134,12 @@ Gallo                         Informational                    [Page 20]
    When PIC-X processes an advancement candidate, it additionally
    verifies the previous trusted settled PIC Continuity JWT, the
    workload-signed candidate PIC Continuity JWT, the single
-   continuity_transition_jwt, the Continuity Transition JWT signature,
-   PoR/key binding, predecessor_hash, position increment, challenge
-   continuity, attenuation, contract additions, non-expansion,
-   revocation, and local/profile policy.  If validation succeeds, PIC-X
-   issues the next settled PIC Continuity JWT with no pending
-   transition.
+   continuity_transition_jwt, the PIC Continuity Transition JWT
+   signature, PoR/key binding, predecessor_hash, position increment,
+   challenge continuity, attenuation including
+   attenuations.execution_contract.additions, non-expansion, revocation,
+   and local/profile policy.  If validation succeeds, PIC-X issues the
+   next settled PIC Continuity JWT with no pending transition.
 
 3.2.  Root Validation
 
@@ -1166,9 +1160,15 @@ Gallo                         Informational                    [Page 20]
    In PIC Profile 0.2, the root representation is a PIC PCA JWT carried
    at context_of_authority.root.pca_jwt by the settled PIC Continuity
    JWT.  The PIC PCA JWT carries the root Indexed Authority Map and
-   challenge.next_challenge, which initializes the first Continuity
+   challenge.next_challenge, which initializes the first PIC Continuity
    Transition JWT.  The hash of the compact signed PIC PCA JWT is
    carried as context_of_authority.root.pca_jwt_hash.
+
+3.3.  Advancement Validation
+
+   For each non-root continuity advancement, the Verifier MUST perform
+   the following checks and MUST reject the continuity state if any
+   fails:
 
 
 
@@ -1177,12 +1177,6 @@ Gallo                         Informational                    [Page 21]
 
                          PIC Prover and Verifier               July 2026
 
-
-3.3.  Advancement Validation
-
-   For each non-root continuity advancement, the Verifier MUST perform
-   the following checks and MUST reject the continuity state if any
-   fails:
 
    1.  *integrity* — the advancement artifact or proof is valid under
        the profile's canonical encoding and cryptographic suite
@@ -1225,15 +1219,6 @@ Gallo                         Informational                    [Page 21]
    the signature verified.  The Verifier does *not* trust that the
    Prover already performed these checks; it repeats them independently.
 
-
-
-
-
-Gallo                         Informational                    [Page 22]
-
-                         PIC Prover and Verifier               July 2026
-
-
    *Executed-vs-signed, always.* Independently of the profile - open
    continuation included - a verified continuity state authorizes the
    signed or otherwise bound action and no other.  The reference monitor
@@ -1241,6 +1226,13 @@ Gallo                         Informational                    [Page 22]
    digests actually executed match those bound by the request/execution
    commitment, and MUST refuse any action that differs.  Signing one
    request and executing another is always a violation.
+
+
+
+Gallo                         Informational                    [Page 22]
+
+                         PIC Prover and Verifier               July 2026
+
 
    This is where the cross-lineage composition of Section 1.4 fails:
    authority absent from the predecessor fails non-expansion (6), and a
@@ -1278,18 +1270,6 @@ Gallo                         Informational                    [Page 22]
    profile inherits the guarantee exactly to the extent that its order
    refines its denotation order.
 
-
-
-
-
-
-
-
-Gallo                         Informational                    [Page 23]
-
-                         PIC Prover and Verifier               July 2026
-
-
 4.2.  Attenuation Profiles
 
    Every profile that introduces an authority representation or an
@@ -1302,6 +1282,13 @@ Gallo                         Informational                    [Page 23]
    requiredCompliance: current ⊇ predecessor
    executionModel:     current ⊆ predecessor
    expiresAt:          current ≤ predecessor
+
+
+
+Gallo                         Informational                    [Page 23]
+
+                         PIC Prover and Verifier               July 2026
+
 
    The core uses the abstract relation Attenuates(current, predecessor,
    profile); a Verifier MUST reject a PCA whose profile is unknown or
@@ -1338,6 +1325,19 @@ Gallo                         Informational                    [Page 23]
    PDP.  It does *not inherit the Lean proof* [2] (Section 12): the
    proof covers non-expansion of the _abstract_ order only; semantic
    monotonicity of a concrete vocabulary is a separate proof obligation
+   that PIC does not discharge.  This is the same boundary the model
+   already draws for heterogeneous translation, and it is a natural
+   point of standardization — label vocabularies with provably semantic-
+   monotone orders, and the PIC↔PDP interface that carries the
+   obligation.
+
+
+
+
+
+
+
+
 
 
 
@@ -1345,12 +1345,6 @@ Gallo                         Informational                    [Page 24]
 
                          PIC Prover and Verifier               July 2026
 
-
-   that PIC does not discharge.  This is the same boundary the model
-   already draws for heterogeneous translation, and it is a natural
-   point of standardization — label vocabularies with provably semantic-
-   monotone orders, and the PIC↔PDP interface that carries the
-   obligation.
 
 5.  Continuity Representations
 
@@ -1397,6 +1391,12 @@ Gallo                         Informational                    [Page 24]
 
 
 
+
+
+
+
+
+
 Gallo                         Informational                    [Page 25]
 
                          PIC Prover and Verifier               July 2026
@@ -1417,11 +1417,12 @@ Gallo                         Informational                    [Page 25]
 
    The candidate is not a trusted settled continuity artifact.  PIC-X
    validates the previous settled continuity, the candidate outer
-   signature, the single Continuity Transition JWT, PoR/key binding,
+   signature, the single PIC Continuity Transition JWT, PoR/key binding,
    predecessor hash, position increment, challenge continuity,
-   attenuation, non-expansion, revocation, and local/profile policy.  If
-   validation succeeds, PIC-X issues the next settled PIC Continuity JWT
-   with no pending transition.
+   attenuation including attenuations.execution_contract.additions, non-
+   expansion, revocation, and local/profile policy.  If validation
+   succeeds, PIC-X issues the next settled PIC Continuity JWT with no
+   pending transition.
 
    Profile 0.2 does not transport a replayable transition graph in the
    settled PIC Continuity JWT.  Any settled-token placement for
@@ -1445,7 +1446,6 @@ Gallo                         Informational                    [Page 25]
    profile MUST define what the Verifier independently verifies and what
    trust assumption, if any, is placed on a validator, checkpoint
    issuer, history service, or prior verifier.
-
 
 
 
