@@ -90,9 +90,10 @@ Expiry bounds how long a continuity state may be accepted; revocation withdraws 
 core model invariants: exactly one predecessor per non-root advancement, Proof of Relationship, authority non-expansion, and no authority
 import from unrelated continuities.
 
-For the current PIC Profile 0.2 / PIC-X realization, the native causal revocation coordinate is a stable authenticated **PCA ID** plus a
-continuity **position**. Additional authenticated selectors, such as grant, issuer, key, delegate, attestation, or policy selectors, may be
-used by a profile but do not replace the causal coordinate when descendants must be invalidated.
+For revocation profiles that support causal lineage or suffix revocation, the native causal revocation coordinate is a stable authenticated
+lineage/PCA identifier plus a continuity **position**. This document calls that semantic identifier **PCA ID**, but current PIC Profile 0.2
+does not define a mandatory concrete PCA-ID wire field. Additional authenticated selectors, such as grant, issuer, key, delegate,
+attestation, or policy selectors, may be used by a profile but do not replace the causal coordinate when descendants must be invalidated.
 
 --- middle
 
@@ -104,13 +105,14 @@ PIC continuity starts from a trusted root PIC Context of Authority, or PCA, and 
 revocation that must affect descendants needs a stable way to name the root authority context and a stable way to name the causal position at
 which validity stops.
 
-In PIC Profile 0.2, PIC-X issues settled PIC Continuity JWTs. A workload may propose exactly one advancement in a candidate PIC Continuity
-JWT by carrying one `continuity_transition_jwt`. PIC-X validates that candidate and, if it accepts the advancement, issues the next settled
-PIC Continuity JWT. Settled Profile 0.2 continuity artifacts do not carry a replayable transition history.
+In PIC Profile 0.2, a trusted settlement authority issues settled PIC Token JWTs carrying settled PIC Continuity COSE artifacts. A workload
+may propose exactly one advancement in a workload-signed candidate PIC Token JWT whose candidate PIC Continuity COSE carries exactly one PIC
+Continuity Transition COSE. The settlement authority validates that candidate and, if it accepts the advancement, issues the next settled PIC
+Token JWT. Settled Profile 0.2 Continuity COSE artifacts have `transitions = null` and do not carry a replayable transition history.
 
 Revocation state remains external and dynamic. Revoking a PCA, position, key, delegate, attestation, grant, issuer, or policy does not
-rewrite the root PIC PCA JWT and does not rebuild historical transitions. Verifiers and PIC-X evaluate authenticated revocation state against
-the presented continuity state.
+rewrite signed PIC PCA COSE checkpoints and does not rebuild historical transitions. Verifiers and settlement services evaluate authenticated
+revocation state against the presented continuity state.
 
 ## Requirements Notation
 
@@ -126,32 +128,35 @@ This section is normative.
 
 ## PCA ID
 
-A revocable Profile 0.2 continuity MUST have a stable authenticated **PCA ID**. The PCA ID identifies the root authority context for
-revocation purposes.
+A revocation profile that supports causal lineage or suffix revocation MUST define a stable authenticated **PCA ID** or equivalent
+lineage/PCA identifier. The PCA ID identifies the relevant trusted continuity origin or checkpoint state for revocation purposes.
 
-The PCA ID MUST be bound to the trusted root PIC PCA JWT or to authenticated root metadata covered by the selected profile. It MUST NOT be a
-freely chosen unauthenticated value. The selected profile MUST define how the PCA ID is represented, authenticated, and validated.
+The PCA ID MUST be bound to the relevant trusted PCA checkpoint artifact or to authenticated metadata covered by the selected revocation
+profile. It MUST NOT be a freely chosen unauthenticated value. The selected revocation profile MUST define its representation,
+authentication, issuer or authority, lookup and validation procedure, freshness, rollback protection, and unavailable-state behavior.
 
-This document does not define the concrete wire claim carrying the PCA ID. It also does not define the JWT `jti` claim as the PCA ID. A
-profile MAY map a concrete claim to the PCA ID only when that mapping is explicitly defined and authenticated by that profile.
+This document does not define the concrete wire claim or field carrying the PCA ID. It also does not define the JWT `jti` claim as the PCA
+ID. A profile MAY map a concrete claim, field, artifact hash, or authenticated metadata item to the PCA ID only when that mapping is
+explicitly defined and authenticated by that profile.
 
-The compact signed root PIC PCA JWT is carried by a settled Profile 0.2 PIC Continuity JWT at:
-
-~~~text
-context_of_authority.root.pca_jwt
-~~~
-
-Its compact-artifact hash is carried at:
+Current Profile 0.2 settled PIC Continuity COSE carries the exact signed current PIC PCA COSE checkpoint bytes at:
 
 ~~~text
-context_of_authority.root.pca_jwt_hash
+root.pca
 ~~~
 
-Those fields identify the root artifact. Whether either value is used directly as the PCA ID is profile-defined.
+The corresponding signed-artifact hash is carried at:
+
+~~~text
+root.pca_hash
+~~~
+
+Those fields identify the current trusted checkpoint artifact for Profile 0.2 validation. Whether either value, or another authenticated
+coordinate, is used as the revocation PCA ID is profile-defined.
 
 ## Position
 
-A revocable Profile 0.2 continuity MUST expose or authenticate a continuity `position`.
+A revocation profile that supports causal suffix revocation MUST expose or authenticate a continuity `position`.
 
 The position identifies causal order within the continuity rooted at the PCA ID. The root position and non-root positions MUST be
 unambiguous. A non-root advancement MUST have the position required by the selected continuity profile.
@@ -159,9 +164,12 @@ unambiguous. A non-root advancement MUST have the position required by the selec
 The profile MUST reject missing, negative, fractional, non-canonical, overflowing, wrapping, or otherwise invalid positions. A profile MUST
 NOT introduce a second mandatory counter solely for revocation when the continuity profile already defines positions.
 
+For current Profile 0.2, `position` is carried by PIC PCA COSE checkpoints and PIC Continuity Transition COSE artifacts. PIC Continuity COSE
+itself does not carry a `position` field.
+
 ## Causal Coordinate
 
-The native causal coordinate for current Profile 0.2 revocation is:
+A revocation profile's native causal coordinate for suffix revocation is:
 
 ~~~text
 (PCA ID, position)
@@ -196,7 +204,7 @@ A causal suffix cutoff invalidates the selected position and its causal future:
 (PCA ID, fromPosition)
 ~~~
 
-A Verifier or PIC-X MUST reject a matching state when the authenticated revocation state contains an authorized suffix cutoff and:
+A Verifier or settlement service MUST reject a matching state when the authenticated revocation state contains an authorized suffix cutoff and:
 
 ~~~text
 state.PCA_ID == target.PCA_ID
@@ -266,8 +274,8 @@ A profile MAY define dynamic authority or execution-contract restrictions. Such 
 against the presented PCA ID, position, and optional selectors.
 
 Dynamic restrictions MUST be monotonic: they may only make effective authority or execution conformance equally or more restrictive. They
-MUST NOT rewrite the signed root PIC PCA JWT, mutate historical transitions, alter predecessor uniqueness, replace Proof of Relationship, or
-expand authority.
+MUST NOT rewrite signed PCA checkpoint artifacts, mutate historical transitions, alter predecessor uniqueness, replace Proof of Relationship,
+or expand authority.
 
 The profile MUST define restriction scope, composition, conflict resolution, freshness, rollback protection, and unavailable-state behavior.
 

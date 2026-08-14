@@ -112,8 +112,8 @@ decentralized* — each hop carrying everything the next needs to verify it — 
 server. Section 5 describes these representations; the PIC *invariants* are the same in every case, but the concrete assurance and trust
 assumptions differ by profile (Sections 6.8, 7) — the profiles are not equivalent.
 
-This statement concerns the abstract PIC model and profile space. The current PIC Profile 0.2 / PIC-X realization defined by this
-specification uses centralized PIC-X-mediated advancement and settlement.
+This statement concerns the abstract PIC model and profile space. The current PIC Profile 0.2 uses centralized advancement and settlement by
+a trusted settlement authority. PIC-X is one conforming realization of that profile, not a required component of the abstract PIC model.
 
 PIC also draws a **clean line between the security model and transport**. The guarantees come from the signed continuity chain, not from how
 it travels: an implementation must not rely on the transport — a TLS session, a network perimeter, a message bus — to obtain them (the
@@ -305,9 +305,11 @@ authority context that establishes the upper bound for the lineage. The root PCA
 to relate to. Every later continuity advancement continues, and may only attenuate, the authority established by the root.
 
 This specification does not require every hop to create a new signed PCA. A profile defines the concrete signed root representation and the
-concrete continuity-advancement representation. In PIC Profile 0.2, the trusted root is represented by a **PIC PCA JWT**. A workload
-proposes one advancement by signing a **PIC Continuity Transition JWT** and placing it in a workload-signed candidate
-**PIC Continuity JWT**. PIC-X validates the candidate and issues the next settled **PIC Continuity JWT**.
+concrete continuity-advancement representation. In PIC Profile 0.2, a PCA is serialized and signed as a native **PIC PCA COSE** checkpoint.
+A settled **PIC Token JWT** carries a settled **PIC Continuity COSE** in `pic.root`; the settled Continuity carries the exact signed PIC PCA
+COSE bytes for the current trusted checkpoint. A workload proposes one centralized advancement by signing a **PIC Continuity Transition
+COSE**, placing it in a workload-signed candidate **PIC Continuity COSE**, and carrying that candidate in a workload-signed candidate PIC
+Token JWT. The trusted settlement authority validates the candidate and issues the next settled PIC Token JWT.
 
 The examples represent authority as an `operations` set — the reference profile, matching the operation-resource privileges of the model
 [[1]](#references). PIC does not require this representation, nor does it define the application's authorization vocabulary; Section 4
@@ -369,8 +371,8 @@ an AI agent. She accepts them, but only for the file `foo`. The resulting root P
 
 Each root PCA starts a distinct lineage with its own authority bound, and no later continuity advancement can expand it. These are the two
 lineages of Section 1.4. The `continuation` block in these examples is the root bootstrap challenge consumed by the first Proof of
-Relationship (Section 2.3). PIC Profile 0.2 carries the corresponding root challenge as `challenge.next_challenge` inside the signed root
-PIC PCA JWT.
+Relationship (Section 2.3). PIC Profile 0.2 carries the corresponding root challenge as `challenge.next_challenge` inside the signed PIC PCA
+COSE checkpoint.
 
 A root PCA may be **minted directly** by an authenticated permissioned entity, or **derived from an existing credential** - for example from
 an OAuth access token through a profile-defined exchange. These derivations are out of scope for this specification, but they are in line
@@ -425,9 +427,10 @@ produce next continuity advancement
 emit updated continuity state
 ~~~
 
-At the abstract level, the advancement is not required to be a PCA. The PIC Continuity Transition JWT is the proposed Profile 0.2
-advancement artifact. It is carried as `continuity_transition_jwt` in a workload-signed candidate PIC Continuity JWT. PIC-X validates that
-candidate and issues the next settled PIC Continuity JWT with no pending `continuity_transition_jwt`.
+At the abstract level, the advancement is not required to be a PCA. The PIC Continuity Transition COSE is the proposed Profile 0.2
+advancement artifact. It is carried as the single entry in `transitions` in a workload-signed candidate PIC Continuity COSE, which is carried
+by a workload-signed candidate PIC Token JWT. The trusted settlement authority validates that candidate and issues the next settled PIC Token
+JWT carrying a settled PIC Continuity COSE with `transitions = null`.
 
 ## Predecessor Validation
 
@@ -445,17 +448,19 @@ the PoR required by the selected profile. The PoR establishes:
 - request or execution binding where applicable;
 - conformance evidence where the profile requires executor conformance.
 
-For PIC Profile 0.2, the PIC Continuity Transition JWT carries `proof_of_relationship`. Key binding is part of that PoR; this specification
-does not define a separate generic `key_binding` field. The predecessor hash for the current centralized Profile 0.2 realization is:
+For PIC Profile 0.2, the PIC Continuity Transition COSE carries `proof_of_relationship` as a byte string containing the exact UTF-8 bytes of
+the selected issuer-signed SD-JWT presentation. The selected Profile 0.2 PoR schema MUST bind or identify the workload verification key; this
+specification does not define a universal claim name and does not define a separate generic `key_binding` field. The predecessor reference for
+the current centralized Profile 0.2 realization is:
 
 ~~~text
-predecessor_hash = hash(compact previous trusted PIC Continuity JWT N)
+predecessor.type = "pca"
+predecessor.hash = SHA-256(exact signed current root.pca PIC PCA COSE bytes)
 ~~~
 
-The first transition still consumes the bootstrap challenge from
-`context_of_authority.root.pca_jwt.payload.challenge.next_challenge`. Later transitions use the current challenge material made available by
-the previous settled continuity state according to the selected Profile 0.2 schema. This document does not assign a settled-token field for
-that post-initial challenge material.
+The first transition consumes the bootstrap challenge from the current PIC PCA COSE checkpoint's `challenge.next_challenge`. Later transitions
+use the `challenge.next_challenge` value carried by the current signed PIC PCA COSE checkpoint. The hash input is the exact signed PIC PCA
+COSE artifact bytes, not a decoded payload, diagnostic notation, JSON representation, Base64url text, or reserialized structure.
 
 Continuing the running scenario, the backup service performing `BACKUP` produces the following PoR payload:
 
@@ -555,42 +560,61 @@ The root authority context (Section 1.8) granted `READ-ALL` and `BACKUP`. The ba
 The order that decides "more restrictive" is defined by the profile (Section 4): here `operations` uses subset inclusion and the
 `executionContract` fields use the reference profile's order.
 
-In PIC Profile 0.2, the PIC PCA JWT `context_of_authority` carries an Indexed Authority Map, not the normalized Logical Context of
-Authority directly. The canonical sections are `principal`, `attributes`, `invariants`, and `execution_contract`; logical
-`execution.contract` maps to `execution_contract`.
+In PIC Profile 0.2, the PIC PCA COSE payload `context_of_authority` carries an Indexed Authority Map, not the normalized Logical Context of
+Authority directly. The logical authority shape contains optional `identity_context` and `execution`, where `execution.invariants` carries
+executable PIC authority and `execution.contract` carries constraints. The canonical Indexed Authority Map sections are `identity_context`,
+`invariants`, and `execution_contract`; logical `execution.contract` maps to `execution_contract`. `identity_context` is descriptive or
+contextual and does not itself grant execution authority.
 
-Section-local numeric indexes start at `0`. Bitmap identity is `(section, numeric index)`, for example `principal/0` or `invariants/1`;
-JSON object member order has no protocol meaning.
+Section-local numeric indexes start at `0`. Bitmap identity is `(section, numeric index)`, for example `identity_context/0` or
+`invariants/1`; JSON object member order has no protocol meaning.
 
 Indexed Authority Map entries use compact tuples. Tuple element order is normative:
 
-- `principal`: `[key, value]`;
-- `attributes`: `[key, value]`;
+- `identity_context`: `[key, value]`;
 - `execution_contract`: `[key, value]`;
 - `invariants`: `[scope, operation, resourceType, resourceId]`.
 
 Scalar logical values become one indexed tuple. Set or list membership is denormalized into independently indexed boolean membership tuples,
 for example `["roles:payment-approver", true]`. This document defines no false-valued membership semantics for Profile 0.2.
 
-Removal attenuation applies only to `attenuations.principal.remove_bitmap`, `attenuations.attributes.remove_bitmap`, and
-`attenuations.invariants.remove_bitmap`, each evaluated against the section-local numeric indexes of its own map section. Removal never adds
-authority, and a removed entry cannot reappear later in the same continuity.
+Removal attenuation applies only to `attenuations.identity_context.remove_bitmap` and `attenuations.invariants.remove_bitmap`, each evaluated
+against the section-local numeric indexes of its own map section. Removal never adds authority, and a removed entry cannot reappear later in
+the same continuity.
+
+For Profile 0.2 removal bitmaps, `byte_index = floor(i / 8)`, `bit_index = i mod 8`, and `mask = 1 << bit_index`; bits are interpreted
+least-significant-bit first. Thus index `0` is `h'01'`, index `1` is `h'02'`, index `2` is `h'04'`, index `7` is `h'80'`, and index `8` is
+`h'0001'`. A set bit referring to a nonexistent predecessor index MUST be rejected. Trailing zero bytes MUST be omitted. A no-op bitmap
+SHOULD be omitted together with its optional attenuation member.
 
 Execution-contract restriction does not use a removal bitmap. Accepted restrictions are carried as
 `attenuations.execution_contract.additions`. Each proposed addition is a `[key, value]` tuple for the `execution_contract` section; the
-workload MUST NOT assign its numeric index. PIC-X validates accepted additions and assigns the next section-local numeric indexes in the
+workload MUST NOT assign its numeric index. The settlement verifier validates proposed additions and assigns the next section-local numeric indexes in the
 materialized/effective `execution_contract` section. Existing execution-contract constraints are not removed, replaced, or weakened; accepted
 constraints accumulate with logical AND.
 
-Canonical serialization of an already indexed Profile 0.2 authority map is separate from initial index assignment. For serialization and
-authority-state hashing, sections are serialized in the profile-defined section order `principal`, `attributes`, `invariants`,
-`execution_contract`, and entries within each indexed section are serialized by ascending numeric index. A JWT artifact hash in Profile 0.2,
-such as `context_of_authority.root.pca_jwt_hash` or `predecessor_hash`, is computed over the compact serialized JWT bytes. An
-authority-state hash, when a profile defines one, is computed over the canonical/materialized authority representation. These are separate
-domains.
+When one PIC Continuity Transition COSE proposes multiple execution-contract additions, the settlement verifier validates the proposed
+additions, denormalizes any collection-valued logical proposal material into individual canonical `[key, value]` additions when applicable,
+sorts accepted additions lexicographically by canonical key using Unicode code point order, assigns the next section-local numeric indexes in
+that sorted order, and then materializes the additions. Input array order MUST NOT determine materialized index assignment. The workload is
+not required to pre-sort the additions.
 
-This document does not define the deterministic initial index-assignment algorithm for converting a Logical Context of Authority into an
-Indexed Authority Map. Implementations MUST NOT infer initial indexes from JSON object member order.
+Initial PIC PCA COSE canonicalization for Profile 0.2 is deterministic. Implementations denormalize the Logical Context of Authority into
+canonical tuple candidates, sort candidates within each section, and then assign section-local numeric indexes starting at `0`.
+
+For `identity_context` and `execution_contract`, candidates are sorted lexicographically by canonical `key`, using Unicode code
+point order. Collection memberships are denormalized before sorting; each member becomes its own `[key, true]` tuple, and the complete
+resulting canonical membership key determines ordering. For `invariants`, candidates are sorted lexicographically by tuple elements in this
+order: `scope`, `operation`, `resourceType`, `resourceId`, using Unicode code point order for each element. After sorting, indexes `0`, `1`,
+`2`, and so on are assigned within each section. Implementations MUST NOT derive index values from JSON object member order.
+
+Canonical serialization of an already indexed Profile 0.2 authority map is separate from initial index assignment. For serialization and
+authority-state structural ordering, sections are ordered as `identity_context`, `invariants`, `execution_contract`, and entries
+within each indexed section are ordered by ascending numeric index. This ordering defines the deterministic canonical structure, but does not
+by itself define an interoperable hash-input byte string. An authority-state hash, when defined by a selected profile or schema, requires
+that profile or schema to define the exact byte serialization used as hash input. Profile 0.2 signed-artifact references such as
+`root.pca_hash` and `predecessor.hash` are computed over exact signed COSE artifact bytes. Authority-state identity and signed-artifact
+identity are separate domains.
 
 ## Continuity Advancement Construction
 
@@ -598,11 +622,11 @@ The Prover assembles the next continuity advancement from the PoR of Section 2.3
 binding required by the profile, and the profile-defined freshness material for the next step. The profile defines the signed artifact that
 protects those values.
 
-In PIC Profile 0.2, a PIC Continuity Transition JWT contains `position`, `predecessor_hash`, `challenge.previous_challenge`,
-`challenge.next_challenge`, `attenuations`, and `proof_of_relationship`. It is carried only by the workload-produced candidate PIC
-Continuity JWT for the current exchange. PIC-X validates the candidate and, if the advancement is accepted, issues the next settled PIC
-Continuity JWT with no pending `continuity_transition_jwt`. Decoded JSON views of those JWTs are illustrative only; the wire representation
-is compact JWS.
+In PIC Profile 0.2, a PIC Continuity Transition COSE contains `position`, a structured `predecessor` reference, `challenge.previous_challenge`,
+`challenge.next_challenge`, optional `attenuations`, and `proof_of_relationship`. It is carried only by the workload-produced candidate PIC
+Continuity COSE for the current exchange. The settlement authority validates the candidate and, if the advancement is accepted, issues the
+next settled PIC Token JWT carrying a settled PIC Continuity COSE with `transitions = null`. Diagnostic JSON-like or CBOR-like views are
+illustrative unless a selected profile assigns exact encodings.
 
 The following non-normative sketch shows the abstract contents of an advancement:
 
@@ -651,19 +675,42 @@ Given a received continuity state, the Verifier MUST perform the following steps
 10. verify the final materialized authority commitment when the profile defines one;
 11. accept the materialized current authority.
 
-For PIC Profile 0.2, ordinary verification of a settled artifact includes verifying the PIC-X-issued PIC Continuity JWT signature, verifying
-the profile, verifying the nested root PIC PCA JWT at `context_of_authority.root.pca_jwt`, verifying
-`context_of_authority.root.pca_jwt_hash`, and confirming that the artifact is settled and contains no pending `continuity_transition_jwt`.
-When revocation is enabled for a revocable Profile 0.2 continuity, the Verifier also validates the authenticated PCA ID and authenticated
-continuity position required by the PIC Revocation Specification before evaluating applicable authenticated revocation state. This document
-does not assign concrete settled-token fields or placement for those revocation coordinates. Ordinary Profile 0.2 Verifiers are not required
-to replay a transported transition history.
+For PIC Profile 0.2, ordinary verification of a settled artifact includes verifying the settled PIC Token JWT signature, obtaining `pic.root`
+as the exact PIC Continuity COSE bytes, verifying the settled PIC Continuity COSE signature and profile, verifying that `transitions = null`,
+verifying `root.pca` as the exact signed PIC PCA COSE bytes for the current trusted checkpoint, recomputing `root.pca_hash`, and verifying
+that the signed PIC PCA COSE payload supplies the materialized authority, `position`, and `challenge.next_challenge`. When revocation is
+enabled for a revocable continuity, the Verifier also validates the authenticated revocation coordinates required by the PIC Revocation
+Specification before evaluating applicable authenticated revocation state. This document does not assign concrete settled-token fields or
+placement for revocation coordinates other than the Profile 0.2 PCA `position`. Ordinary Profile 0.2 Verifiers are not required to replay a
+transported transition history.
 
-When PIC-X processes an advancement candidate, it additionally verifies the previous trusted settled PIC Continuity JWT, the workload-signed
-candidate PIC Continuity JWT, the single `continuity_transition_jwt`, the PIC Continuity Transition JWT signature, PoR/key binding,
-`predecessor_hash`, position increment, challenge continuity, attenuation including `attenuations.execution_contract.additions`,
-non-expansion, revocation, and local/profile policy. If validation succeeds, PIC-X issues the next settled PIC Continuity JWT with no
-pending transition.
+When a trusted settlement authority processes a Profile 0.2 advancement candidate, it additionally:
+
+1. receives the candidate PIC Token JWT as untrusted input and parses it without accepting authenticity;
+2. obtains `pic.root` as untrusted candidate PIC Continuity COSE bytes;
+3. parses the candidate Continuity without accepting authenticity and validates the presence and shape of `root.pca`, `root.pca_hash`, and
+   `transitions`;
+4. requires `transitions` to contain exactly one PIC Continuity Transition COSE;
+5. parses that Transition as untrusted input and extracts `proof_of_relationship`;
+6. parses `proof_of_relationship` as the selected Profile 0.2 SD-JWT presentation;
+7. validates the SD-JWT issuer signature, issuer trust, required disclosures, claims, and schema requirements;
+8. obtains or resolves the workload verification key accepted from the PoR;
+9. verifies the Transition COSE signature, candidate Continuity COSE signature, and candidate PIC Token JWT signature using that accepted
+   workload key, and verifies signer consistency as required by the profile;
+10. verifies `root.pca` as the exact signed PIC PCA COSE bytes for the currently trusted checkpoint;
+11. recomputes `SHA-256(exact signed root.pca PIC PCA COSE bytes)` and compares it with `root.pca_hash`;
+12. verifies that `Transition.position = current PCA.position + 1`;
+13. verifies `predecessor.type = "pca"` and `predecessor.hash = SHA-256(exact signed current root.pca PIC PCA COSE bytes)`;
+14. verifies that `Transition.challenge.previous_challenge = current PCA.challenge.next_challenge` and validates `challenge.next_challenge`;
+15. validates removal bitmaps and execution-contract additions, including deterministic ordering and section-local index assignment for
+    accepted additions;
+16. validates request/execution binding and executor evidence or conformance when required by the selected profile;
+17. validates authority non-expansion, revocation, and local/profile policy;
+18. materializes the new authority, creates logical PCA N+1, transfers the accepted next challenge into it, serializes and signs it as a new
+    PIC PCA COSE checkpoint, creates a settled PIC Continuity COSE with the new `root.pca`, recomputed `root.pca_hash`, and `transitions =
+    null`, and creates/signs the settled PIC Token JWT.
+
+If validation succeeds, the settlement authority issues the next settled PIC Token JWT. PIC-X is one realization of this settlement role.
 
 ## Root Validation
 
@@ -675,9 +722,10 @@ reference, because there is no predecessor. The Verifier MUST:
 - confirm applicable temporal and revocation state;
 - extract the root authority and any root bootstrap challenge or equivalent freshness material.
 
-In PIC Profile 0.2, the root representation is a PIC PCA JWT carried at `context_of_authority.root.pca_jwt` by the settled PIC Continuity
-JWT. The PIC PCA JWT carries the root Indexed Authority Map and `challenge.next_challenge`, which initializes the first PIC Continuity
-Transition JWT. The hash of the compact signed PIC PCA JWT is carried as `context_of_authority.root.pca_jwt_hash`.
+In PIC Profile 0.2, the root representation is the signed PIC PCA COSE checkpoint carried as exact bytes in `root.pca` by the settled PIC
+Continuity COSE. The PIC PCA COSE carries the Indexed Authority Map, `position = 0`, and `challenge.next_challenge`, which initializes the
+first PIC Continuity Transition COSE. The signed-artifact hash is carried as `root.pca_hash` and is computed over the exact signed PIC PCA
+COSE bytes.
 
 ## Advancement Validation
 
@@ -798,33 +846,45 @@ independence.
 
 ## Current Profile 0.2 Representation
 
-PIC Profile 0.2 uses centralized PIC-X-mediated settlement. A settled PIC Continuity JWT is issued by PIC-X and binds to the immutable root
-PIC PCA JWT through `context_of_authority.root.pca_jwt` and `context_of_authority.root.pca_jwt_hash`; it contains no pending
-`continuity_transition_jwt`.
+PIC Profile 0.2 uses centralized settlement. A settled PIC Token JWT is issued by the trusted settlement authority and carries a settled PIC
+Continuity COSE in `pic.root`. That Continuity carries the exact signed PIC PCA COSE bytes for the current trusted checkpoint in `root.pca`,
+the matching `root.pca_hash`, and `transitions = null`. `root.pca` is the current checkpoint, not an immutable genesis artifact: after an
+accepted advancement it changes from PIC PCA COSE N to PIC PCA COSE N+1.
 
 ~~~text
-trusted PIC-X-issued settled PIC Continuity JWT N
-        |
-        | workload proposes exactly one advancement
-        v
-workload-signed candidate PIC Continuity JWT
-        |
-        +-- continuity_transition_jwt
-        v
-PIC-X validation
-        |
-        v
-trusted PIC-X-issued settled PIC Continuity JWT N+1
+trusted settled PIC Token JWT N
+`-- pic.root = settled PIC Continuity COSE N
+    +-- root.pca = exact signed PIC PCA COSE N bytes
+    +-- root.pca_hash = SHA-256(exact signed PIC PCA COSE N bytes)
+    `-- transitions = null
+
+workload-signed candidate PIC Token JWT
+`-- pic.root = workload-signed candidate PIC Continuity COSE
+    +-- root.pca = exact signed PIC PCA COSE N bytes
+    +-- root.pca_hash = matching SHA-256 digest
+    `-- transitions = [
+          exactly one workload-signed PIC Continuity Transition COSE N+1
+        ]
+
+trusted settlement validation
+
+trusted settled PIC Token JWT N+1
+`-- pic.root = settled PIC Continuity COSE N+1
+    +-- root.pca = exact signed PIC PCA COSE N+1 bytes
+    +-- root.pca_hash = SHA-256(exact signed PIC PCA COSE N+1 bytes)
+    `-- transitions = null
 ~~~
 
-The candidate is not a trusted settled continuity artifact. PIC-X validates the previous settled continuity, the candidate outer signature,
-the single PIC Continuity Transition JWT, PoR/key binding, predecessor hash, position increment, challenge continuity, attenuation including
-`attenuations.execution_contract.additions`, non-expansion, revocation, and local/profile policy. If validation succeeds, PIC-X issues the
-next settled PIC Continuity JWT with no pending transition.
+The candidate is not a trusted settled continuity artifact. The settlement authority validates the current settled continuity, the candidate
+PIC Token JWT, the candidate PIC Continuity COSE, the single PIC Continuity Transition COSE, PoR/key binding, predecessor hash over the exact
+current PIC PCA COSE bytes, position increment, challenge continuity, removal attenuations, execution-contract additions including
+deterministic canonical ordering and index assignment for accepted additions, non-expansion, revocation, and local/profile policy. If
+validation succeeds, the settlement authority materializes the new authority into a new PIC PCA COSE checkpoint and issues the next settled
+PIC Token JWT.
 
-Profile 0.2 does not transport a replayable transition graph in the settled PIC Continuity JWT. Any settled-token placement for
-materialized authority state or post-initial challenge material is defined by the selected Profile 0.2 schema; this document does not invent
-a current-authority field or challenge field.
+Profile 0.2 does not transport a replayable transition graph in the settled PIC Continuity COSE. The current authority and post-initial
+challenge material are represented by the latest trusted PIC PCA COSE checkpoint carried in `root.pca`; the settled Continuity itself has no
+`position` field and no `challenge` field.
 
 ## Self-Contained Transition Graphs
 
@@ -938,8 +998,9 @@ semantics, but they may change the cryptographic trust model.
 
 The Lean formalization [[2]](#references) proves the logical safety properties of the abstract model and, through a refinement mapping, that
 any chain accepted under the modeled verifier assumptions satisfies the abstract PIC invariants. The computational security of the chosen
-cryptographic primitives, and the semantic monotonicity of a concrete authority profile (Section 4.3), remain **external assumptions**. It
-is not claimed that Lean proves the security of a cryptographic implementation.
+cryptographic primitives, the soundness of concrete PoR mechanisms and issuer infrastructure, runtime or attestation integrity, revocation
+state, and the semantic monotonicity of a concrete authority profile (Section 4.3), remain **external assumptions**. It is not claimed that
+Lean proves the security of ES256, SHA-256, COSE, JWS, SD-JWT, or any deployment-specific cryptographic implementation.
 
 ## Proof of Possession (Optional)
 

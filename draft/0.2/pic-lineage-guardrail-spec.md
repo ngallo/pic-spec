@@ -195,12 +195,13 @@ Distinct continuities, one proposed transition.
 
 A **composition member** is an independently verifiable PIC continuity representation carried within a Composition Collection for joint
 evaluation in one exact proposed transition. A composition member is not an execution step, workflow stage, route segment, child continuity,
-subordinate continuity, additional outer predecessor, or authority fragment. In PIC Profile 0.2, each member is represented by an
-independently verifiable PIC Continuity JWT unless a more specific selected profile defines another representation.
+subordinate continuity, additional outer predecessor, or authority fragment. A Sandboxed Execution profile layered on a PIC continuity profile
+MUST define the independently verifiable representation of each Composition Collection member and the exact binding of that collection to the
+outer execution.
 
 The Sandboxed Execution does not execute on or through its composition members. It carries and evaluates their joint participation while
-preserving each member's independent root PIC PCA JWT, PCA ID, position, effective authority, execution contract, and revocation
-state.
+preserving each member's independently rooted PIC continuity state, revocation coordinates, position, effective authority, and execution
+contract.
 
 A Composition Collection is structurally composed of composition members. The outer Sandboxed Execution remains a separate PIC continuity with
 its own root, predecessor path, authority `{ ENFORCE }`, execution contract, continuation semantics, and revocation coordinates. The
@@ -400,13 +401,13 @@ action locally.
 An ENFORCE advancement in a Sandboxed Execution MUST cryptographically bind the exact Composition Collection that the guardrail evaluated.
 This document uses **Composition Collection** and **Composition Collection commitment** as semantic names for that bound object and
 commitment. Their wire location, canonicalization, and serialization are defined by the selected Sandboxed Execution profile; they are not
-generic mandatory fields of every PIC Continuity JWT.
+generic mandatory fields of every PIC continuity representation.
 
-The bound Composition Collection carries one bounded list of independently verifiable PIC continuity inputs. In PIC Profile 0.2, each
-composition member is represented as a PIC Continuity JWT unless a more specific selected profile defines another independently verifiable
-representation.
+The bound Composition Collection carries one bounded list of independently verifiable PIC continuity inputs. A Sandboxed Execution profile
+using the current Profile 0.2 artifact family may represent each member with a PIC Token JWT carrying a PIC Continuity COSE, but the base
+Profile 0.2 artifact profile does not by itself define Composition Collection processing.
 
-The following is a non-normative semantic view, not a wire schema and not a set of generic PIC Continuity JWT member names:
+The following is a non-normative semantic view, not a wire schema and not a set of generic PIC continuity member names:
 
 ~~~text
 Composition Collection
@@ -563,7 +564,7 @@ The outer root establishes the outer authority and the future guardrail contract
 ordinary PIC root — no predecessor, no PoR, authenticated by its authorized origin.
 
 The following is a semantic illustration of the authority and bootstrap requirements of the outer root. It is not the Profile 0.2 logical
-PCA schema, is not the Profile 0.2 PIC PCA JWT wire representation, and is not the Indexed Authority Map representation.
+PCA schema, is not the Profile 0.2 PIC PCA COSE wire representation, and is not the Indexed Authority Map representation.
 
 ~~~json
 {
@@ -575,8 +576,9 @@ PCA schema, is not the Profile 0.2 PIC PCA JWT wire representation, and is not t
 }
 ~~~
 
-In PIC Profile 0.2, the outer root is represented by the trusted root PIC PCA JWT, and the bootstrap challenge is carried in that PIC PCA
-JWT. The first guardrail decision appears in the first applicable PIC Continuity Transition JWT proposed for the outer continuity.
+In a Sandboxed Execution realization using Profile 0.2 artifacts, the outer root is represented by a trusted PIC PCA COSE checkpoint, and the
+bootstrap challenge is carried in that PIC PCA COSE. The first guardrail decision appears in the first applicable PIC Continuity Transition
+COSE proposed for the outer continuity.
 
 The outer root MAY carry an origin-level commitment identifying the execution proposal, but it MUST NOT contain a guardrail verdict.
 
@@ -621,17 +623,18 @@ FIRST GUARDRAIL
        permit
           |
           v
-workload-signed candidate PIC Continuity JWT
-  carries exactly one continuity_transition_jwt
+workload-signed candidate PIC Token JWT
+  carries candidate PIC Continuity COSE
+  whose transitions array contains exactly one PIC Continuity Transition COSE
   proposed operation: ENFORCE
   binds the Composition Collection commitment
   binds enforcementResult: permit
           |
-          | PIC-X validates candidate and transition
+          | trusted settlement validates candidate and transition
           v
-settled outer PIC Continuity JWT 1
-  issued by PIC-X
-  contains no pending continuity_transition_jwt
+settled outer PIC Token JWT 1
+  carries settled PIC Continuity COSE
+  whose transitions = null
 ~~~
 
 The first outer advancement, not the outer root, is the first outer state attributable to a guardrail decision. Subsequent guardrails produce
@@ -704,11 +707,13 @@ PIC Prover procedure. It MUST:
 
 No additional approval signature is created. The next guardrail repeats the same procedure — and that repetition is the sandbox.
 
-In the current PIC Profile 0.2 / PIC-X realization, the guardrail or workload creates a workload-signed PIC Continuity Transition JWT,
-places it as the single `continuity_transition_jwt` in a workload-signed candidate PIC Continuity JWT, and submits the candidate for PIC-X
-validation. PIC-X validates the outer continuity, `ENFORCE` authority, Composition Collection commitment, PoR/key binding, predecessor hash,
-challenge continuity, attenuation, revocation, and local/profile policy. On success, PIC-X issues the next settled outer PIC Continuity JWT
-with no pending `continuity_transition_jwt`. This is ordinary Profile 0.2 continuity advancement, not a sandbox-specific protocol.
+In a current Profile 0.2 / PIC-X realization, the guardrail or workload creates a workload-signed PIC Continuity Transition COSE, places it
+as the single transition in a workload-signed candidate PIC Continuity COSE, carries that candidate in a workload-signed candidate PIC Token
+JWT, and submits the candidate for settlement validation. The settlement authority validates the outer continuity, `ENFORCE` authority,
+Composition Collection commitment, PoR/key binding, predecessor hash over the current PIC PCA COSE checkpoint, challenge continuity,
+attenuation, revocation, and local/profile policy.
+On success, it issues the next settled outer PIC Token JWT carrying a settled PIC Continuity COSE with `transitions = null`. This is ordinary
+Profile 0.2 continuity advancement, not a sandbox-specific protocol.
 
 ~~~text
 receive outer continuity state
@@ -883,11 +888,12 @@ already-authenticated advancement. The materializing guardrail:
 8. performs exactly the bound physical action according to the selected materialization profile and its ordering rules.
 
 For current PIC Profile 0.2, the materializing guardrail or workload validates the outer predecessor, validates every Composition Collection
-member, evaluates enforcement, constructs and signs the PIC Continuity Transition JWT, constructs and signs the candidate PIC Continuity JWT,
-and submits the candidate through the ordinary PIC-X advancement flow. PIC-X validates the candidate and transition and, on success, issues
-the next settled outer PIC Continuity JWT. The settled token is signed by PIC-X and contains no pending `continuity_transition_jwt`.
+member, evaluates enforcement, constructs and signs the PIC Continuity Transition COSE, constructs and signs the candidate PIC Continuity
+COSE, carries it in a signed candidate PIC Token JWT, and submits the candidate through the ordinary advancement flow. The settlement
+authority validates the candidate and transition and, on success, issues the next settled outer PIC Token JWT carrying a settled PIC
+Continuity COSE with `transitions = null`.
 
-This document does not define the exact temporal ordering between PIC-X settlement and the final irreversible physical side effect against a
+This document does not define the exact temporal ordering between Profile 0.2 settlement and the final irreversible physical side effect against a
 non-PIC-aware target. That ordering is profile-defined or deployment-defined.
 
 After the decision, control of that concrete materialized target operation does not return to the proposing executor; this concerns the
@@ -906,13 +912,13 @@ materializing guardrail
       | builds Profile 0.2 candidate
       | binds exact target operation
       v
-  +-------- PIC-X validates candidate and transition
+  +-------- settlement authority validates candidate and transition
   |         and issues settled outer continuity
   |
   +-------- non-PIC-aware target receives only
             the exact bound permitted action
 
-The timing between PIC-X settlement and irreversible physical action is profile-defined.
+The timing between Profile 0.2 settlement and irreversible physical action is profile-defined.
 ~~~
 
 The materializing guardrail is not a new trusted authority, a special continuity artifact type, a required service mesh, a universal gateway,

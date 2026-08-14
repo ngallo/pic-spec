@@ -126,29 +126,30 @@ service validates the predecessor state, the proposed advancement, revocation st
 profile-required evidence. If validation succeeds, it issues or authenticates the next continuity state according to the selected profile.
 The rest of this document uses **Trust Plane** for such a centralized trusted service.
 
-In the PIC Profile 0.2 / PIC-X realization, centralized continuity is:
+In PIC Profile 0.2, centralized continuity is:
 
 ~~~text
-trusted PIC-X-issued settled PIC Continuity JWT N
-        |
-        | workload proposes exactly one advancement
-        v
-workload-signed candidate PIC Continuity JWT
-        |
-        +-- continuity_transition_jwt
-        |
-        v
-PIC-X validation
-        |
-        v
-PIC-X-issued settled PIC Continuity JWT N+1
-        |
-        `-- no continuity_transition_jwt
+trusted settled PIC Token JWT N
+`-- pic.root = settled PIC Continuity COSE N
+    +-- root.pca = exact signed PIC PCA COSE N bytes
+    `-- transitions = null
+
+workload-signed candidate PIC Token JWT
+`-- pic.root = workload-signed candidate PIC Continuity COSE
+    +-- root.pca = exact signed PIC PCA COSE N bytes
+    `-- transitions = [ exactly one PIC Continuity Transition COSE N+1 ]
+
+trusted central validation / settlement
+
+trusted settled PIC Token JWT N+1
+`-- pic.root = settled PIC Continuity COSE N+1
+    +-- root.pca = exact signed PIC PCA COSE N+1 bytes
+    `-- transitions = null
 ~~~
 
-PIC-X validates the workload-signed candidate and PIC Continuity Transition JWT. PIC-X does not centrally sign the PIC Continuity Transition
-JWT; it signs the next settled PIC Continuity JWT. PIC-X is a concrete implementation and profile realization, not a required component of
-the abstract PIC model.
+The trusted settlement service validates the workload-signed candidate and PIC Continuity Transition COSE. It does not centrally sign the
+workload's Transition COSE; after successful validation it signs the new PIC PCA COSE checkpoint, settled PIC Continuity COSE, and settled
+PIC Token JWT. PIC-X is a concrete implementation and profile realization of this role, not a required component of the abstract PIC model.
 
 ~~~text
 +--------+        +--------+        +--------+
@@ -174,7 +175,7 @@ In the decentralized architecture, a local prover, runtime, or workload advances
 contacting a central service for every hop. The resulting continuity state remains subject to ordinary verification by the receiver and by
 any later central validation or re-issuance step defined by the profile.
 
-This topology is not part of the current PIC Profile 0.2 / PIC-X realization. Profile 0.2 currently defines centralized PIC-X-mediated
+This topology is not part of the current PIC Profile 0.2 centralized realization. Profile 0.2 currently defines settlement-authority-mediated
 advancement only. A future or separate profile may define local advancement, holder-signed settled artifacts, transition-history transport,
 or other decentralized mechanisms, but those mechanisms are not advertised as Profile 0.2 behavior by this document.
 
@@ -192,13 +193,13 @@ Central validation or re-issuance of locally advanced state is a possible future
 It is not part of current Profile 0.2. Such a profile could validate and re-issue the same continuity state:
 
 ~~~text
-locally issued PIC Continuity JWT M
+locally issued profile-defined continuity state M
         |
         v
 central validation
         |
         v
-centrally re-issued PIC Continuity JWT M
+centrally re-issued profile-defined continuity state M
 ~~~
 
 Such same-position re-issuance would create no new transition and would not increment position. Current Profile 0.2 does not define this
@@ -308,17 +309,18 @@ profile, and local policy.
 OAUTH INFRASTRUCTURE                      PIC
 
 +--------------+     token exchange      +----------------------+
-| ACCESS TOKEN |------------------------>| PIC Continuity JWT   |   enter PIC
+| ACCESS TOKEN |------------------------>| PIC Token JWT        |   enter PIC
 +--------------+                         +----------------------+
 
-the trusted root PCA representation is created inside the exchange
+the trusted PIC PCA COSE checkpoint and settled PIC Continuity COSE
+are created inside the exchange
 ~~~
 
-In the Profile 0.2 / PIC-X realization, the exchange returns a PIC Continuity JWT. The PIC PCA JWT is created as the trusted root artifact
-inside that process and is carried by the returned PIC Continuity JWT at `context_of_authority.root.pca_jwt`; its compact-artifact hash is
-carried at `context_of_authority.root.pca_jwt_hash`. The returned PIC Continuity JWT is not merely an OAuth Bearer access token, even when
-OAuth Token Exchange carries it in an `access_token` response member. Transport of PIC continuity artifacts is a profile-defined binding; for
-HTTP, a deployment MAY use a `PIC-Token` header.
+In the Profile 0.2 / PIC-X realization, the exchange returns a settled PIC Token JWT. The initial PIC PCA COSE is created as the trusted
+checkpoint inside that process, carried as exact signed bytes in `root.pca` by the settled PIC Continuity COSE, and referenced by
+`root.pca_hash`. The PIC Continuity COSE is carried by the returned PIC Token JWT in `pic.root`. The returned PIC Token JWT is not an OAuth
+Bearer token merely because OAuth Token Exchange carries it in an `access_token` response member. Transport of PIC continuity artifacts is a
+profile-defined binding; for HTTP, a deployment MAY use a `PIC-Token` header.
 
 # Contributors {#contributors}
 
