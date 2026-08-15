@@ -302,8 +302,8 @@ segment above.
 # Interoperability
 
 This section is non-normative. OAuth is one possible entry mechanism for PIC, not a dependency of the PIC model. A profile may define an
-OAuth Token Exchange binding that derives initial PIC authority from an OAuth access token, an initial continuity proposal, an exchange
-profile, and local policy.
+OAuth Token Exchange binding that derives initial PIC authority from a validated OAuth access token under an exchange profile and local
+policy, with execution constraints supplied by the initial continuity proposal when defined by that binding.
 
 ~~~text
 OAUTH INFRASTRUCTURE                      PIC

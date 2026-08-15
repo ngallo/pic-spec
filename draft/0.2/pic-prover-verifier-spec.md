@@ -100,9 +100,9 @@ implemented at each execution hop to close that gap. The model, including
 paper [[1]](#references) and formally verified with the Lean theorem prover [[2]](#references). The paper treats PoR as an abstract,
 unforgeable primitive. This document specifies the two components that realize it:
 
-- The **PIC Prover** constructs the PoR, the evidence binding the current execution step to its causal predecessor, and uses it to construct
-  the PoC handed to the next hop. A PoC is valid only if it satisfies the PIC invariants: causal linkage witnessed by PoR at every hop, and a
-  non-expansive authority context.
+- The **PIC Prover** constructs the relationship evidence required by the selected profile to witness the PoR relation binding the current
+  execution step to its causal predecessor, and uses the resulting valid advancement to construct the PoC handed to the next hop. A PoC is
+  valid only if it satisfies the PIC invariants: causal linkage witnessed by PoR at every hop, and a non-expansive authority context.
 - The **PIC Verifier** validates both proofs at the receiving hop: the PoR, which establishes that the incoming step is a genuine
   continuation of its predecessor, and the PoC, which establishes that the invariants hold along the entire received lineage. If either
   proof is invalid, the hop is rejected before any authority is exercised.
@@ -125,8 +125,8 @@ systems such as Apache Kafka, or over any other carrier.
 ## Security Guarantees of the Model
 
 An authority-propagation protocol guarantees the validity of authority states, not the physical behavior of executors. PIC guarantees that
-no actor can cause another executor to create, accept, or propagate an invalid authority state: an operation is accepted only if it can be
-represented as a valid continuation of the authority carried by the request.
+no actor can cause a conforming executor to accept or propagate an invalid authority state as valid PIC state: an operation is accepted only
+if it can be represented as a valid continuation of the authority carried by the request.
 
 Physical behavior is outside this guarantee, for PIC as for any security protocol. No authorization model can guarantee that an application
 is free of bugs or that an executor behaves correctly: an executor that receives authority to `READ`, ignores it, and physically performs
@@ -451,13 +451,14 @@ and does not by itself establish semantic continuity. A transition is accepted a
 separate non-expansion requirement, together with all other applicable profile checks such as predecessor binding, freshness, integrity,
 evidence or conformance, request/execution binding, revocation, and policy, also succeeds.
 
-Profile-defined PoR validation covers, as applicable:
+Profile-defined concrete relationship validation may cover, as applicable:
 
 - a predecessor cryptographic reference;
 - challenge continuity or an equivalent profile-defined freshness mechanism;
-- holder, executor, or key relationship as required by the profile;
-- request or execution binding where applicable;
-- conformance evidence where the profile requires executor conformance.
+- holder, executor, or key relationship as required by the profile.
+
+Request/execution binding and executor or execution-contract conformance remain separate applicable advancement-validation checks; they are
+not, merely by being required for acceptance, part of the abstract PoR relation.
 
 For PIC Profile 0.2, the PIC Continuity Transition COSE carries `proof_of_relationship` as a typed object:
 
@@ -480,10 +481,11 @@ The first transition consumes the bootstrap challenge from the current PIC PCA C
 use the `challenge.next_challenge` value carried by the current signed PIC PCA COSE checkpoint. The hash input is the exact signed PIC PCA
 COSE artifact bytes, not a decoded payload, diagnostic notation, JSON representation, Base64url text, or reserialized structure.
 
-The Prover MUST check its own PoR before proceeding: if the predecessor reference does not match the predecessor continuity state, if the
-challenge or equivalent freshness evidence does not satisfy the selected profile, or if profile-required executor or contract evidence is
-missing or invalid, the PoR or advancement is invalid and the Prover MUST stop. A continuity advancement carrying invalid required evidence is
-rejected at the next hop anyway.
+The Prover MUST check its own PoR before proceeding: if the predecessor reference does not match the predecessor continuity state, or if the
+challenge or equivalent freshness evidence does not satisfy the selected relationship-validation rules, the required PoR relation is not
+established and the Prover MUST stop. If profile-required executor, contract, request/execution, or other required evidence is missing or
+invalid, the advancement is invalid and the Prover MUST stop. A continuity advancement carrying invalid required evidence is rejected at the
+next hop anyway.
 
 **What the PoR proves.** The PoR does not prove physical, counterfactual, or prior-designation causation. Taken in isolation, a challenge
 response or concrete relationship artifact proves only the relationship semantics defined by the selected profile. A hop is accepted as a

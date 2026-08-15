@@ -1534,9 +1534,9 @@ paper <span><a href="#references" class="internal xref">[1]</a> (<a href="#refer
 unforgeable primitive. This document specifies the two components that realize it:<a href="#section-1-2" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-1-3.1">
-          <p id="section-1-3.1.1">The <strong>PIC Prover</strong> constructs the PoR, the evidence binding the current execution step to its causal predecessor, and uses it to construct
-the PoC handed to the next hop. A PoC is valid only if it satisfies the PIC invariants: causal linkage witnessed by PoR at every hop, and a
-non-expansive authority context.<a href="#section-1-3.1.1" class="pilcrow">¶</a></p>
+          <p id="section-1-3.1.1">The <strong>PIC Prover</strong> constructs the relationship evidence required by the selected profile to witness the PoR relation binding the current
+execution step to its causal predecessor, and uses the resulting valid advancement to construct the PoC handed to the next hop. A PoC is
+valid only if it satisfies the PIC invariants: causal linkage witnessed by PoR at every hop, and a non-expansive authority context.<a href="#section-1-3.1.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-1-3.2">
           <p id="section-1-3.2.1">The <strong>PIC Verifier</strong> validates both proofs at the receiving hop: the PoR, which establishes that the incoming step is a genuine
@@ -1562,8 +1562,8 @@ systems such as Apache Kafka, or over any other carrier.<a href="#section-1-6" c
 <a href="#section-1.1" class="section-number selfRef">1.1. </a><a href="#name-security-guarantees-of-the-" class="section-name selfRef">Security Guarantees of the Model</a>
         </h3>
 <p id="section-1.1-1">An authority-propagation protocol guarantees the validity of authority states, not the physical behavior of executors. PIC guarantees that
-no actor can cause another executor to create, accept, or propagate an invalid authority state: an operation is accepted only if it can be
-represented as a valid continuation of the authority carried by the request.<a href="#section-1.1-1" class="pilcrow">¶</a></p>
+no actor can cause a conforming executor to accept or propagate an invalid authority state as valid PIC state: an operation is accepted only
+if it can be represented as a valid continuation of the authority carried by the request.<a href="#section-1.1-1" class="pilcrow">¶</a></p>
 <p id="section-1.1-2">Physical behavior is outside this guarantee, for PIC as for any security protocol. No authorization model can guarantee that an application
 is free of bugs or that an executor behaves correctly: an executor that receives authority to <code>READ</code>, ignores it, and physically performs
 <code>DELETE</code> fails as an implementation, locally. What the protocol guarantees is that such a fault remains local: executor <code>n+1</code> cannot
@@ -1948,7 +1948,7 @@ soundly witness the abstract single-hop PoR relation.<a href="#section-2.3-1" cl
 and does not by itself establish semantic continuity. A transition is accepted as valid only when the required PoR relation holds and the
 separate non-expansion requirement, together with all other applicable profile checks such as predecessor binding, freshness, integrity,
 evidence or conformance, request/execution binding, revocation, and policy, also succeeds.<a href="#section-2.3-2" class="pilcrow">¶</a></p>
-<p id="section-2.3-3">Profile-defined PoR validation covers, as applicable:<a href="#section-2.3-3" class="pilcrow">¶</a></p>
+<p id="section-2.3-3">Profile-defined concrete relationship validation may cover, as applicable:<a href="#section-2.3-3" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-2.3-4.1">
             <p id="section-2.3-4.1.1">a predecessor cryptographic reference;<a href="#section-2.3-4.1.1" class="pilcrow">¶</a></p>
@@ -1957,56 +1957,53 @@ evidence or conformance, request/execution binding, revocation, and policy, also
             <p id="section-2.3-4.2.1">challenge continuity or an equivalent profile-defined freshness mechanism;<a href="#section-2.3-4.2.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-2.3-4.3">
-            <p id="section-2.3-4.3.1">holder, executor, or key relationship as required by the profile;<a href="#section-2.3-4.3.1" class="pilcrow">¶</a></p>
-</li>
-          <li class="normal" id="section-2.3-4.4">
-            <p id="section-2.3-4.4.1">request or execution binding where applicable;<a href="#section-2.3-4.4.1" class="pilcrow">¶</a></p>
-</li>
-          <li class="normal" id="section-2.3-4.5">
-            <p id="section-2.3-4.5.1">conformance evidence where the profile requires executor conformance.<a href="#section-2.3-4.5.1" class="pilcrow">¶</a></p>
+            <p id="section-2.3-4.3.1">holder, executor, or key relationship as required by the profile.<a href="#section-2.3-4.3.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-2.3-5">For PIC Profile 0.2, the PIC Continuity Transition COSE carries <code>proof_of_relationship</code> as a typed object:<a href="#section-2.3-5" class="pilcrow">¶</a></p>
-<div class="lang-text sourcecode" id="section-2.3-6">
+<p id="section-2.3-5">Request/execution binding and executor or execution-contract conformance remain separate applicable advancement-validation checks; they are
+not, merely by being required for acceptance, part of the abstract PoR relation.<a href="#section-2.3-5" class="pilcrow">¶</a></p>
+<p id="section-2.3-6">For PIC Profile 0.2, the PIC Continuity Transition COSE carries <code>proof_of_relationship</code> as a typed object:<a href="#section-2.3-6" class="pilcrow">¶</a></p>
+<div class="lang-text sourcecode" id="section-2.3-7">
 <pre>
 proof_of_relationship.type = "sd-jwt"
 proof_of_relationship.evidence = exact UTF-8 bytes of the textual issuer-signed
                                  Profile 0.2 SD-JWT presentation
-</pre><a href="#section-2.3-6" class="pilcrow">¶</a>
+</pre><a href="#section-2.3-7" class="pilcrow">¶</a>
 </div>
-<p id="section-2.3-7">The <code>type</code> value controls parsing and validation of <code>evidence</code>. The selected Profile 0.2 PoR schema MUST bind or identify the workload
+<p id="section-2.3-8">The <code>type</code> value controls parsing and validation of <code>evidence</code>. The selected Profile 0.2 PoR schema MUST bind or identify the workload
 verification key; this specification does not define a universal claim name and does not define a separate generic <code>key_binding</code> field. The
-predecessor reference for the current centralized Profile 0.2 realization is:<a href="#section-2.3-7" class="pilcrow">¶</a></p>
-<div class="lang-text sourcecode" id="section-2.3-8">
+predecessor reference for the current centralized Profile 0.2 realization is:<a href="#section-2.3-8" class="pilcrow">¶</a></p>
+<div class="lang-text sourcecode" id="section-2.3-9">
 <pre>
 predecessor.type = "pca"
 predecessor.hash = SHA-256(exact signed current root.pca PIC PCA COSE bytes)
-</pre><a href="#section-2.3-8" class="pilcrow">¶</a>
+</pre><a href="#section-2.3-9" class="pilcrow">¶</a>
 </div>
-<p id="section-2.3-9">The first transition consumes the bootstrap challenge from the current PIC PCA COSE checkpoint's <code>challenge.next_challenge</code>. Later transitions
+<p id="section-2.3-10">The first transition consumes the bootstrap challenge from the current PIC PCA COSE checkpoint's <code>challenge.next_challenge</code>. Later transitions
 use the <code>challenge.next_challenge</code> value carried by the current signed PIC PCA COSE checkpoint. The hash input is the exact signed PIC PCA
-COSE artifact bytes, not a decoded payload, diagnostic notation, JSON representation, Base64url text, or reserialized structure.<a href="#section-2.3-9" class="pilcrow">¶</a></p>
-<p id="section-2.3-10">The Prover MUST check its own PoR before proceeding: if the predecessor reference does not match the predecessor continuity state, if the
-challenge or equivalent freshness evidence does not satisfy the selected profile, or if profile-required executor or contract evidence is
-missing or invalid, the PoR or advancement is invalid and the Prover MUST stop. A continuity advancement carrying invalid required evidence is
-rejected at the next hop anyway.<a href="#section-2.3-10" class="pilcrow">¶</a></p>
-<p id="section-2.3-11"><strong>What the PoR proves.</strong> The PoR does not prove physical, counterfactual, or prior-designation causation. Taken in isolation, a challenge
+COSE artifact bytes, not a decoded payload, diagnostic notation, JSON representation, Base64url text, or reserialized structure.<a href="#section-2.3-10" class="pilcrow">¶</a></p>
+<p id="section-2.3-11">The Prover MUST check its own PoR before proceeding: if the predecessor reference does not match the predecessor continuity state, or if the
+challenge or equivalent freshness evidence does not satisfy the selected relationship-validation rules, the required PoR relation is not
+established and the Prover MUST stop. If profile-required executor, contract, request/execution, or other required evidence is missing or
+invalid, the advancement is invalid and the Prover MUST stop. A continuity advancement carrying invalid required evidence is rejected at the
+next hop anyway.<a href="#section-2.3-11" class="pilcrow">¶</a></p>
+<p id="section-2.3-12"><strong>What the PoR proves.</strong> The PoR does not prove physical, counterfactual, or prior-designation causation. Taken in isolation, a challenge
 response or concrete relationship artifact proves only the relationship semantics defined by the selected profile. A hop is accepted as a
 valid PIC continuation only when the Verifier also applies the other required PIC and profile checks, including non-expansion and any
 applicable contract, request/execution, evidence, freshness, revocation, and policy checks. The selected concrete relationship checks are
-assumed to soundly witness the abstract single-hop PoR relation used by the model <span><a href="#references" class="internal xref">[1]</a> (<a href="#references" class="auto internal xref">Section 12</a>)</span> and Lean formalization <span><a href="#references" class="internal xref">[2]</a> (<a href="#references" class="auto internal xref">Section 12</a>)</span>.<a href="#section-2.3-11" class="pilcrow">¶</a></p>
-<p id="section-2.3-12"><strong>Continuation is open by default.</strong> The core model does not require a predecessor to preselect a concrete successor. A profile MAY constrain
+assumed to soundly witness the abstract single-hop PoR relation used by the model <span><a href="#references" class="internal xref">[1]</a> (<a href="#references" class="auto internal xref">Section 12</a>)</span> and Lean formalization <span><a href="#references" class="internal xref">[2]</a> (<a href="#references" class="auto internal xref">Section 12</a>)</span>.<a href="#section-2.3-12" class="pilcrow">¶</a></p>
+<p id="section-2.3-13"><strong>Continuation is open by default.</strong> The core model does not require a predecessor to preselect a concrete successor. A profile MAY constrain
 holder keys, recipients, or channels, but those constraints are profile-specific. When a selected profile defines a request or execution
-commitment, that binding fixes the concrete action accepted under that profile (Section 3.3).<a href="#section-2.3-12" class="pilcrow">¶</a></p>
-<p id="section-2.3-13"><strong>Out of scope.</strong> The canonical form of the <code>request</code>, digest construction, streaming and partial payloads, and request-binding construction
+commitment, that binding fixes the concrete action accepted under that profile (Section 3.3).<a href="#section-2.3-13" class="pilcrow">¶</a></p>
+<p id="section-2.3-14"><strong>Out of scope.</strong> The canonical form of the <code>request</code>, digest construction, streaming and partial payloads, and request-binding construction
 are defined by the selected profile or by a separate specification. The core keeps only the profile-conditional requirement that authenticated
-request/execution commitments, when defined and relied upon, match the accepted or executed action (Section 3.3).<a href="#section-2.3-13" class="pilcrow">¶</a></p>
+request/execution commitments, when defined and relied upon, match the accepted or executed action (Section 3.3).<a href="#section-2.3-14" class="pilcrow">¶</a></p>
 <ul class="normal ulEmpty">
-<li class="normal ulEmpty" id="section-2.3-14.1">
-            <p id="section-2.3-14.1.1"><strong>Note - proof mechanism agility.</strong> Future or separate profiles may realize PoR and advancement integrity with mechanisms other than the
+<li class="normal ulEmpty" id="section-2.3-15.1">
+            <p id="section-2.3-15.1.1"><strong>Note - proof mechanism agility.</strong> Future or separate profiles may realize PoR and advancement integrity with mechanisms other than the
 current Profile 0.2 typed SD-JWT evidence, including signed hash chains, Merkle proofs, accumulators, recursive or zero-knowledge proofs,
 or hardware-backed attestations, provided they preserve the normative semantics: binding to exactly one predecessor, profile-defined
-freshness or challenge continuity, non-expansion of authority, and integrity of the concrete advancement.<a href="#section-2.3-14.1.1" class="pilcrow">¶</a></p>
+freshness or challenge continuity, non-expansion of authority, and integrity of the concrete advancement.<a href="#section-2.3-15.1.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
 </section>
