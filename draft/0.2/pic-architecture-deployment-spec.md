@@ -122,8 +122,8 @@ cost and assurance properties.
 ## Centralized
 
 In the centralized architecture, a current continuity state and continuation input are submitted to a trusted central continuity service. The
-service validates the predecessor state, the proposed advancement, revocation state, non-expansion, request/execution binding, and any
-profile-required evidence. If validation succeeds, it issues or authenticates the next continuity state according to the selected profile.
+service validates the predecessor state, the proposed advancement, revocation state, non-expansion, request/execution binding when required,
+and any profile-required evidence. If validation succeeds, it issues or authenticates the next continuity state according to the selected profile.
 The rest of this document uses **Trust Plane** for such a centralized trusted service.
 
 In PIC Profile 0.2, centralized continuity is:
@@ -301,7 +301,7 @@ segment above.
 
 # Interoperability
 
-This section is non-normative. OAuth is one possible entry mechanism for PIC, not a dependency of the PIC model. A profile MAY define an
+This section is non-normative. OAuth is one possible entry mechanism for PIC, not a dependency of the PIC model. A profile may define an
 OAuth Token Exchange binding that derives initial PIC authority from an OAuth access token, an initial continuity proposal, an exchange
 profile, and local policy.
 
@@ -320,7 +320,21 @@ In the Profile 0.2 / PIC-X realization, the exchange returns a settled PIC Token
 checkpoint inside that process, carried as exact signed bytes in `root.pca` by the settled PIC Continuity COSE, and referenced by
 `root.pca_hash`. The PIC Continuity COSE is carried by the returned PIC Token JWT in `pic.root`. The returned PIC Token JWT is not an OAuth
 Bearer token merely because OAuth Token Exchange carries it in an `access_token` response member. Transport of PIC continuity artifacts is a
-profile-defined binding; for HTTP, a deployment MAY use a `PIC-Token` header.
+profile-defined binding; for HTTP, a deployment may use a `PIC-Token` header.
+
+The interoperable parameter names, token-type identifiers, request members, and response semantics for a Profile 0.2 OAuth Token Exchange
+binding are defined by the selected Profile 0.2 exchange binding specification, not by this informational architecture section.
+
+# Security Considerations
+
+This document describes deployment topology and trust placement; it does not replace the security requirements of the PIC Prover and Verifier
+Specification or the PIC Revocation Specification. Deployments need to evaluate trusted-service compromise, trust-boundary assumptions,
+history availability, collusion resistance, and revocation-state availability separately from artifact integrity.
+
+Centralized profiles rely on the correctness and availability of the trusted settlement or continuity service. Decentralized and hybrid
+profiles need to define what each Verifier independently validates, what prior validation or checkpoint state it trusts, and how failures are
+handled. Transport protections such as TLS, mTLS, broker authentication, or service-mesh policy protect channels and operational exposure, but
+they do not replace PIC continuity validation, non-expansion checks, freshness checks, or authenticated revocation evaluation.
 
 # Contributors {#contributors}
 

@@ -174,19 +174,19 @@ Gallo                         Informational                     [Page 3]
    4.  Bypass  . . . . . . . . . . . . . . . . . . . . . . . . . . .  25
      4.1.  Non-PIC-Aware Target  . . . . . . . . . . . . . . . . . .  25
      4.2.  Relationship to Service Meshes and Deployment
-           Infrastructure  . . . . . . . . . . . . . . . . . . . . .  27
-     4.3.  Consecutive Collusion . . . . . . . . . . . . . . . . . .  28
-   5.  Recursion . . . . . . . . . . . . . . . . . . . . . . . . . .  28
+           Infrastructure  . . . . . . . . . . . . . . . . . . . . .  28
+     4.3.  Consecutive Collusion . . . . . . . . . . . . . . . . . .  29
+   5.  Recursion . . . . . . . . . . . . . . . . . . . . . . . . . .  29
    6.  Security Boundary . . . . . . . . . . . . . . . . . . . . . .  30
      6.1.  Model Guarantee . . . . . . . . . . . . . . . . . . . . .  30
-     6.2.  Implementation Failure  . . . . . . . . . . . . . . . . .  30
+     6.2.  Implementation Failure  . . . . . . . . . . . . . . . . .  31
      6.3.  Semantic Divergence . . . . . . . . . . . . . . . . . . .  31
    7.  Model Summary . . . . . . . . . . . . . . . . . . . . . . . .  31
    8.  Contributors  . . . . . . . . . . . . . . . . . . . . . . . .  32
-   9.  Acknowledgement . . . . . . . . . . . . . . . . . . . . . . .  32
-   10. Legal Notices . . . . . . . . . . . . . . . . . . . . . . . .  32
-   11. References  . . . . . . . . . . . . . . . . . . . . . . . . .  33
-   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .  33
+   9.  Acknowledgement . . . . . . . . . . . . . . . . . . . . . . .  33
+   10. Legal Notices . . . . . . . . . . . . . . . . . . . . . . . .  33
+   11. References  . . . . . . . . . . . . . . . . . . . . . . . . .  34
+   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .  34
 
 1.  Introduction
 
@@ -304,7 +304,7 @@ Gallo                         Informational                     [Page 5]
    not an execution step, workflow stage, route segment, child
    continuity, subordinate continuity, additional outer predecessor, or
    authority fragment.  A Sandboxed Execution profile layered on a PIC
-   continuity profile MUST define the independently verifiable
+   continuity profile defines the independently verifiable
    representation of each Composition Collection member and the exact
    binding of that collection to the outer execution.
 
@@ -368,9 +368,9 @@ Gallo                         Informational                     [Page 6]
    Removing all collection members removes the execution subject of the
    Sandboxed Execution; it does not attenuate the outer authority or
    transform the outer continuity into an empty authority container.  A
-   Composition Collection MUST contain at least one composition member;
-   an empty collection-member set represents no Composition Collection
-   to evaluate and MUST be rejected.
+   Composition Collection contains at least one composition member; an
+   empty collection-member set represents no Composition Collection to
+   evaluate and is invalid.
 
 1.3.  Sandboxed Execution
 
@@ -736,8 +736,8 @@ Gallo                         Informational                    [Page 13]
    it requires an ENFORCE-specific request binding.  The authenticated
    continuity advancement protects or binds the complete Composition
    Collection, and the request commitment pins the concrete ENFORCE
-   operation to that exact inner execution under the executed-vs-signed
-   rule.
+   operation to that exact inner execution under the profile-defined
+   executed-vs-bound rule.
 
    A Composition Collection commitment is mandatory in every non-root
    ENFORCE advancement and is computed over the selected profile's
@@ -1001,7 +1001,7 @@ Gallo                         Informational                    [Page 17]
    *Phase 1 — Outer PIC verification.* The guardrail acts as an ordinary
    PIC Verifier for the outer execution:
 
-   1.  validate the outer predecessor continuity state;
+   1.   validate the outer predecessor continuity state;
 
 
 
@@ -1010,46 +1010,64 @@ Gallo                         Informational                    [Page 18]
                          PIC Sandboxed Execution               July 2026
 
 
-   2.  verify the profile-defined predecessor cryptographic reference;
+   2.   verify the profile-defined predecessor cryptographic reference
+        and PoR;
 
-   3.  verify challenge continuity when the selected profile uses
-       challenges;
+   3.   verify freshness or challenge continuity as defined by the
+        selected profile;
 
-   4.  verify the guardrail executor attestation;
+   4.   verify outer non-expansion;
 
-   5.  verify execution-contract conformance;
+   5.   verify time, profile, and applicable revocation requirements;
 
-   6.  verify outer non-expansion;
+   6.   verify guardrail executor evidence and execution-contract
+        conformance when required by the selected Sandboxed Execution
+        profile or the underlying continuity profile;
 
-   7.  verify time, freshness, profile, and revocation requirements;
+   7.   verify the materialized outer authority contains ENFORCE;
 
-   8.  verify the outer request operation is ENFORCE;
+   8.   verify the profile-defined outer request/execution binding
+        operation is ENFORCE;
 
-   9.  recompute and verify the request commitment to the complete
-       Composition Collection.
+   9.   recompute and verify the request commitment to the complete
+        Composition Collection;
+
+   10.  verify the bound enforcement result is permit for an authorizing
+        prior outer advancement.
 
    *Phase 2 — Inner PIC verification.* Only after Phase 1 succeeds, for
    every composition member:
 
-   1.  validate the composition member using the selected ordinary PIC
-       validation profile;
+   1.  validate the composition member independently using its selected
+       ordinary PIC validation profile;
 
    2.  verify its root, immediate predecessor, or equivalent proof as
-       required;
+       required by that profile;
 
-   3.  verify artifact authentication and PoR;
+   3.  verify artifact authentication, integrity, and PoR as required by
+       that profile;
 
-   4.  verify predecessor binding;
+   4.  verify predecessor binding where applicable;
 
    5.  verify non-expansion;
 
-   6.  verify request binding and executed-vs-signed requirements;
+   6.  verify request/execution binding when required by that member's
+       selected PIC continuity profile;
 
-   7.  verify execution-contract conformance;
+   7.  verify executor evidence and execution-contract conformance when
+       required by that member's selected PIC continuity profile;
 
-   8.  verify freshness and time;
+   8.  verify freshness and time as required by that profile;
 
-   9.  verify revocation coordinates and active revocation state.
+
+
+Gallo                         Informational                    [Page 19]
+
+                         PIC Sandboxed Execution               July 2026
+
+
+   9.  verify revocation coordinates and active revocation state when
+       required or applicable under that profile.
 
    Any invalid outer check or composition member produces deny before
    policy evaluation.
@@ -1058,13 +1076,6 @@ Gallo                         Informational                    [Page 18]
    and the exact crossing context, the guardrail evaluates the profile-
    defined enforcement function.  A PDP is only one possible
    implementation.
-
-
-
-Gallo                         Informational                    [Page 19]
-
-                         PIC Sandboxed Execution               July 2026
-
 
       The profile defines the required enforcement result and its signed
       inputs.  It does not require a specific PDP, policy language,
@@ -1103,6 +1114,14 @@ Gallo                         Informational                    [Page 19]
 
    1.  identify exactly one outer predecessor;
 
+
+
+
+Gallo                         Informational                    [Page 20]
+
+                         PIC Sandboxed Execution               July 2026
+
+
    2.  produce valid PoR;
 
    3.  retain or attenuate ENFORCE;
@@ -1114,13 +1133,6 @@ Gallo                         Informational                    [Page 19]
    6.  bind its canonical digest in the request;
 
    7.  bind the enforcement inputs and permit result;
-
-
-
-Gallo                         Informational                    [Page 20]
-
-                         PIC Sandboxed Execution               July 2026
-
 
    8.  emit the next profile-defined challenge or freshness value when
        required;
@@ -1157,6 +1169,15 @@ Gallo                         Informational                    [Page 20]
     no      yes
     X       Phase 4: build candidate and obtain next settled outer continuity
 
+
+
+
+
+Gallo                         Informational                    [Page 21]
+
+                         PIC Sandboxed Execution               July 2026
+
+
    *Hop-specific result.* An enforcement result is hop-specific.  A
    permit in the outer advancement at position n applies only to the
    exact execution bound by that advancement: its Composition
@@ -1166,17 +1187,6 @@ Gallo                         Informational                    [Page 20]
    destination, a changed payload, a changed policy, a modified
    Composition Collection, or any physical action not bound by the
    request.
-
-
-
-
-
-
-
-Gallo                         Informational                    [Page 21]
-
-                         PIC Sandboxed Execution               July 2026
-
 
    outer advancement n
    permit for exact crossing X
@@ -1216,16 +1226,6 @@ Gallo                         Informational                    [Page 21]
    Two checks are separate: ENFORCE must belong to the outer authority
    context, and the concrete executed request must be ENFORCE.
 
-   ENFORCE in materialized outer authority        (authority)
-   bound request/execution operation == ENFORCE   (executed action)
-
-   For every non-root outer advancement, both MUST hold.  A conforming
-   guardrail or receiving outer executor MUST accept the outer
-   continuity only if:
-
-
-
-
 
 
 
@@ -1233,6 +1233,13 @@ Gallo                         Informational                    [Page 22]
 
                          PIC Sandboxed Execution               July 2026
 
+
+   ENFORCE in materialized outer authority        (authority)
+   bound request/execution operation == ENFORCE   (executed action)
+
+   For every non-root outer advancement, both MUST hold.  A conforming
+   guardrail or receiving outer executor MUST accept the outer
+   continuity only if:
 
    ValidOuterContinuity(predecessorState, currentAdvancement)
    AND ValidSandboxOrigin(outerRoot)
@@ -1268,15 +1275,8 @@ Gallo                         Informational                    [Page 22]
    and MAY require a minimum outer execution contract.  Such
    restrictions narrow acceptance; they do not create outer authority.
 
-   ValidCompositionCollection means that the presented Composition
-   Collection contains at least one composition member and every
-   composition member validates independently under its own PIC
-   continuity and the selected validation profile.  Validation of one
-   composition member does not validate another.  A composition member
-   is never an additional predecessor of the outer continuity.  A
-   composition member may itself be a Sandboxed Execution, enabling
-   recursive composition to arbitrary finite depth.  An empty
-   collection-member set is invalid under this profile.
+
+
 
 
 
@@ -1289,6 +1289,16 @@ Gallo                         Informational                    [Page 23]
 
                          PIC Sandboxed Execution               July 2026
 
+
+   ValidCompositionCollection means that the presented Composition
+   Collection contains at least one composition member and every
+   composition member validates independently under its own PIC
+   continuity and the selected validation profile.  Validation of one
+   composition member does not validate another.  A composition member
+   is never an additional predecessor of the outer continuity.  A
+   composition member may itself be a Sandboxed Execution, enabling
+   recursive composition to arbitrary finite depth.  An empty
+   collection-member set is invalid under this profile.
 
    ExactPresentedExecutionBinding means that the complete presented
    collection-member set and crossing context are reconstructed from the
@@ -1328,16 +1338,6 @@ Gallo                         Informational                    [Page 23]
 
    *  an added, removed, or substituted presented composition member;
 
-   *  a mismatched request, destination, or payload;
-
-   *  an invalid policy or input commitment;
-
-   *  a non-permit decision;
-
-   *  stale, replayed, or revoked state.
-
-
-
 
 
 
@@ -1345,6 +1345,14 @@ Gallo                         Informational                    [Page 24]
 
                          PIC Sandboxed Execution               July 2026
 
+
+   *  a mismatched request, destination, or payload;
+
+   *  an invalid policy or input commitment;
+
+   *  a non-permit decision;
+
+   *  stale, replayed, or revoked state.
 
    This profile adds no second signature system: guardrail approval is
    the ordinary authentication of the outer continuity advancement,
@@ -1385,14 +1393,6 @@ Gallo                         Informational                    [Page 24]
 
    3.  evaluates the enforcement function;
 
-   4.  constructs the ordinary outer continuity advancement or
-       advancement proposal required by the selected profile;
-
-   5.  binds the exact physical action, destination, payload,
-       participants, policy inputs, and context;
-
-   6.  authenticates the complete advancement or proposal as required by
-       the selected profile;
 
 
 
@@ -1401,6 +1401,15 @@ Gallo                         Informational                    [Page 25]
 
                          PIC Sandboxed Execution               July 2026
 
+
+   4.  constructs the ordinary outer continuity advancement or
+       advancement proposal required by the selected profile;
+
+   5.  binds the exact physical action, destination, payload,
+       participants, policy inputs, and context;
+
+   6.  authenticates the complete advancement or proposal as required by
+       the selected profile;
 
    7.  follows any profile-required settlement or acceptance rules for
        treating the continuation as valid;
@@ -1428,6 +1437,27 @@ Gallo                         Informational                    [Page 25]
    the materialized operation, not ownership of unrelated application
    workflow.
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Gallo                         Informational                    [Page 26]
+
+                         PIC Sandboxed Execution               July 2026
+
+
    proposing executor
          |
          | proposed Composition Collection
@@ -1447,16 +1477,6 @@ Gallo                         Informational                    [Page 25]
                the exact bound permitted action
 
    The timing between Profile 0.2 settlement and irreversible physical action is profile-defined.
-
-
-
-
-
-
-Gallo                         Informational                    [Page 26]
-
-                         PIC Sandboxed Execution               July 2026
-
 
    The materializing guardrail is not a new trusted authority, a special
    continuity artifact type, a required service mesh, a universal
@@ -1479,26 +1499,6 @@ Gallo                         Informational                    [Page 26]
    Deployment path boundary:
        Can the target be reached through an alternate physical route?
 
-4.2.  Relationship to Service Meshes and Deployment Infrastructure
-
-   A Sandboxed Execution does not require a service mesh, sidecar,
-   proxy, gateway, network-interception layer, or physical sandbox.  The
-   validity of guardrail traversal derives from the outer PIC
-   continuity: ordinary Proof of Relationship, exactly-one-predecessor
-   continuity, non-expansion, request binding, executor conformance,
-   revocation checks, and verification by the next conforming outer
-   executor.
-
-   A service mesh MAY transport, route, encrypt, observe, load-balance,
-   or operationally restrict a Sandboxed Execution.  It is not the
-   source of the execution's continuity, guardrail authorization,
-   authority separation, or sandboxing property.  PIC therefore assumes
-   responsibility for the execution-continuity and guardrail-validity
-   properties that would otherwise have to be trusted to interception
-   infrastructure; the service mesh, when present, remains deployment
-   infrastructure rather than a PIC security primitive.
-
-
 
 
 
@@ -1513,6 +1513,26 @@ Gallo                         Informational                    [Page 27]
 
                          PIC Sandboxed Execution               July 2026
 
+
+4.2.  Relationship to Service Meshes and Deployment Infrastructure
+
+   A Sandboxed Execution does not require a service mesh, sidecar,
+   proxy, gateway, network-interception layer, or physical sandbox.  The
+   validity of guardrail traversal derives from the outer PIC
+   continuity: ordinary Proof of Relationship, exactly-one-predecessor
+   continuity, non-expansion, the mandatory outer ENFORCE request/
+   execution binding, profile-required executor evidence or conformance,
+   applicable revocation checks, and verification by the next conforming
+   outer executor.
+
+   A service mesh MAY transport, route, encrypt, observe, load-balance,
+   or operationally restrict a Sandboxed Execution.  It is not the
+   source of the execution's continuity, guardrail authorization,
+   authority separation, or sandboxing property.  PIC therefore assumes
+   responsibility for the execution-continuity and guardrail-validity
+   properties that would otherwise have to be trusted to interception
+   infrastructure; the service mesh, when present, remains deployment
+   infrastructure rather than a PIC security primitive.
 
    PIC SANDBOXED EXECUTION            OPTIONAL SERVICE MESH
    provides:                          may provide:
@@ -1536,6 +1556,20 @@ Gallo                         Informational                    [Page 27]
 
       A service mesh may carry the sandbox, but it is not the sandbox.
 
+
+
+
+
+
+
+
+
+
+Gallo                         Informational                    [Page 28]
+
+                         PIC Sandboxed Execution               July 2026
+
+
 4.3.  Consecutive Collusion
 
    A sender colluding with a receiving hop that deliberately ignores the
@@ -1556,19 +1590,6 @@ Gallo                         Informational                    [Page 27]
 
    The model is recursively closed.  No special root guardrail object
    exists, and no new trust primitive appears at deeper levels.
-
-
-
-
-
-
-
-
-
-Gallo                         Informational                    [Page 28]
-
-                         PIC Sandboxed Execution               July 2026
-
 
    outer continuity
     +-- Composition Collection
@@ -1595,6 +1616,16 @@ Gallo                         Informational                    [Page 28]
 
    *  no authority flows upward from inner continuities.
 
+
+
+
+
+
+Gallo                         Informational                    [Page 29]
+
+                         PIC Sandboxed Execution               July 2026
+
+
    At every recursive level the same separation holds: one predecessor
    in the local continuity, root-bounded authority, ordinary PoR,
    ordinary non-expansion, exact request binding, and independent
@@ -1618,13 +1649,6 @@ Gallo                         Informational                    [Page 28]
 
    Nesting adds execution structure.  It does not create authority
    inheritance between recursive levels.
-
-
-
-Gallo                         Informational                    [Page 29]
-
-                         PIC Sandboxed Execution               July 2026
-
 
    The model is recursively composable to arbitrary finite depth — not
    literal infinite execution.  Implementations MUST bound maximum
@@ -1650,6 +1674,14 @@ Gallo                         Informational                    [Page 29]
    *  a different inner execution cannot be substituted without
       invalidating the authenticated binding;
 
+
+
+
+Gallo                         Informational                    [Page 30]
+
+                         PIC Sandboxed Execution               July 2026
+
+
    *  skipping guardrails cannot produce a valid outer continuation.
 
    This specification adds no independent trust primitive.  The trusted
@@ -1674,14 +1706,6 @@ Gallo                         Informational                    [Page 29]
    implemented incorrectly.  These break the implementation or its
    assumptions, not the model.
 
-
-
-
-Gallo                         Informational                    [Page 30]
-
-                         PIC Sandboxed Execution               July 2026
-
-
 6.3.  Semantic Divergence
 
    The enforcement function may be incorrect, dishonest, or semantically
@@ -1692,6 +1716,27 @@ Gallo                         Informational                    [Page 30]
    interpretation is correct.
 
 7.  Model Summary
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Gallo                         Informational                    [Page 31]
+
+                         PIC Sandboxed Execution               July 2026
+
 
    PIC CONTINUITY
    one root;
@@ -1730,20 +1775,24 @@ Gallo                         Informational                    [Page 30]
    make the member continuities authority parents of the outer
    continuity.
 
-
-
-
-Gallo                         Informational                    [Page 31]
-
-                         PIC Sandboxed Execution               July 2026
-
-
 8.  Contributors
 
    The editors and contributors of this document are listed in the
    *document header* above.  Listing is governed by Appendix B.7 of the
    PIC Legal Appendices (https://github.com/pic-protocol/pic-
    spec/blob/main/draft/0.2/pic-legal.md).
+
+
+
+
+
+
+
+
+Gallo                         Informational                    [Page 32]
+
+                         PIC Sandboxed Execution               July 2026
+
 
 9.  Acknowledgement
 
@@ -1785,20 +1834,21 @@ Gallo                         Informational                    [Page 31]
 
    *  *D.* Acknowledgements,
 
-
-
-
-
-Gallo                         Informational                    [Page 32]
-
-                         PIC Sandboxed Execution               July 2026
-
-
    are maintained in a single canonical document, the *PIC Legal
    Appendices (https://github.com/pic-protocol/pic-
    spec/blob/main/draft/0.2/pic-legal.md)* (draft/0.2/pic-legal.md), and
    are *incorporated into this specification by reference* as if fully
    set forth herein.
+
+
+
+
+
+
+Gallo                         Informational                    [Page 33]
+
+                         PIC Sandboxed Execution               July 2026
+
 
    In case of conflict between this document and the PIC Legal
    Appendices, the PIC Legal Appendices prevail for legal, governance,
@@ -1845,4 +1895,10 @@ Author's Address
 
 
 
-Gallo                         Informational                    [Page 33]
+
+
+
+
+
+
+Gallo                         Informational                    [Page 34]

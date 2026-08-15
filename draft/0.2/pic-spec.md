@@ -78,6 +78,11 @@ is authoritative for normative requirements and conformance language.
 - The **PIC Specification** (this document and its subordinate specifications)
   defines the normative semantics of the PIC Model.
 
+## Requirements Notation
+
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+"OPTIONAL" are to be interpreted as described in BCP 14 [[2]](#references) [[3]](#references) when, and only when, they appear in all capitals.
+
 Documents and implementations claiming conformance with PIC **MUST** faithfully
 preserve the invariants defined by the PIC Model as expressed by this
 Specification. Anything that violates these invariants is **not PIC-compliant**,
@@ -93,7 +98,7 @@ Subordinate specifications:
 
 | Document | Description | Status | Date |
 | --- | --- | --- | --- |
-| [PIC Prover and Verifier](https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-prover-verifier-spec.md) | Normative requirements for PIC Provers and Verifiers: trusted roots, non-root continuity advancements, Proof of Relationship, ordered Verifier checks including executed-vs-signed binding, authority as an abstract attenuation domain, and profile-selected continuity representations. Current Profile 0.2 uses centralized settlement with PIC Token JWTs carrying settled PIC Continuity COSE, PIC PCA COSE checkpoints, and workload-signed candidate advancement artifacts. | Draft 0.2 | 2026-07-15 |
+| [PIC Prover and Verifier](https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-prover-verifier-spec.md) | Normative requirements for PIC Provers and Verifiers: trusted roots, non-root continuity advancements, Proof of Relationship, ordered Verifier checks including profile-conditional request/execution binding, authority as an abstract attenuation domain, and profile-selected continuity representations. Current Profile 0.2 uses centralized settlement with PIC Token JWTs carrying settled PIC Continuity COSE, PIC PCA COSE checkpoints, and workload-signed candidate advancement artifacts. | Draft 0.2 | 2026-07-15 |
 | [PIC Revocation](https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-revocation-spec.md) | Revocation around PCA ID, position, optional authenticated selectors, authorized causal cutoffs, position witnesses, revocation authorization, and authenticated revocation state. | Draft 0.2 | 2026-07-18 |
 | [PIC Sandboxed Execution](https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-lineage-guardrail-spec.md) | Sandboxed Execution as an outer `ENFORCE` PIC continuity governing a Composition Collection of independently verifiable PIC continuities. The collection is bound exactly, members remain independent, and no authority union is created. | Draft 0.2 | 2026-08-12 |
 | [PIC Architecture and Deployment](https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-architecture-deployment-spec.md) | Profile-selected PIC deployment architectures, including trusted continuity services, hybrid enterprise topologies, service meshes, and optional interoperability through selected exchange profiles. Current Profile 0.2 is centralized, with PIC-X as one realization; future or other profiles may define other modes. | Draft 0.2 | 2026-08-12 |
@@ -135,3 +140,5 @@ matters.
 # References {#references}
 
 - [1] Gallo, N. (2026). *Proof-of-Continuity: A Temporal Model for Authority Propagation in Distributed Systems and AI Agents*. arXiv:2607.08906 [cs.CR]. [arxiv.org/abs/2607.08906](https://arxiv.org/abs/2607.08906)
+- [2] Bradner, S. (1997). *Key words for use in RFCs to Indicate Requirement Levels*. BCP 14, RFC 2119. [rfc-editor.org/rfc/rfc2119](https://www.rfc-editor.org/rfc/rfc2119)
+- [3] Leiba, B. (2017). *Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words*. BCP 14, RFC 8174. [rfc-editor.org/rfc/rfc8174](https://www.rfc-editor.org/rfc/rfc8174)

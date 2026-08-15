@@ -119,12 +119,12 @@ Editors
    *  *Nicola Gallo* (Nitro Agility S.r.l.)  Lead Editor
 
    *  _Add your name via pull request (individual or organization) —
-      listing is subject to editor approval (see Section 8)._
+      listing is subject to editor approval (see Section 9)._
 
 Contributors
 
    *  _Add your name via pull request (individual or organization) —
-      listing is subject to editor approval (see Section 8)._
+      listing is subject to editor approval (see Section 9)._
 
 Table of Contents
 
@@ -144,10 +144,11 @@ Table of Contents
    5.  Revocation State  . . . . . . . . . . . . . . . . . . . . . .   9
    6.  Future Branch-Capable Profiles  . . . . . . . . . . . . . . .  10
    7.  Position Capacity . . . . . . . . . . . . . . . . . . . . . .  11
-   8.  Contributors  . . . . . . . . . . . . . . . . . . . . . . . .  11
-   9.  Acknowledgement . . . . . . . . . . . . . . . . . . . . . . .  11
-   10. Legal Notices . . . . . . . . . . . . . . . . . . . . . . . .  12
-   11. References  . . . . . . . . . . . . . . . . . . . . . . . . .  12
+   8.  Security Considerations . . . . . . . . . . . . . . . . . . .  11
+   9.  Contributors  . . . . . . . . . . . . . . . . . . . . . . . .  11
+   10. Acknowledgement . . . . . . . . . . . . . . . . . . . . . . .  12
+   11. Legal Notices . . . . . . . . . . . . . . . . . . . . . . . .  12
+   12. References  . . . . . . . . . . . . . . . . . . . . . . . . .  13
    Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .  13
 
 1.  Introduction
@@ -160,7 +161,6 @@ Table of Contents
    revocation that must affect descendants needs a stable way to name
    the root authority context and a stable way to name the causal
    position at which validity stops.
-
 
 
 
@@ -195,7 +195,7 @@ Gallo                         Informational                     [Page 3]
    The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
    "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
    "OPTIONAL" are to be interpreted as described in BCP 14 [2]
-   (Section 11) [3] (Section 11) when, and only when, they appear in all
+   (Section 12) [3] (Section 12) when, and only when, they appear in all
    capitals within normative text.
 
 2.  Revocation Coordinates
@@ -576,18 +576,49 @@ Gallo                         Informational                    [Page 10]
    network, and application logic and is not fixed here.  Under any
    realistic per-path rate a uint64 position is practically
    inexhaustible, though a profile that wants the mathematically
-   unbounded case MAY use an unbounded integer encoding.  The normative
+   unbounded case may use an unbounded integer encoding.  The normative
    point is only that overflow and wraparound are rejected when the
    selected representation can overflow.
 
-8.  Contributors
+8.  Security Considerations
+
+   Revocation security depends on authenticated, fresh, rollback-
+   protected revocation state and explicit behavior when that state is
+   unavailable.  Stale or rolled-back state can cause a Verifier or
+   settlement service to accept continuity that should have been cut
+   off.  A selector value, PCA ID, position, key identifier, grant
+   identifier, or policy label is only a target coordinate; knowledge or
+   possession of it is not revocation authority.
+
+   Selector-to-position resolution needs authenticated evidence that the
+   selector occurred at the affected continuity position.  For
+   compromised key revocation, evidence authenticated only by the
+   compromised key is not sufficient where this document requires
+   independent corroboration.  Dynamic restrictions need to remain
+   monotonic: they can make effective authority or execution-contract
+   conformance more restrictive, but cannot rewrite signed checkpoints,
+   mutate history, replace Proof of Relationship, or expand authority.
+
+9.  Contributors
 
    The editors and contributors of this document are listed in the
    *document header* above.  Listing is governed by Appendix B.7 of the
    PIC Legal Appendices (https://github.com/pic-protocol/pic-
    spec/blob/main/draft/0.2/pic-legal.md).
 
-9.  Acknowledgement
+
+
+
+
+
+
+
+Gallo                         Informational                    [Page 11]
+
+                             PIC Revocation                    July 2026
+
+
+10.  Acknowledgement
 
    The *Provenance Identity Continuity (PIC) Model* — the theoretical
    framework this specification expresses in normative form — was
@@ -610,20 +641,12 @@ Gallo                         Informational                    [Page 10]
    claims conformance with PIC must preserve this attribution,
    distinguishing the *PIC Model* (author: Nicola Gallo) from the *PIC
    Specifications* (steward: Nitro Agility S.r.l.), as required by the
-
-
-
-Gallo                         Informational                    [Page 11]
-
-                             PIC Revocation                    July 2026
-
-
    *PIC Legal Appendices (https://github.com/pic-protocol/pic-
    spec/blob/main/draft/0.2/pic-legal.md)* (Appendix B, Attribution;
    Appendix D, Acknowledgements), which are incorporated into this
    specification by reference.
 
-10.  Legal Notices
+11.  Legal Notices
 
    The appendices governing:
 
@@ -641,6 +664,16 @@ Gallo                         Informational                    [Page 11]
    are *incorporated into this specification by reference* as if fully
    set forth herein.
 
+
+
+
+
+
+Gallo                         Informational                    [Page 12]
+
+                             PIC Revocation                    July 2026
+
+
    In case of conflict between this document and the PIC Legal
    Appendices, the PIC Legal Appendices prevail for legal, governance,
    licensing, and attribution matters.
@@ -652,7 +685,7 @@ Gallo                         Informational                    [Page 11]
    introduce new conceptual authority, invariants, or authorship claims
    beyond those defined in the PIC Legal Appendices.
 
-11.  References
+12.  References
 
    *  [1] Gallo, N. (2026). _Proof-of-Continuity: A Temporal Model for
       Authority Propagation in Distributed Systems and AI Agents_.
@@ -667,44 +700,11 @@ Gallo                         Informational                    [Page 11]
       2119 Key Words_. BCP 14, RFC 8174. rfc-editor.org/rfc/rfc8174
       (https://www.rfc-editor.org/rfc/rfc8174)
 
-
-
-Gallo                         Informational                    [Page 12]
-
-                             PIC Revocation                    July 2026
-
-
 Author's Address
 
    Nicola Gallo
    Nitro Agility S.r.l.
    Email: nicola.gallo@nitroagility.com
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

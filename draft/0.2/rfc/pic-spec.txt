@@ -77,9 +77,10 @@ Gallo                         Informational                     [Page 1]
 Table of Contents
 
    1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
+     1.1.  Requirements Notation . . . . . . . . . . . . . . . . . .   2
    2.  Documents . . . . . . . . . . . . . . . . . . . . . . . . . .   3
    3.  Acknowledgement . . . . . . . . . . . . . . . . . . . . . . .   5
-   4.  Legal Notices . . . . . . . . . . . . . . . . . . . . . . . .   5
+   4.  Legal Notices . . . . . . . . . . . . . . . . . . . . . . . .   6
    5.  References  . . . . . . . . . . . . . . . . . . . . . . . . .   6
    Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .   6
 
@@ -91,12 +92,27 @@ Table of Contents
    *  The *PIC Specification* (this document and its subordinate
       specifications) defines the normative semantics of the PIC Model.
 
+1.1.  Requirements Notation
+
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+   "OPTIONAL" are to be interpreted as described in BCP 14 [2]
+   (Section 5) [3] (Section 5) when, and only when, they appear in all
+   capitals.
+
    Documents and implementations claiming conformance with PIC *MUST*
    faithfully preserve the invariants defined by the PIC Model as
    expressed by this Specification.  Anything that violates these
    invariants is *not PIC-compliant*, regardless of naming or intent.
 
    Subordinate specifications:
+
+
+
+Gallo                         Informational                     [Page 2]
+
+                            PIC Specification                  July 2026
+
 
    *  MUST NOT redefine, extend, or alter the invariants of the PIC
       Model,
@@ -106,13 +122,6 @@ Table of Contents
 
    *  are canonical only in the version designated by the Specification
       Steward.
-
-
-
-Gallo                         Informational                     [Page 2]
-
-                            PIC Specification                  July 2026
-
 
 2.  Documents
 
@@ -131,8 +140,11 @@ Gallo                         Informational                     [Page 2]
    |                           | Relationship,     |      |            |
    |                           | ordered Verifier  |      |            |
    |                           | checks including  |      |            |
-   |                           | executed-vs-      |      |            |
-   |                           | signed binding,   |      |            |
+   |                           | profile-          |      |            |
+   |                           | conditional       |      |            |
+   |                           | request/          |      |            |
+   |                           | execution         |      |            |
+   |                           | binding,          |      |            |
    |                           | authority as an   |      |            |
    |                           | abstract          |      |            |
    |                           | attenuation       |      |            |
@@ -150,6 +162,14 @@ Gallo                         Informational                     [Page 2]
    |                           | COSE, PIC PCA     |      |            |
    |                           | COSE              |      |            |
    |                           | checkpoints, and  |      |            |
+
+
+
+Gallo                         Informational                     [Page 3]
+
+                            PIC Specification                  July 2026
+
+
    |                           | workload-signed   |      |            |
    |                           | candidate         |      |            |
    |                           | advancement       |      |            |
@@ -162,14 +182,6 @@ Gallo                         Informational                     [Page 2]
    | pic-revocation-spec.md)   | authenticated     |      |            |
    |                           | selectors,        |      |            |
    |                           | authorized        |      |            |
-
-
-
-Gallo                         Informational                     [Page 3]
-
-                            PIC Specification                  July 2026
-
-
    |                           | causal cutoffs,   |      |            |
    |                           | position          |      |            |
    |                           | witnesses,        |      |            |
@@ -206,6 +218,14 @@ Gallo                         Informational                     [Page 3]
    | spec/blob/main/draft/0.2/ | trusted           |      |            |
    | pic-architecture-         | continuity        |      |            |
    | deployment-spec.md)       | services, hybrid  |      |            |
+
+
+
+Gallo                         Informational                     [Page 4]
+
+                            PIC Specification                  July 2026
+
+
    |                           | enterprise        |      |            |
    |                           | topologies,       |      |            |
    |                           | service meshes,   |      |            |
@@ -218,14 +238,6 @@ Gallo                         Informational                     [Page 3]
    |                           | 0.2 is            |      |            |
    |                           | centralized,      |      |            |
    |                           | with PIC-X as     |      |            |
-
-
-
-Gallo                         Informational                     [Page 4]
-
-                            PIC Specification                  July 2026
-
-
    |                           | one realization;  |      |            |
    |                           | future or other   |      |            |
    |                           | profiles may      |      |            |
@@ -263,6 +275,13 @@ Gallo                         Informational                     [Page 4]
    Appendix D, Acknowledgements), which are incorporated into this
    specification by reference.
 
+
+
+Gallo                         Informational                     [Page 5]
+
+                            PIC Specification                  July 2026
+
+
 4.  Legal Notices
 
    The appendices governing:
@@ -274,13 +293,6 @@ Gallo                         Informational                     [Page 4]
    *  *C.* Disclaimer and Limitation of Liability,
 
    *  *D.* Acknowledgements,
-
-
-
-Gallo                         Informational                     [Page 5]
-
-                            PIC Specification                  July 2026
-
 
    are maintained in a single canonical document, the *PIC Legal
    Appendices (https://github.com/pic-protocol/pic-
@@ -299,31 +311,19 @@ Gallo                         Informational                     [Page 5]
       arXiv:2607.08906 [cs.CR]. arxiv.org/abs/2607.08906
       (https://arxiv.org/abs/2607.08906)
 
+   *  [2] Bradner, S. (1997). _Key words for use in RFCs to Indicate
+      Requirement Levels_. BCP 14, RFC 2119. rfc-editor.org/rfc/rfc2119
+      (https://www.rfc-editor.org/rfc/rfc2119)
+
+   *  [3] Leiba, B. (2017). _Ambiguity of Uppercase vs Lowercase in RFC
+      2119 Key Words_. BCP 14, RFC 8174. rfc-editor.org/rfc/rfc8174
+      (https://www.rfc-editor.org/rfc/rfc8174)
+
 Author's Address
 
    Nicola Gallo
    Nitro Agility S.r.l.
    Email: nicola.gallo@nitroagility.com
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

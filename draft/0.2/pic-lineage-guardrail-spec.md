@@ -196,7 +196,7 @@ Distinct continuities, one proposed transition.
 A **composition member** is an independently verifiable PIC continuity representation carried within a Composition Collection for joint
 evaluation in one exact proposed transition. A composition member is not an execution step, workflow stage, route segment, child continuity,
 subordinate continuity, additional outer predecessor, or authority fragment. A Sandboxed Execution profile layered on a PIC continuity profile
-MUST define the independently verifiable representation of each Composition Collection member and the exact binding of that collection to the
+defines the independently verifiable representation of each Composition Collection member and the exact binding of that collection to the
 outer execution.
 
 The Sandboxed Execution does not execute on or through its composition members. It carries and evaluates their joint participation while
@@ -236,8 +236,8 @@ outer continuity authority
 ~~~
 
 Removing all collection members removes the execution subject of the Sandboxed Execution; it does not attenuate the outer authority or
-transform the outer continuity into an empty authority container. A Composition Collection MUST contain at least one composition member; an
-empty collection-member set represents no Composition Collection to evaluate and MUST be rejected.
+transform the outer continuity into an empty authority container. A Composition Collection contains at least one composition member; an
+empty collection-member set represents no Composition Collection to evaluate and is invalid.
 
 ## Sandboxed Execution
 
@@ -475,7 +475,7 @@ This profile does not redefine the base request format
 ([PIC Prover and Verifier Specification](https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-prover-verifier-spec.md),
 Section 2.3); it requires an ENFORCE-specific request binding. The authenticated continuity advancement protects or binds the complete
 Composition Collection, and the request commitment pins the concrete `ENFORCE` operation to that exact inner execution under the
-executed-vs-signed rule.
+profile-defined executed-vs-bound rule.
 
 A Composition Collection commitment is mandatory in every non-root ENFORCE advancement and is computed over the selected profile's canonical
 Composition Collection representation:
@@ -648,26 +648,28 @@ continuity advancement. It MUST perform the phases in order.
 **Phase 1 — Outer PIC verification.** The guardrail acts as an ordinary PIC Verifier for the outer execution:
 
 1. validate the outer predecessor continuity state;
-2. verify the profile-defined predecessor cryptographic reference;
-3. verify challenge continuity when the selected profile uses challenges;
-4. verify the guardrail executor attestation;
-5. verify execution-contract conformance;
-6. verify outer non-expansion;
-7. verify time, freshness, profile, and revocation requirements;
-8. verify the outer request operation is `ENFORCE`;
-9. recompute and verify the request commitment to the complete Composition Collection.
+2. verify the profile-defined predecessor cryptographic reference and PoR;
+3. verify freshness or challenge continuity as defined by the selected profile;
+4. verify outer non-expansion;
+5. verify time, profile, and applicable revocation requirements;
+6. verify guardrail executor evidence and execution-contract conformance when required by the selected Sandboxed Execution profile or the
+   underlying continuity profile;
+7. verify the materialized outer authority contains `ENFORCE`;
+8. verify the profile-defined outer request/execution binding operation is `ENFORCE`;
+9. recompute and verify the request commitment to the complete Composition Collection;
+10. verify the bound enforcement result is `permit` for an authorizing prior outer advancement.
 
 **Phase 2 — Inner PIC verification.** Only after Phase 1 succeeds, for every composition member:
 
-1. validate the composition member using the selected ordinary PIC validation profile;
-2. verify its root, immediate predecessor, or equivalent proof as required;
-3. verify artifact authentication and PoR;
-4. verify predecessor binding;
+1. validate the composition member independently using its selected ordinary PIC validation profile;
+2. verify its root, immediate predecessor, or equivalent proof as required by that profile;
+3. verify artifact authentication, integrity, and PoR as required by that profile;
+4. verify predecessor binding where applicable;
 5. verify non-expansion;
-6. verify request binding and executed-vs-signed requirements;
-7. verify execution-contract conformance;
-8. verify freshness and time;
-9. verify revocation coordinates and active revocation state.
+6. verify request/execution binding when required by that member's selected PIC continuity profile;
+7. verify executor evidence and execution-contract conformance when required by that member's selected PIC continuity profile;
+8. verify freshness and time as required by that profile;
+9. verify revocation coordinates and active revocation state when required or applicable under that profile.
 
 Any invalid outer check or composition member produces deny before policy evaluation.
 
@@ -942,7 +944,8 @@ Deployment path boundary:
 
 A Sandboxed Execution does not require a service mesh, sidecar, proxy, gateway, network-interception layer, or physical sandbox. The validity
 of guardrail traversal derives from the outer PIC continuity: ordinary Proof of Relationship, exactly-one-predecessor continuity,
-non-expansion, request binding, executor conformance, revocation checks, and verification by the next conforming outer executor.
+non-expansion, the mandatory outer ENFORCE request/execution binding, profile-required executor evidence or conformance, applicable
+revocation checks, and verification by the next conforming outer executor.
 
 A service mesh MAY transport, route, encrypt, observe, load-balance, or operationally restrict a Sandboxed Execution. It is not the source of
 the execution's continuity, guardrail authorization, authority separation, or sandboxing property. PIC therefore assumes responsibility for

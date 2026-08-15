@@ -355,8 +355,20 @@ secondsToOverflow = (2^64 - 1 - currentPosition) / R
 
 Each path is causally sequential; fan-out permits several paths but does not parallelize one path. A concrete `R` depends on hardware,
 network, and application logic and is not fixed here. Under any realistic per-path rate a `uint64` position is practically inexhaustible,
-though a profile that wants the mathematically unbounded case MAY use an unbounded integer encoding. The normative point is only that
+though a profile that wants the mathematically unbounded case may use an unbounded integer encoding. The normative point is only that
 overflow and wraparound are rejected when the selected representation can overflow.
+
+# Security Considerations
+
+Revocation security depends on authenticated, fresh, rollback-protected revocation state and explicit behavior when that state is unavailable.
+Stale or rolled-back state can cause a Verifier or settlement service to accept continuity that should have been cut off. A selector value, PCA
+ID, position, key identifier, grant identifier, or policy label is only a target coordinate; knowledge or possession of it is not revocation
+authority.
+
+Selector-to-position resolution needs authenticated evidence that the selector occurred at the affected continuity position. For compromised
+key revocation, evidence authenticated only by the compromised key is not sufficient where this document requires independent corroboration.
+Dynamic restrictions need to remain monotonic: they can make effective authority or execution-contract conformance more restrictive, but cannot
+rewrite signed checkpoints, mutate history, replace Proof of Relationship, or expand authority.
 
 # Contributors {#contributors}
 

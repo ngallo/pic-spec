@@ -487,10 +487,10 @@ boundary.
 PoR is specified.
 
 The Prover/Verifier specification normatively defines the PoR payload and its
-construction, including predecessor-hash binding, continuation-challenge
-response, executor and request binding, embedded executor attestation, and the
-Prover procedure with mandatory failure conditions (§§2.2–2.5 in the RFC
-rendering).
+construction, including predecessor binding, profile-defined freshness or
+challenge continuity, profile-conditional executor or relationship evidence,
+profile-conditional request/execution binding, and the Prover procedure with
+mandatory failure conditions (§§2.2–2.5 in the RFC rendering).
 
 The statement that concrete PoR construction lies outside the formal model's
 scope does not mean that PoR is undefined. The model separates the abstract
@@ -501,9 +501,10 @@ Verifier behavior is specified.
 
 The same specification defines an ordered verification procedure covering
 origin validation and the required per-hop checks, including integrity,
-predecessor binding, continuation validation, attestation, profile conformance,
-authority non-expansion, temporal containment, and consistency between executed
-and signed requests (§§3.1–3.3 in the RFC rendering).
+predecessor binding, continuation validation, profile-conditional executor or
+relationship evidence, profile conformance, authority non-expansion, temporal
+containment, and request/execution binding when required by the selected profile
+(§§3.1–3.3 in the RFC rendering).
 
 These conditions are independently recomputed by the Verifier rather than
 accepted from the executor.
@@ -1005,9 +1006,9 @@ Applicable requirements may include:
 - ordered Verifier checks;
 - predecessor binding;
 - Proof of Relationship;
-- request matching;
-- executed-versus-signed enforcement;
-- attestation and conformance checks;
+- request/execution binding when required by the selected profile;
+- executed-versus-bound enforcement for profile-defined commitments;
+- profile-conditional executor evidence and conformance checks;
 - authority non-expansion;
 - temporal checks;
 - profile-specific requirements, including revocation coordinates where applicable.

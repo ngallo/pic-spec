@@ -78,7 +78,7 @@ At every hop, a node acts in both roles: it **verifies** the continuity state re
 successor by producing the next continuity advancement required by the selected profile.
 
 It specifies the per-hop **Proof of Relationship** and continuity-advancement requirements (Section 2), the ordered **Verifier checks** -
-including the executed-vs-signed rule - that validate a hop before authority is exercised (Section 3), authority as an abstract
+including profile-conditional request/execution binding - that validate a hop before authority is exercised (Section 3), authority as an abstract
 **attenuation domain** with a Policy Decision Point boundary (Section 4), and profile-selected **continuity representations** (Section 5).
 
 This document does not redefine, extend, or alter the PIC Model or the normative semantics defined by the PIC Specification.
@@ -315,6 +315,9 @@ The examples represent authority as an `operations` set — the reference profil
 [[1]](#references). PIC does not require this representation, nor does it define the application's authorization vocabulary; Section 4
 covers authority as an abstract domain (roles, labels, scopes, policy references) and its relationship to a Policy Decision Point.
 
+The following root-PCA examples are illustrative views of a generic example profile, not the PIC Profile 0.2 logical PCA or wire schema. In
+particular, the illustrative `continuation.mode = "single-use"` member is not a Profile 0.2 field or invariant.
+
 In the running scenario, Alice connects to the backup SaaS. The service agreement confirms that the service is operated in Europe by an
 accountable party and does not use agentic execution. On those terms she grants access to all her files for backup. Her client produces a
 root PCA, signed or otherwise authenticated by the selected origin profile:
@@ -415,7 +418,7 @@ receive current continuity state
 validate predecessor continuity state
       |
       v
-build PoR and request/execution binding
+build PoR and profile-required request/execution binding
       |
       v
 keep or attenuate materialized authority
@@ -501,23 +504,24 @@ Continuing the running scenario, the backup service performing `BACKUP` produces
 }
 ~~~
 
-The Prover MUST check its own PoR before proceeding: if the executor does not satisfy the predecessor execution contract, if the predecessor
-reference does not match the predecessor continuity state, or if the challenge or equivalent freshness evidence does not satisfy the
-selected profile, the PoR is invalid and the Prover MUST stop. A continuity advancement carrying an invalid PoR is rejected at the next hop
-anyway.
+The Prover MUST check its own PoR before proceeding: if the predecessor reference does not match the predecessor continuity state, if the
+challenge or equivalent freshness evidence does not satisfy the selected profile, or if profile-required executor or contract evidence is
+missing or invalid, the PoR or advancement is invalid and the Prover MUST stop. A continuity advancement carrying invalid required evidence is
+rejected at the next hop anyway.
 
 **What the PoR proves.** The PoR does not prove physical, counterfactual, or prior-designation causation. Taken in isolation, a challenge
-response proves only what the selected profile defines it to prove. The complete PoR, validated together with the checks of Section 3.3,
-proves **PIC execution causality**: the current hop is a valid, contract-conforming, non-expansive continuation of exactly one predecessor,
-bound to the concrete request where applicable, and therefore constitutes the next element of that PIC execution. This is the causal linkage
-of the model [[1]](#references), the property the Lean formalization verifies [[2]](#references).
+response or concrete relationship artifact proves only the relationship semantics defined by the selected profile. A hop is accepted as a
+valid PIC continuation only when the Verifier also applies the other required PIC and profile checks, including non-expansion and any
+applicable contract, request/execution, evidence, freshness, revocation, and policy checks. The selected concrete relationship checks are
+assumed to soundly witness the abstract single-hop PoR relation used by the model [[1]](#references) and Lean formalization [[2]](#references).
 
 **Continuation is open by default.** The core model does not require a predecessor to preselect a concrete successor. A profile MAY constrain
-holder keys, recipients, or channels, but those constraints are profile-specific. What is executed is still pinned: the request or execution
-binding fixes the concrete action, and the executed-vs-signed rule holds unconditionally (Section 3.3).
+holder keys, recipients, or channels, but those constraints are profile-specific. When a selected profile defines a request or execution
+commitment, that binding fixes the concrete action accepted under that profile (Section 3.3).
 
 **Out of scope.** The canonical form of the `request`, digest construction, streaming and partial payloads, and request-binding construction
-are defined by a separate specification. The core keeps only the mandatory executed-vs-signed check (Section 3.3).
+are defined by the selected profile or by a separate specification. The core keeps only the profile-conditional requirement that authenticated
+request/execution commitments, when defined and relied upon, match the accepted or executed action (Section 3.3).
 
 > **Note - proof mechanism agility.** This hash-and-signature construction is a non-normative example. Implementations may realize PoR and
 > advancement integrity with other mechanisms - signed hash chains, Merkle proofs, accumulators, recursive or zero-knowledge proofs,
@@ -575,8 +579,14 @@ Indexed Authority Map entries use compact tuples. Tuple element order is normati
 - `execution_contract`: `[key, value]`;
 - `invariants`: `[scope, operation, resourceType, resourceId]`.
 
+A logical Profile 0.2 `execution.contract` value MUST contain at least one attribute. Each logical attribute value MUST be either a non-empty
+string or a non-empty array of non-empty strings. Profile 0.2 implementations MUST reject logical `execution.contract` values containing a
+number, boolean, object, null, empty string, empty array, array containing an empty string, or array containing a non-string value.
+
 Scalar logical values become one indexed tuple. Set or list membership is denormalized into independently indexed boolean membership tuples,
-for example `["roles:payment-approver", true]`. This document defines no false-valued membership semantics for Profile 0.2.
+for example `["roles:payment-approver", true]`. That `true` is a canonical denormalized membership representation in the Indexed Authority
+Map; it is not permission for arbitrary boolean values in the logical `execution.contract` input domain. This document defines no
+false-valued membership semantics for Profile 0.2.
 
 Removal attenuation applies only to `attenuations.identity_context.remove_bitmap` and `attenuations.invariants.remove_bitmap`, each evaluated
 against the section-local numeric indexes of its own map section. Removal never adds authority, and a removed entry cannot reappear later in
@@ -641,9 +651,9 @@ The following non-normative sketch shows the abstract contents of an advancement
 }
 ~~~
 
-The integrity protection MUST cover the predecessor reference, PoR, attenuation, freshness material, request/execution binding, and temporal
-fields required by the selected profile. A valid signature or proof is necessary but not sufficient: the Verifier still performs all semantic
-checks in Section 3.
+The integrity protection MUST cover the predecessor reference, PoR, attenuation, freshness material, temporal fields, and any
+request/execution binding required by the selected profile. A valid signature or proof is necessary but not sufficient: the Verifier still
+performs all semantic checks in Section 3.
 
 # Verifier Requirements
 
@@ -670,7 +680,7 @@ Given a received continuity state, the Verifier MUST perform the following steps
 5. validate PoR for each non-root advancement;
 6. validate challenge continuity or the equivalent freshness mechanism used by the profile;
 7. validate profile-required evidence, conformance, freshness, temporal state, and revocation state;
-8. validate request/executed-vs-signed semantics;
+8. validate request/execution binding when required by the selected profile;
 9. apply profile-defined attenuations and verify non-expansion;
 10. verify the final materialized authority commitment when the profile defines one;
 11. accept the materialized current authority.
@@ -737,24 +747,23 @@ For each non-root continuity advancement, the Verifier MUST perform the followin
    answered, authority attenuated, and execution contract checked all belong to that same predecessor;
 3. **continuation** — the challenge or equivalent freshness mechanism satisfies the selected profile and has the declared consumption scope
    (Section 6.1);
-4. **attestation** — the embedded executor attestation is valid: its issuer signature verifies, the issuer is trusted for the asserted
-   attributes, it is within its validity period, and its `subject` matches `executor`, which matches the key or holder proof accepted for
-   the advancement by the selected profile;
-5. **conformance** — the attested attributes satisfy the predecessor `executionContract` under the profile's conformance function
-   (Section 4); for example a `deterministic` contract rejects an `agentic` executor;
+4. **executor / relationship evidence** — when required by the selected profile, the required executor, holder, key, attestation, or
+   equivalent relationship evidence is valid according to that profile;
+5. **execution-contract conformance** — when the predecessor authority context contains an execution contract and the selected profile
+   requires executor conformance evidence, the presented executor or evidence satisfies that contract according to the profile-defined
+   conformance function (Section 4); for example a `deterministic` contract rejects an `agentic` executor;
 6. **non-expansion** — the resulting authority is equal to or more restrictive than the predecessor materialized authority under the
    profile's attenuation order (Section 4);
 7. **temporal** — the advancement and resulting continuity state satisfy the profile's temporal rules (Section 6.3);
-8. **request match** — the operation, target, tenant, parameters, and digests actually served or executed match those signed in the PoR
-   `request` (Section 2.3); mandatory in every profile (see enforcement below).
+8. **request/execution binding** — when the selected profile defines or requires a request/execution commitment, the concrete action accepted
+   or executed matches the operation, target, parameters, digests, or equivalent semantic values bound by that commitment.
 
 A valid signature establishes *integrity*, not *semantic validity*: checks 2–8 are separate and the Verifier MUST NOT skip them because the
 signature verified. The Verifier does **not** trust that the Prover already performed these checks; it repeats them independently.
 
-**Executed-vs-signed, always.** Independently of the profile - open continuation included - a verified continuity state authorizes the signed
-or otherwise bound action and no other. The reference monitor MUST verify that the operation, target, tenant, parameters, and digests
-actually executed match those bound by the request/execution commitment, and MUST refuse any action that differs. Signing one request and
-executing another is always a violation.
+**Executed-vs-bound.** When a selected profile defines a request/execution commitment and relies on that commitment to authorize a concrete
+action, the reference monitor or equivalent enforcement point MUST ensure that the action accepted or executed matches the authenticated
+commitment. Signing or binding one action and executing another is invalid under that profile.
 
 This is where the cross-lineage composition of Section 1.4 fails: authority absent from the predecessor fails non-expansion (6), and a PoR
 that does not bind to the predecessor fails continuation (3) or predecessor binding (2). Such a state cannot be validated as a conforming
@@ -784,8 +793,11 @@ denotation order.
 
 ## Attenuation Profiles
 
-Every profile that introduces an authority representation or an execution contract MUST define its syntax, its equivalence relation, its
-attenuation order `≤`, and the conformance function that checks an executor against a contract. For example:
+Every profile that introduces an authority representation MUST define its syntax, its equivalence relation, its attenuation order `≤`, and a
+deterministic comparison sufficient for non-expansion validation.
+
+A profile that uses an execution contract MUST additionally define the conformance semantics or function required to determine whether
+presented executor evidence satisfies that contract, when the profile requires such conformance evidence. For example:
 
 ~~~text
 role:               current == predecessor
@@ -827,9 +839,9 @@ label vocabularies with provably semantic-monotone orders, and the PIC↔PDP int
 # Continuity Representations
 
 A PIC continuity state can be represented and validated in more than one way. The choice does not change the model - the invariants and the
-checks of Section 3 stay the same - but it changes validation cost and trust assumptions. This section is non-normative, except for one
-requirement that is normative: a representation does not inherit the Lean proof automatically; each profile MUST show that its concrete
-acceptance predicate implies the abstract PoC (Section 6.5).
+checks of Section 3 stay the same - but it changes validation cost and trust assumptions. This section contains non-normative representation
+guidance and explicit profile requirements. A representation does not inherit the Lean proof automatically; each profile MUST show that its
+concrete acceptance predicate implies the abstract PoC (Section 6.5).
 
 A continuity profile MAY use:
 
@@ -841,8 +853,8 @@ A continuity profile MAY use:
 - other proof mechanisms.
 
 The profile MUST define its acceptance predicate, canonicalization, cryptographic references, freshness mechanism, authority materialization,
-and failure behavior. It MUST preserve exactly-one-predecessor continuity, PoR, non-expansion, request/execution binding, and verifier
-independence.
+and failure behavior. It MUST preserve exactly-one-predecessor continuity, PoR, non-expansion, request/execution binding when required by that
+profile, and verifier independence.
 
 ## Current Profile 0.2 Representation
 
@@ -886,6 +898,195 @@ Profile 0.2 does not transport a replayable transition graph in the settled PIC 
 challenge material are represented by the latest trusted PIC PCA COSE checkpoint carried in `root.pca`; the settled Continuity itself has no
 `position` field and no `challenge` field.
 
+## Profile 0.2 Artifact Semantics
+
+This subsection is normative for PIC Profile 0.2. The semantic field names below are normative for this profile. Exact CBOR integer labels,
+COSE protected-header `typ` values, media-type registrations, and any IANA assignments are deferred to the applicable profile registry or a
+later byte-level wire assignment; this subsection does not invent them.
+
+The active PIC Profile 0.2 identifier is:
+
+~~~text
+https://pic-protocol.org/profiles/0.2
+~~~
+
+Profile 0.2 uses the following artifact format identifiers:
+
+| Artifact | Profile 0.2 format identifier |
+| --- | --- |
+| PIC Token JWT | `pic+jwt` |
+| PIC PCA COSE | `pic-pca+cose` |
+| PIC Continuity COSE | `pic-continuity+cose` |
+| PIC Continuity Transition COSE | `pic-continuity-transition+cose` |
+
+These identifiers are Profile 0.2 format identifiers, not IANA-assigned media types unless and until a registration assigns that status.
+
+Profile 0.2 also uses the following stable semantic definition URIs:
+
+| Concept | Definition URI |
+| --- | --- |
+| PIC Token type URI | `https://pic-protocol.org/definitions/token-types/pic` |
+| Initial Continuity Proposal type URI | `https://pic-protocol.org/definitions/proposal-types/continuity-initial` |
+| Continuation Proposal type URI | `https://pic-protocol.org/definitions/proposal-types/continuity` |
+
+### PIC Token JWT
+
+A PIC Token JWT has format identifier `pic+jwt`.
+
+The `pic.root` member MUST contain the unpadded Base64url encoding of the exact binary PIC Continuity COSE artifact bytes.
+
+A candidate PIC Token JWT is workload-signed. A settled PIC Token JWT is signed by the trusted settlement authority. Candidate and settled
+tokens use the same `pic+jwt` format; no second token format is defined for the candidate role. Exact JOSE `typ` assignment is deferred to
+the applicable profile registry or later byte-level wire assignment.
+
+### PIC PCA COSE
+
+A PIC PCA COSE is the signed checkpoint artifact representing a logical PCA. Its Profile 0.2 semantic payload contains:
+
+~~~text
+profile
+position
+context_of_authority
+challenge.next_challenge
+~~~
+
+`position` is a non-negative canonical integer defined by Profile 0.2. `context_of_authority` is the canonical Indexed Authority Map defined
+in Section 2.4. `challenge.next_challenge` is binary challenge material for the next Profile 0.2 transition.
+
+### PIC Continuity COSE
+
+A PIC Continuity COSE has the following Profile 0.2 semantic payload:
+
+~~~text
+profile
+root:
+    pca_hash
+    pca
+transitions
+~~~
+
+`root.pca` MUST contain the exact signed PIC PCA COSE bytes for the current trusted checkpoint. `root.pca_hash` MUST equal
+`SHA-256(exact signed root.pca bytes)`, and Verifiers MUST recompute it.
+
+A settled Profile 0.2 Continuity MUST have `transitions = null`. A candidate Profile 0.2 Continuity MUST have `transitions` containing
+exactly one PIC Continuity Transition COSE. PIC Continuity COSE itself does not require a `position` field or `challenge` field in Profile
+0.2; those values belong to PIC PCA COSE checkpoints and PIC Continuity Transition COSE artifacts.
+
+### PIC Continuity Transition COSE
+
+A PIC Continuity Transition COSE has the following Profile 0.2 semantic payload:
+
+~~~text
+profile
+position
+predecessor:
+    type
+    hash
+challenge:
+    previous_challenge
+    next_challenge
+attenuations             optional
+proof_of_relationship
+request_digest           optional/profile-defined
+executor_evidence        optional/profile-defined
+~~~
+
+For current Profile 0.2, `predecessor.type` MUST be `"pca"` and `predecessor.hash` MUST equal
+`SHA-256(exact signed current root.pca PIC PCA COSE bytes)`. A future or separate profile MAY define another predecessor representation while
+preserving exactly-one-predecessor semantics.
+
+`proof_of_relationship` is a byte string containing the exact UTF-8 bytes of the textual issuer-signed SD-JWT presentation selected by the
+Profile 0.2 PoR schema. That schema MUST bind or identify the workload verification key used to verify the workload-signed candidate
+artifacts. Profile 0.2 does not define a universal claim path, does not require `cnf.jwk` at the PIC protocol level, and does not require a
+separate SD-JWT KB-JWT for continuity advancement.
+
+Signer roles are:
+
+~~~text
+PoR issuer
+    signs issuer-signed SD-JWT
+
+workload key accepted through PoR
+    signs PIC Continuity Transition COSE
+    signs candidate PIC Continuity COSE
+    signs candidate PIC Token JWT
+
+trusted settlement authority
+    signs new PIC PCA COSE
+    signs settled PIC Continuity COSE
+    signs settled PIC Token JWT
+~~~
+
+The workload signatures prove control of the selected workload key and authenticate the candidate objects. They do not, by themselves,
+establish semantic continuity; the Verifier still performs the complete Profile 0.2 validation procedure.
+
+## Profile 0.2 OAuth Token Exchange Binding
+
+OAuth is not required by the PIC model. This subsection is normative only for a Profile 0.2 binding that uses OAuth Token Exchange [[7]](#references)
+as an entry or advancement transport.
+
+For initialization:
+
+~~~text
+grant_type
+    urn:ietf:params:oauth:grant-type:token-exchange
+
+subject_token
+    OAuth access token
+
+subject_token_type
+    urn:ietf:params:oauth:token-type:access_token
+
+requested_token_type
+    https://pic-protocol.org/definitions/token-types/pic
+
+continuity_proposal
+    Initial Continuity Proposal
+
+continuity_proposal_type
+    https://pic-protocol.org/definitions/proposal-types/continuity-initial
+
+result
+    settled PIC Token JWT 0
+~~~
+
+For PIC-to-PIC advancement:
+
+~~~text
+grant_type
+    urn:ietf:params:oauth:grant-type:token-exchange
+
+subject_token
+    workload-signed candidate PIC Token JWT
+
+subject_token_type
+    https://pic-protocol.org/definitions/token-types/pic
+
+requested_token_type
+    https://pic-protocol.org/definitions/token-types/pic
+
+continuity_proposal
+    omitted
+
+continuity_proposal_type
+    omitted
+
+result
+    settled PIC Token JWT N+1
+~~~
+
+`https://pic-protocol.org/definitions/proposal-types/continuity` is the Profile 0.2 Continuation Proposal type URI. Current Profile 0.2
+PIC-to-PIC advancement omits `continuity_proposal` and `continuity_proposal_type`, so that URI is not sent in the current advancement request.
+
+The RFC 8693 response MAY transport the returned PIC Token JWT in the `access_token` response member. That placement does not make the PIC
+Token JWT an OAuth Bearer token. For this Profile 0.2 binding, when an `issued_token_type` response member is returned for a PIC Token JWT,
+its value is `https://pic-protocol.org/definitions/token-types/pic`. When a `token_type` response member is returned for a PIC Token JWT, its
+value is `"N_A"`.
+
+Endpoint paths, client authentication, and the complete Initial Continuity Proposal schema are defined by the selected exchange binding. This
+document does not assign additional OAuth endpoint paths, client-authentication rules, proposal schema fields, or URI values beyond the
+Profile 0.2 identifiers above.
+
 ## Self-Contained Transition Graphs
 
 A future or separate profile MAY use a self-contained transition graph, provided the profile defines the graph format, predecessor
@@ -912,7 +1113,8 @@ were continuing the lineage now. The authority it carries is still bounded by th
 past action, or run it in a context that no longer applies. Freshness closes that window by making each continuation answer something the
 predecessor issued specifically for this hop.
 
-The `continuation` block declares how a challenge may be consumed:
+The following JSON is an illustrative example of a profile that explicitly models challenge-consumption policy. It is not the current Profile
+0.2 wire schema and does not define generic PIC fields:
 
 ~~~json
 {
@@ -925,32 +1127,33 @@ The `continuation` block declares how a challenge may be consumed:
 }
 ~~~
 
-The `continuation` carries no recipient selector. In the core, continuation is **open**: any executor conforming to the predecessor's
-`executionContract` may continue, and the concrete action is always identified by the `request` block in the PoR (Section 2.3). `mode` and
-`maxUses` govern consumption, replay, and fan-out — not *who* may continue. Recipient-, key-, or channel-constrained continuations are future
-extension profiles (Section 6.6).
+In that example profile, `continuation` carries no recipient selector. In the core, continuation is **open**: the predecessor need not
+preselect the successor. When a selected profile defines `mode` and `maxUses`, those fields govern consumption, replay, and fan-out — not
+*who* may continue. Recipient-, key-, or channel-constrained continuations are future extension profiles (Section 6.6).
 
-For a `single-use` challenge, a Verifier MUST prevent it from being consumed twice, keeping state or an equivalent mechanism; this is what
-stops a public predecessor PCA from being replayed as a fresh continuation. Note the scope: `maxUses` enforced per Verifier is a *local*
-bound — it does not cap total uses across independent Verifiers. A global limit needs shared state or coordination, whose delivery semantics
-(at-most-once vs at-least-once) are out of scope for this document. **Fan-out** is the case where reuse is intentional: several
-successors continue the same predecessor, which is permitted provided each branch references that predecessor, each branch is individually
-valid, and no branch composes authority from — or recovers authority attenuated by — another branch. Authorized fan-out is therefore
-distinct from unauthorized replay: the difference is declared by `mode`/`maxUses` and enforced by the Verifier.
+For a profile-defined `single-use` challenge, a Verifier MUST prevent it from being consumed twice within the enforcement scope declared by
+that profile, keeping state or an equivalent mechanism. Note the scope: `maxUses` enforced per Verifier is a *local* bound — it does not cap
+total uses across independent Verifiers. A global limit needs shared state or coordination, whose delivery semantics (at-most-once vs
+at-least-once) are out of scope for this document. **Fan-out** is the case where reuse is intentional: several successors continue the same
+predecessor, which is permitted provided each branch references that predecessor, each branch is individually valid, and no branch composes
+authority from — or recovers authority attenuated by — another branch. Authorized fan-out is therefore distinct from unauthorized replay: in
+the example profile, the difference is declared by `mode`/`maxUses` and enforced by the Verifier.
 
 Three consumption semantics are therefore distinct. **Local single-use**: the challenge is consumed once per Verifier state; independent
 Verifiers without shared state can each accept the same continuation.
 **Coordinated single-use**: the challenge is consumed once across Verifiers; it requires shared state or a coordinating component — the
 Trust Plane of the [PIC Architecture and Deployment Specification](https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-architecture-deployment-spec.md), or a future federation profile.
-**Bounded multi-use (fan-out)**: reuse explicitly authorized and declared by `mode`/`maxUses`. A property that depends exclusively on local
-Verifier state MUST NOT be described as global single-use. Replay never expands authority, but it can duplicate effects or continuations;
-coordination adds the bound on their global cardinality.
+**Bounded multi-use (fan-out)**: reuse explicitly authorized and declared by the selected profile. A property that depends exclusively on
+local Verifier state MUST NOT be described as global single-use. Replay never expands authority, but it can duplicate effects or
+continuations; coordination adds the bound on their global cardinality.
 
-The continuation challenge is **one** freshness mechanism, not a mandatory one. A profile MAY meet the same goal differently — a monotonic
-per-lineage counter, a server-issued single-use ticket, a bounded acceptance window (Section 6.3), or a transport-level anti-replay
-control. What is normative is conformance to the consumption semantics and enforcement scope declared by the selected profile, not the specific
-freshness mechanism: the anti-replay enforcement MUST match the scope the profile declares, and a profile claiming coordinated single-use
-MUST provide the shared state or coordination required to enforce that claim across the participating Verifiers.
+The continuation challenge is **one** freshness mechanism, not a mandatory one. A profile MAY meet the same goal differently — for example
+with a monotonic per-lineage counter, a server-issued single-use ticket, or a bounded acceptance window (Section 6.3). A profile MAY rely on
+an external anti-replay mechanism only when that mechanism is explicitly part of the profile's authenticated acceptance predicate, has a
+defined enforcement scope, and preserves the profile's continuity guarantees. Ordinary transport security by itself does not create PIC
+continuity. What is normative is conformance to the consumption semantics and enforcement scope declared by the selected profile, not the
+specific freshness mechanism: the anti-replay enforcement MUST match the scope the profile declares, and a profile claiming coordinated
+single-use MUST provide the shared state or coordination required to enforce that claim across the participating Verifiers.
 
 ## Origin Trust Boundary
 
@@ -1004,11 +1207,11 @@ Lean proves the security of ES256, SHA-256, COSE, JWS, SD-JWT, or any deployment
 
 ## Proof of Possession (Optional)
 
-The core binds a hop to its accepted continuity advancement and pins the action through the request/execution binding (Section 2.3). A
-profile MAY add a **proof of possession** of the request or channel — for example **DPoP** [[5]](#references), **HTTP Message Signatures**
-[[6]](#references), or an equivalent signed request binding — or otherwise constrain the recipient or channel. These are **not core
-continuation modes** and are **not needed for the N+1 model**, whose successor is unknown; they serve profiles that require additional
-presentation constraints.
+The core binds a hop to its accepted continuity advancement. When a selected profile defines a request/execution binding, that profile pins
+the accepted or executed action through that binding (Section 2.3). A profile MAY add a **proof of possession** of the request or channel —
+for example **DPoP** [[5]](#references), **HTTP Message Signatures** [[6]](#references), or an equivalent signed request binding — or
+otherwise constrain the recipient or channel. These are **not core continuation modes** and are **not needed for the N+1 model**, whose
+successor is unknown; they serve profiles that require additional presentation constraints.
 
 > Profiles MAY define recipient- or channel-constrained continuations when the successor or presentation key is known in advance. Such
 > profiles remain PIC-compatible but do not address the unknown-successor case that motivates the core N+1 model, and are outside the scope
@@ -1077,8 +1280,8 @@ aspiration.
 - **No implicit trust from network location.** Authorization comes from the signed continuity state, never from where a request originates. A
   caller inside the perimeter has exactly the authority its lineage carries, and no more (Section 6.7).
 - **Every hop is verified, never assumed.** No step is trusted because a previous one was: the Verifier re-checks the transition it holds —
-  signature, predecessor link, challenge, attestation, conformance, non-expansion, time (Section 3.3) — and never assumes the Prover already
-  did. The full-chain profile re-checks *every* hop; the incremental profile re-checks the immediate transition and trusts prior verifiers
+  signature, predecessor link, freshness, profile-required evidence and conformance, non-expansion, time, and profile-required request/execution
+  binding (Section 3.3) — and never assumes the Prover already did. The full-chain profile re-checks *every* hop; the incremental profile re-checks the immediate transition and trusts prior verifiers
   inductively (Section 6.8).
 - **Least privilege by construction.** Authority only attenuates; each hop carries or materializes the smallest context it needs and can never regain what an
   ancestor dropped (Section 2.4). A privilege absent from the origin cannot appear anywhere downstream.
@@ -1136,9 +1339,20 @@ those defined in the PIC Legal Appendices.
 
 # References {#references}
 
-- [1] Gallo, N. (2026). *Proof-of-Continuity: A Temporal Model for Authority Propagation in Distributed Systems and AI Agents*. arXiv:2607.08906 [cs.CR]. [arxiv.org/abs/2607.08906](https://arxiv.org/abs/2607.08906)
-- [2] Gallo, N. (2026). *PIC Lean Verification*. Lean 4 formalization of the definitions and theorems of [1]. [github.com/ngallo/pic-model/draft/0.1/pic-model-math/pic-lean](https://github.com/ngallo/pic-model/tree/main/draft/0.1/pic-model-math/pic-lean)
+## Normative References
+
 - [3] Bradner, S. (1997). *Key words for use in RFCs to Indicate Requirement Levels*. BCP 14, RFC 2119. [rfc-editor.org/rfc/rfc2119](https://www.rfc-editor.org/rfc/rfc2119)
 - [4] Leiba, B. (2017). *Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words*. BCP 14, RFC 8174. [rfc-editor.org/rfc/rfc8174](https://www.rfc-editor.org/rfc/rfc8174)
+- [7] Jones, M., Nadalin, A., Campbell, B., Bradley, J., & Mortimore, C. (2020). *OAuth 2.0 Token Exchange*. RFC 8693. [rfc-editor.org/rfc/rfc8693](https://www.rfc-editor.org/rfc/rfc8693)
+- [8] Jones, M., Bradley, J., & Sakimura, N. (2015). *JSON Web Token (JWT)*. RFC 7519. [rfc-editor.org/rfc/rfc7519](https://www.rfc-editor.org/rfc/rfc7519)
+- [9] Jones, M., Bradley, J., & Sakimura, N. (2015). *JSON Web Signature (JWS)*. RFC 7515. [rfc-editor.org/rfc/rfc7515](https://www.rfc-editor.org/rfc/rfc7515)
+- [10] Bormann, C., & Hoffman, P. (2020). *Concise Binary Object Representation (CBOR)*. STD 94, RFC 8949. [rfc-editor.org/rfc/rfc8949](https://www.rfc-editor.org/rfc/rfc8949)
+- [11] Schaad, J. (2022). *CBOR Object Signing and Encryption (COSE): Structures and Process*. STD 96, RFC 9052. [rfc-editor.org/rfc/rfc9052](https://www.rfc-editor.org/rfc/rfc9052)
+- [12] Fett, D., Yasuda, K., & Campbell, B. (2025). *Selective Disclosure for JSON Web Tokens*. RFC 9901. [rfc-editor.org/rfc/rfc9901](https://www.rfc-editor.org/rfc/rfc9901)
+
+## Informative References
+
+- [1] Gallo, N. (2026). *Proof-of-Continuity: A Temporal Model for Authority Propagation in Distributed Systems and AI Agents*. arXiv:2607.08906 [cs.CR]. [arxiv.org/abs/2607.08906](https://arxiv.org/abs/2607.08906)
+- [2] Gallo, N. (2026). *PIC Lean Verification*. Lean 4 formalization of the definitions and theorems of [1]. [github.com/ngallo/pic-model/draft/0.1/pic-model-math/pic-lean](https://github.com/ngallo/pic-model/tree/main/draft/0.1/pic-model-math/pic-lean)
 - [5] Fett, D., Campbell, B., Bradley, J., Lodderstedt, T., Jones, M. B., & Waite, D. (2023). *OAuth 2.0 Demonstrating Proof of Possession (DPoP)*. RFC 9449. [rfc-editor.org/rfc/rfc9449](https://www.rfc-editor.org/rfc/rfc9449)
 - [6] Backman, A., Richer, J., & Sporny, M. (2024). *HTTP Message Signatures*. RFC 9421. [rfc-editor.org/rfc/rfc9421](https://www.rfc-editor.org/rfc/rfc9421)

@@ -122,12 +122,12 @@ Editors
    *  *Nicola Gallo* (Nitro Agility S.r.l.)  Lead Editor
 
    *  _Add your name via pull request (individual or organization) —
-      listing is subject to editor approval (see Section 6)._
+      listing is subject to editor approval (see Section 7)._
 
 Contributors
 
    *  _Add your name via pull request (individual or organization) —
-      listing is subject to editor approval (see Section 6)._
+      listing is subject to editor approval (see Section 7)._
 
 Table of Contents
 
@@ -141,10 +141,11 @@ Table of Contents
    4.  Hybrid Enterprise Architectures . . . . . . . . . . . . . . .   8
      4.1.  Service Meshes  . . . . . . . . . . . . . . . . . . . . .   9
    5.  Interoperability  . . . . . . . . . . . . . . . . . . . . . .   9
-   6.  Contributors  . . . . . . . . . . . . . . . . . . . . . . . .  10
-   7.  Acknowledgement . . . . . . . . . . . . . . . . . . . . . . .  10
-   8.  Legal Notices . . . . . . . . . . . . . . . . . . . . . . . .  11
-   9.  References  . . . . . . . . . . . . . . . . . . . . . . . . .  11
+   6.  Security Considerations . . . . . . . . . . . . . . . . . . .  10
+   7.  Contributors  . . . . . . . . . . . . . . . . . . . . . . . .  11
+   8.  Acknowledgement . . . . . . . . . . . . . . . . . . . . . . .  11
+   9.  Legal Notices . . . . . . . . . . . . . . . . . . . . . . . .  11
+   10. References  . . . . . . . . . . . . . . . . . . . . . . . . .  12
    Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .  12
 
 1.  Introduction
@@ -164,7 +165,6 @@ Table of Contents
 
 
 
-
 Gallo                         Informational                     [Page 3]
 
                      PIC Architecture and Deployment         August 2026
@@ -175,7 +175,7 @@ Gallo                         Informational                     [Page 3]
    The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
    "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
    "OPTIONAL" are to be interpreted as described in BCP 14 [2]
-   (Section 9) [3] (Section 9) when, and only when, they appear in all
+   (Section 10) [3] (Section 10) when, and only when, they appear in all
    capitals, and only within the normative sections of this document.
    Examples are illustrative and non-normative.
 
@@ -194,10 +194,10 @@ Gallo                         Informational                     [Page 3]
    continuation input are submitted to a trusted central continuity
    service.  The service validates the predecessor state, the proposed
    advancement, revocation state, non-expansion, request/execution
-   binding, and any profile-required evidence.  If validation succeeds,
-   it issues or authenticates the next continuity state according to the
-   selected profile.  The rest of this document uses *Trust Plane* for
-   such a centralized trusted service.
+   binding when required, and any profile-required evidence.  If
+   validation succeeds, it issues or authenticates the next continuity
+   state according to the selected profile.  The rest of this document
+   uses *Trust Plane* for such a centralized trusted service.
 
    In PIC Profile 0.2, centralized continuity is:
 
@@ -491,7 +491,7 @@ Gallo                         Informational                     [Page 8]
 5.  Interoperability
 
    This section is non-normative.  OAuth is one possible entry mechanism
-   for PIC, not a dependency of the PIC model.  A profile MAY define an
+   for PIC, not a dependency of the PIC model.  A profile may define an
    OAuth Token Exchange binding that derives initial PIC authority from
    an OAuth access token, an initial continuity proposal, an exchange
    profile, and local policy.
@@ -523,17 +523,53 @@ Gallo                         Informational                     [Page 9]
    PIC Token JWT in pic.root.  The returned PIC Token JWT is not an
    OAuth Bearer token merely because OAuth Token Exchange carries it in
    an access_token response member.  Transport of PIC continuity
-   artifacts is a profile-defined binding; for HTTP, a deployment MAY
+   artifacts is a profile-defined binding; for HTTP, a deployment may
    use a PIC-Token header.
 
-6.  Contributors
+   The interoperable parameter names, token-type identifiers, request
+   members, and response semantics for a Profile 0.2 OAuth Token
+   Exchange binding are defined by the selected Profile 0.2 exchange
+   binding specification, not by this informational architecture
+   section.
+
+6.  Security Considerations
+
+   This document describes deployment topology and trust placement; it
+   does not replace the security requirements of the PIC Prover and
+   Verifier Specification or the PIC Revocation Specification.
+   Deployments need to evaluate trusted-service compromise, trust-
+   boundary assumptions, history availability, collusion resistance, and
+   revocation-state availability separately from artifact integrity.
+
+   Centralized profiles rely on the correctness and availability of the
+   trusted settlement or continuity service.  Decentralized and hybrid
+   profiles need to define what each Verifier independently validates,
+   what prior validation or checkpoint state it trusts, and how failures
+   are handled.  Transport protections such as TLS, mTLS, broker
+   authentication, or service-mesh policy protect channels and
+   operational exposure, but they do not replace PIC continuity
+   validation, non-expansion checks, freshness checks, or authenticated
+   revocation evaluation.
+
+
+
+
+
+
+
+Gallo                         Informational                    [Page 10]
+
+                     PIC Architecture and Deployment         August 2026
+
+
+7.  Contributors
 
    The editors and contributors of this document are listed in the
    *document header* above.  Listing is governed by Appendix B.7 of the
    PIC Legal Appendices (https://github.com/pic-protocol/pic-
    spec/blob/main/draft/0.2/pic-legal.md).
 
-7.  Acknowledgement
+8.  Acknowledgement
 
    The *Provenance Identity Continuity (PIC) Model* — the theoretical
    framework this specification expresses in normative form — was
@@ -554,14 +590,6 @@ Gallo                         Informational                     [Page 9]
    specifications are published and maintained by *Nitro Agility S.r.l.*
    as Specification Steward.  Any work that references, implements, or
    claims conformance with PIC must preserve this attribution,
-
-
-
-Gallo                         Informational                    [Page 10]
-
-                     PIC Architecture and Deployment         August 2026
-
-
    distinguishing the *PIC Model* (author: Nicola Gallo) from the *PIC
    Specifications* (steward: Nitro Agility S.r.l.), as required by the
    *PIC Legal Appendices (https://github.com/pic-protocol/pic-
@@ -569,7 +597,7 @@ Gallo                         Informational                    [Page 10]
    Appendix D, Acknowledgements), which are incorporated into this
    specification by reference.
 
-8.  Legal Notices
+9.  Legal Notices
 
    The appendices governing:
 
@@ -580,6 +608,15 @@ Gallo                         Informational                    [Page 10]
    *  *C.* Disclaimer and Limitation of Liability,
 
    *  *D.* Acknowledgements,
+
+
+
+
+
+Gallo                         Informational                    [Page 11]
+
+                     PIC Architecture and Deployment         August 2026
+
 
    are maintained in a single canonical document, the *PIC Legal
    Appendices (https://github.com/pic-protocol/pic-
@@ -598,7 +635,7 @@ Gallo                         Informational                    [Page 10]
    introduce new conceptual authority, invariants, or authorship claims
    beyond those defined in the PIC Legal Appendices.
 
-9.  References
+10.  References
 
    *  [1] Gallo, N. (2026). _Proof-of-Continuity: A Temporal Model for
       Authority Propagation in Distributed Systems and AI Agents_.
@@ -608,15 +645,6 @@ Gallo                         Informational                    [Page 10]
    *  [2] Bradner, S. (1997). _Key words for use in RFCs to Indicate
       Requirement Levels_. BCP 14, RFC 2119. rfc-editor.org/rfc/rfc2119
       (https://www.rfc-editor.org/rfc/rfc2119)
-
-
-
-
-
-Gallo                         Informational                    [Page 11]
-
-                     PIC Architecture and Deployment         August 2026
-
 
    *  [3] Leiba, B. (2017). _Ambiguity of Uppercase vs Lowercase in RFC
       2119 Key Words_. BCP 14, RFC 8174. rfc-editor.org/rfc/rfc8174
@@ -631,34 +659,6 @@ Author's Address
    Nicola Gallo
    Nitro Agility S.r.l.
    Email: nicola.gallo@nitroagility.com
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
