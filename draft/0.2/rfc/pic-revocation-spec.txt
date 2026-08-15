@@ -135,17 +135,18 @@ Table of Contents
      2.2.  Position  . . . . . . . . . . . . . . . . . . . . . . . .   5
      2.3.  Causal Coordinate . . . . . . . . . . . . . . . . . . . .   5
    3.  Revocation Semantics  . . . . . . . . . . . . . . . . . . . .   6
-     3.1.  Causal Suffix . . . . . . . . . . . . . . . . . . . . . .   6
-     3.2.  Whole PCA . . . . . . . . . . . . . . . . . . . . . . . .   6
-     3.3.  Optional Selectors  . . . . . . . . . . . . . . . . . . .   6
-     3.4.  Historical Selector Resolution  . . . . . . . . . . . . .   7
-     3.5.  Dynamic Restrictions  . . . . . . . . . . . . . . . . . .   8
+     3.1.  Attenuation Is Not Revocation . . . . . . . . . . . . . .   6
+     3.2.  Causal Suffix . . . . . . . . . . . . . . . . . . . . . .   6
+     3.3.  Whole PCA . . . . . . . . . . . . . . . . . . . . . . . .   7
+     3.4.  Optional Selectors  . . . . . . . . . . . . . . . . . . .   7
+     3.5.  Historical Selector Resolution  . . . . . . . . . . . . .   7
+     3.6.  Dynamic Restrictions  . . . . . . . . . . . . . . . . . .   8
    4.  Revocation Authorization  . . . . . . . . . . . . . . . . . .   8
-   5.  Revocation State  . . . . . . . . . . . . . . . . . . . . . .   9
+   5.  Revocation State  . . . . . . . . . . . . . . . . . . . . . .  10
    6.  Future Branch-Capable Profiles  . . . . . . . . . . . . . . .  10
    7.  Position Capacity . . . . . . . . . . . . . . . . . . . . . .  11
    8.  Security Considerations . . . . . . . . . . . . . . . . . . .  11
-   9.  Contributors  . . . . . . . . . . . . . . . . . . . . . . . .  11
+   9.  Contributors  . . . . . . . . . . . . . . . . . . . . . . . .  12
    10. Acknowledgement . . . . . . . . . . . . . . . . . . . . . . .  12
    11. Legal Notices . . . . . . . . . . . . . . . . . . . . . . . .  12
    12. References  . . . . . . . . . . . . . . . . . . . . . . . . .  13
@@ -161,7 +162,6 @@ Table of Contents
    revocation that must affect descendants needs a stable way to name
    the root authority context and a stable way to name the causal
    position at which validity stops.
-
 
 
 
@@ -299,7 +299,17 @@ Gallo                         Informational                     [Page 5]
 
    This section is normative where BCP 14 language is used.
 
-3.1.  Causal Suffix
+3.1.  Attenuation Is Not Revocation
+
+   Attenuation of a selected continuity advancement changes only the
+   materialized authority of the accepted successor lineage.  It MUST
+   NOT be interpreted as revocation of the predecessor checkpoint,
+   invalidation of that predecessor, or invalidation of another
+   otherwise-valid sibling continuation from the same predecessor.
+   Invalidating those states requires authenticated revocation state
+   under the selected revocation profile.
+
+3.2.  Causal Suffix
 
    A causal suffix cutoff invalidates the selected position and its
    causal future:
@@ -317,18 +327,8 @@ Gallo                         Informational                     [Page 5]
    naming for this operation are profile-defined.  This document defines
    only the semantic causal cutoff.
 
-3.2.  Whole PCA
 
-   Whole-PCA revocation invalidates all continuity states rooted in the
-   selected PCA ID.  It is equivalent to a suffix revocation from the
-   root position:
 
-   (PCA ID, rootPosition)
-
-3.3.  Optional Selectors
-
-   A revocation profile MAY define additional authenticated selectors,
-   including:
 
 
 
@@ -337,6 +337,19 @@ Gallo                         Informational                     [Page 6]
 
                              PIC Revocation                    July 2026
 
+
+3.3.  Whole PCA
+
+   Whole-PCA revocation invalidates all continuity states rooted in the
+   selected PCA ID.  It is equivalent to a suffix revocation from the
+   root position:
+
+   (PCA ID, rootPosition)
+
+3.4.  Optional Selectors
+
+   A revocation profile MAY define additional authenticated selectors,
+   including:
 
    *  grant binding;
 
@@ -363,12 +376,23 @@ Gallo                         Informational                     [Page 6]
    key identifier, issuer identifier, or position is not a revocation
    credential.
 
-3.4.  Historical Selector Resolution
+3.5.  Historical Selector Resolution
 
    When a selector refers to historical evidence that is not present in
    every descendant continuity state, a profile that wants causal
    retroactive effect MUST resolve that selector to an authenticated
    affected position:
+
+
+
+
+
+
+
+Gallo                         Informational                     [Page 7]
+
+                             PIC Revocation                    July 2026
+
 
    KEY / DELEGATE / ATTESTATION / ISSUER / other selector
            |
@@ -381,18 +405,6 @@ Gallo                         Informational                     [Page 6]
    The resolver MUST authenticate the selector occurrence, the PCA ID,
    the position, the integrity of the evidence used for resolution, and
    the authority to materialize the resulting cutoff.
-
-
-
-
-
-
-
-
-Gallo                         Informational                     [Page 7]
-
-                             PIC Revocation                    July 2026
-
 
    A bare assertion that a selector occurred at a position MUST NOT be
    sufficient.  A valid position witness MAY be an authenticated settled
@@ -408,7 +420,7 @@ Gallo                         Informational                     [Page 7]
    authenticated index, a trusted validator record, a checkpoint, or
    another profile-defined proof.
 
-3.5.  Dynamic Restrictions
+3.6.  Dynamic Restrictions
 
    A profile MAY define dynamic authority or execution-contract
    restrictions.  Such restrictions are evaluated as external
@@ -429,18 +441,6 @@ Gallo                         Informational                     [Page 7]
 
    This section is normative.
 
-   Every accepted revocation or dynamic restriction MUST be
-   authenticated by an authorized revocation authority.  A matching
-   target coordinate is necessary for targeting but never sufficient for
-   authorization.
-
-   A profile MUST define how each revocation authority is proven.
-   Possible authorities include:
-
-
-
-
-
 
 
 
@@ -449,6 +449,14 @@ Gallo                         Informational                     [Page 8]
 
                              PIC Revocation                    July 2026
 
+
+   Every accepted revocation or dynamic restriction MUST be
+   authenticated by an authorized revocation authority.  A matching
+   target coordinate is necessary for targeting but never sufficient for
+   authorization.
+
+   A profile MUST define how each revocation authority is proven.
+   Possible authorities include:
 
    +==============+========================+==========================+
    | Revoker      | Scope                  | Required proof           |
@@ -490,6 +498,14 @@ Gallo                         Informational                     [Page 8]
    Possession or knowledge of a grant identifier alone MUST NOT
    authorize revocation.
 
+
+
+
+Gallo                         Informational                     [Page 9]
+
+                             PIC Revocation                    July 2026
+
+
 5.  Revocation State
 
    This section is normative.
@@ -498,13 +514,6 @@ Gallo                         Informational                     [Page 8]
    profile MUST specify:
 
    *  how revocation state is authenticated;
-
-
-
-Gallo                         Informational                     [Page 9]
-
-                             PIC Revocation                    July 2026
-
 
    *  how freshness is determined;
 
@@ -544,15 +553,6 @@ Gallo                         Informational                     [Page 9]
    branch-creation evidence, parent branch ancestry, or branch-domain
    escape rules for Profile 0.2.
 
-   A future branch-capable profile would need to define bounded
-   authenticated branch coordinates, branch-creation authorization,
-   anti-escape validation order, branch-selective cutoff authorization,
-   historical resolution rules, and privacy properties.  Those details
-   are intentionally out of scope for this revision.
-
-
-
-
 
 
 
@@ -561,6 +561,12 @@ Gallo                         Informational                    [Page 10]
 
                              PIC Revocation                    July 2026
 
+
+   A future branch-capable profile would need to define bounded
+   authenticated branch coordinates, branch-creation authorization,
+   anti-escape validation order, branch-selective cutoff authorization,
+   historical resolution rules, and privacy properties.  Those details
+   are intentionally out of scope for this revision.
 
 7.  Position Capacity
 
@@ -599,12 +605,6 @@ Gallo                         Informational                    [Page 10]
    conformance more restrictive, but cannot rewrite signed checkpoints,
    mutate history, replace Proof of Relationship, or expand authority.
 
-9.  Contributors
-
-   The editors and contributors of this document are listed in the
-   *document header* above.  Listing is governed by Appendix B.7 of the
-   PIC Legal Appendices (https://github.com/pic-protocol/pic-
-   spec/blob/main/draft/0.2/pic-legal.md).
 
 
 
@@ -617,6 +617,13 @@ Gallo                         Informational                    [Page 11]
 
                              PIC Revocation                    July 2026
 
+
+9.  Contributors
+
+   The editors and contributors of this document are listed in the
+   *document header* above.  Listing is governed by Appendix B.7 of the
+   PIC Legal Appendices (https://github.com/pic-protocol/pic-
+   spec/blob/main/draft/0.2/pic-legal.md).
 
 10.  Acknowledgement
 
@@ -658,13 +665,6 @@ Gallo                         Informational                    [Page 11]
 
    *  *D.* Acknowledgements,
 
-   are maintained in a single canonical document, the *PIC Legal
-   Appendices (https://github.com/pic-protocol/pic-
-   spec/blob/main/draft/0.2/pic-legal.md)* (draft/0.2/pic-legal.md), and
-   are *incorporated into this specification by reference* as if fully
-   set forth herein.
-
-
 
 
 
@@ -673,6 +673,12 @@ Gallo                         Informational                    [Page 12]
 
                              PIC Revocation                    July 2026
 
+
+   are maintained in a single canonical document, the *PIC Legal
+   Appendices (https://github.com/pic-protocol/pic-
+   spec/blob/main/draft/0.2/pic-legal.md)* (draft/0.2/pic-legal.md), and
+   are *incorporated into this specification by reference* as if fully
+   set forth herein.
 
    In case of conflict between this document and the PIC Legal
    Appendices, the PIC Legal Appendices prevail for legal, governance,
@@ -705,12 +711,6 @@ Author's Address
    Nicola Gallo
    Nitro Agility S.r.l.
    Email: nicola.gallo@nitroagility.com
-
-
-
-
-
-
 
 
 

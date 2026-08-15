@@ -94,6 +94,27 @@ Subordinate specifications:
 - MUST incorporate the [PIC Legal Appendices](https://github.com/pic-protocol/pic-spec/blob/main/draft/0.2/pic-legal.md) by reference,
 - are canonical only in the version designated by the Specification Steward.
 
+# Core Invariants
+
+This section is normative.
+
+A PIC-conformant specification, profile, or implementation MUST preserve all of
+the following invariants:
+
+1. A root PIC Context of Authority establishes the upper authority bound for its
+   lineage.
+2. Every accepted non-root advancement MUST continue exactly one causal
+   predecessor.
+3. The selected profile MUST establish the required Proof of Relationship
+   (PoR) relation between the predecessor and successor.
+4. Successor authority MUST be no greater than predecessor authority under the
+   selected profile's attenuation order. For set-valued authority, successor
+   authority is a subset of predecessor authority.
+5. Authority from unrelated lineages MUST NOT be imported into a valid
+   continuation.
+6. A Proof of Continuity is the composition of valid hops that preserve these
+   invariants.
+
 # Documents
 
 | Document | Description | Status | Date |

@@ -1544,7 +1544,7 @@ continuation of its predecessor, and the PoC, which establishes that the invaria
 proof is invalid, the hop is rejected before any authority is exercised.<a href="#section-1-3.2.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
-<p id="section-1-4">PIC <strong>does not require a central server</strong>. Depending on deployment topology and implementer choice, a chain can be validated <em>fully
+<p id="section-1-4">PIC <strong>does not require a central server</strong>. Depending on deployment topology and selected profile, a chain can be validated <em>fully
 decentralized</em> — each hop carrying everything the next needs to verify it — or with the help of a trusted component such as a snapshot
 server. Section 5 describes these representations; the PIC <em>invariants</em> are the same in every case, but the concrete assurance and trust
 assumptions differ by profile (Sections 6.8, 7) — the profiles are not equivalent.<a href="#section-1-4" class="pilcrow">¶</a></p>
@@ -1941,102 +1941,72 @@ MUST NOT emit a continuity advancement. The rest of this section assumes a valid
         <h3 id="name-proof-of-relationship">
 <a href="#section-2.3" class="section-number selfRef">2.3. </a><a href="#name-proof-of-relationship" class="section-name selfRef">Proof of Relationship</a>
         </h3>
-<p id="section-2.3-1">The <strong>PoR</strong> binds the current execution to exactly one predecessor. A non-root continuity advancement MUST carry or cryptographically bind
-the PoR required by the selected profile. The PoR establishes:<a href="#section-2.3-1" class="pilcrow">¶</a></p>
+<p id="section-2.3-1">The abstract <strong>PoR</strong> relation binds the current execution to exactly one predecessor. A non-root continuity advancement MUST carry or
+cryptographically bind the relationship evidence required by the selected profile. The selected profile MUST define the concrete checks that
+soundly witness the abstract single-hop PoR relation.<a href="#section-2.3-1" class="pilcrow">¶</a></p>
+<p id="section-2.3-2">A <code>proof_of_relationship</code> field, when defined by a profile, is relationship evidence. It is not by itself the complete Proof of Continuity
+and does not by itself establish semantic continuity. A transition is accepted as valid only when the required PoR relation holds and the
+separate non-expansion requirement, together with all other applicable profile checks such as predecessor binding, freshness, integrity,
+evidence or conformance, request/execution binding, revocation, and policy, also succeeds.<a href="#section-2.3-2" class="pilcrow">¶</a></p>
+<p id="section-2.3-3">Profile-defined PoR validation covers, as applicable:<a href="#section-2.3-3" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-2.3-2.1">
-            <p id="section-2.3-2.1.1">a predecessor cryptographic reference;<a href="#section-2.3-2.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-2.3-4.1">
+            <p id="section-2.3-4.1.1">a predecessor cryptographic reference;<a href="#section-2.3-4.1.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-2.3-2.2">
-            <p id="section-2.3-2.2.1">challenge continuity or an equivalent profile-defined freshness mechanism;<a href="#section-2.3-2.2.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-2.3-4.2">
+            <p id="section-2.3-4.2.1">challenge continuity or an equivalent profile-defined freshness mechanism;<a href="#section-2.3-4.2.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-2.3-2.3">
-            <p id="section-2.3-2.3.1">holder, executor, or key relationship as required by the profile;<a href="#section-2.3-2.3.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-2.3-4.3">
+            <p id="section-2.3-4.3.1">holder, executor, or key relationship as required by the profile;<a href="#section-2.3-4.3.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-2.3-2.4">
-            <p id="section-2.3-2.4.1">request or execution binding where applicable;<a href="#section-2.3-2.4.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-2.3-4.4">
+            <p id="section-2.3-4.4.1">request or execution binding where applicable;<a href="#section-2.3-4.4.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-2.3-2.5">
-            <p id="section-2.3-2.5.1">conformance evidence where the profile requires executor conformance.<a href="#section-2.3-2.5.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-2.3-4.5">
+            <p id="section-2.3-4.5.1">conformance evidence where the profile requires executor conformance.<a href="#section-2.3-4.5.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-2.3-3">For PIC Profile 0.2, the PIC Continuity Transition COSE carries <code>proof_of_relationship</code> as a byte string containing the exact UTF-8 bytes of
-the selected issuer-signed SD-JWT presentation. The selected Profile 0.2 PoR schema MUST bind or identify the workload verification key; this
-specification does not define a universal claim name and does not define a separate generic <code>key_binding</code> field. The predecessor reference for
-the current centralized Profile 0.2 realization is:<a href="#section-2.3-3" class="pilcrow">¶</a></p>
-<div class="lang-text sourcecode" id="section-2.3-4">
+<p id="section-2.3-5">For PIC Profile 0.2, the PIC Continuity Transition COSE carries <code>proof_of_relationship</code> as a typed object:<a href="#section-2.3-5" class="pilcrow">¶</a></p>
+<div class="lang-text sourcecode" id="section-2.3-6">
+<pre>
+proof_of_relationship.type = "sd-jwt"
+proof_of_relationship.evidence = exact UTF-8 bytes of the textual issuer-signed
+                                 Profile 0.2 SD-JWT presentation
+</pre><a href="#section-2.3-6" class="pilcrow">¶</a>
+</div>
+<p id="section-2.3-7">The <code>type</code> value controls parsing and validation of <code>evidence</code>. The selected Profile 0.2 PoR schema MUST bind or identify the workload
+verification key; this specification does not define a universal claim name and does not define a separate generic <code>key_binding</code> field. The
+predecessor reference for the current centralized Profile 0.2 realization is:<a href="#section-2.3-7" class="pilcrow">¶</a></p>
+<div class="lang-text sourcecode" id="section-2.3-8">
 <pre>
 predecessor.type = "pca"
 predecessor.hash = SHA-256(exact signed current root.pca PIC PCA COSE bytes)
-</pre><a href="#section-2.3-4" class="pilcrow">¶</a>
+</pre><a href="#section-2.3-8" class="pilcrow">¶</a>
 </div>
-<p id="section-2.3-5">The first transition consumes the bootstrap challenge from the current PIC PCA COSE checkpoint's <code>challenge.next_challenge</code>. Later transitions
+<p id="section-2.3-9">The first transition consumes the bootstrap challenge from the current PIC PCA COSE checkpoint's <code>challenge.next_challenge</code>. Later transitions
 use the <code>challenge.next_challenge</code> value carried by the current signed PIC PCA COSE checkpoint. The hash input is the exact signed PIC PCA
-COSE artifact bytes, not a decoded payload, diagnostic notation, JSON representation, Base64url text, or reserialized structure.<a href="#section-2.3-5" class="pilcrow">¶</a></p>
-<p id="section-2.3-6">Continuing the running scenario, the backup service performing <code>BACKUP</code> produces the following PoR payload:<a href="#section-2.3-6" class="pilcrow">¶</a></p>
-<div class="lang-json sourcecode" id="section-2.3-7">
-<pre>
-{
-  "type": "PIC-PoR-v0",
-  "predecessorReference": "profile-defined cryptographic reference",
-  "continuationResponse": {
-    "predecessorChallenge": "base64url... (from the predecessor's continuation)",
-    "executorNonce": "base64url-random-256-bit-value"
-  },
-  "executor": "did:example:workloads:eu:backup-service",
-  "request": {
-    "operation": "BACKUP",
-    "target": "eu-1/tenant-42/dataset/backups",
-    "securityDomain": "tenant-42",
-    "requestDigest": "sha256:...",
-    "payloadDigest": "sha256:..."
-  },
-  "executorAttestation": {
-    "subject": "did:example:workloads:eu:backup-service",
-    "attributes": {
-      "role": "backup-service",
-      "compliance": ["GDPR"],
-      "accountableParty": "Example Corp",
-      "serviceAgreements": [
-        "https://legal.example.com/agreements/dpa-2026-001"
-      ],
-      "environment": "production",
-      "region": "eu-1",
-      "availabilityZone": "eu-1a",
-      "executionModel": "deterministic"
-    },
-    "issuedAt": "2026-07-17T10:00:00Z",
-    "expiresAt": "2026-08-17T10:00:00Z",
-    "issuer": "did:example:org-authority"
-  }
-}
-</pre><a href="#section-2.3-7" class="pilcrow">¶</a>
-</div>
-<p id="section-2.3-8">The Prover MUST check its own PoR before proceeding: if the predecessor reference does not match the predecessor continuity state, if the
+COSE artifact bytes, not a decoded payload, diagnostic notation, JSON representation, Base64url text, or reserialized structure.<a href="#section-2.3-9" class="pilcrow">¶</a></p>
+<p id="section-2.3-10">The Prover MUST check its own PoR before proceeding: if the predecessor reference does not match the predecessor continuity state, if the
 challenge or equivalent freshness evidence does not satisfy the selected profile, or if profile-required executor or contract evidence is
 missing or invalid, the PoR or advancement is invalid and the Prover MUST stop. A continuity advancement carrying invalid required evidence is
-rejected at the next hop anyway.<a href="#section-2.3-8" class="pilcrow">¶</a></p>
-<p id="section-2.3-9"><strong>What the PoR proves.</strong> The PoR does not prove physical, counterfactual, or prior-designation causation. Taken in isolation, a challenge
+rejected at the next hop anyway.<a href="#section-2.3-10" class="pilcrow">¶</a></p>
+<p id="section-2.3-11"><strong>What the PoR proves.</strong> The PoR does not prove physical, counterfactual, or prior-designation causation. Taken in isolation, a challenge
 response or concrete relationship artifact proves only the relationship semantics defined by the selected profile. A hop is accepted as a
 valid PIC continuation only when the Verifier also applies the other required PIC and profile checks, including non-expansion and any
 applicable contract, request/execution, evidence, freshness, revocation, and policy checks. The selected concrete relationship checks are
-assumed to soundly witness the abstract single-hop PoR relation used by the model <span><a href="#references" class="internal xref">[1]</a> (<a href="#references" class="auto internal xref">Section 12</a>)</span> and Lean formalization <span><a href="#references" class="internal xref">[2]</a> (<a href="#references" class="auto internal xref">Section 12</a>)</span>.<a href="#section-2.3-9" class="pilcrow">¶</a></p>
-<p id="section-2.3-10"><strong>Continuation is open by default.</strong> The core model does not require a predecessor to preselect a concrete successor. A profile MAY constrain
+assumed to soundly witness the abstract single-hop PoR relation used by the model <span><a href="#references" class="internal xref">[1]</a> (<a href="#references" class="auto internal xref">Section 12</a>)</span> and Lean formalization <span><a href="#references" class="internal xref">[2]</a> (<a href="#references" class="auto internal xref">Section 12</a>)</span>.<a href="#section-2.3-11" class="pilcrow">¶</a></p>
+<p id="section-2.3-12"><strong>Continuation is open by default.</strong> The core model does not require a predecessor to preselect a concrete successor. A profile MAY constrain
 holder keys, recipients, or channels, but those constraints are profile-specific. When a selected profile defines a request or execution
-commitment, that binding fixes the concrete action accepted under that profile (Section 3.3).<a href="#section-2.3-10" class="pilcrow">¶</a></p>
-<p id="section-2.3-11"><strong>Out of scope.</strong> The canonical form of the <code>request</code>, digest construction, streaming and partial payloads, and request-binding construction
+commitment, that binding fixes the concrete action accepted under that profile (Section 3.3).<a href="#section-2.3-12" class="pilcrow">¶</a></p>
+<p id="section-2.3-13"><strong>Out of scope.</strong> The canonical form of the <code>request</code>, digest construction, streaming and partial payloads, and request-binding construction
 are defined by the selected profile or by a separate specification. The core keeps only the profile-conditional requirement that authenticated
-request/execution commitments, when defined and relied upon, match the accepted or executed action (Section 3.3).<a href="#section-2.3-11" class="pilcrow">¶</a></p>
+request/execution commitments, when defined and relied upon, match the accepted or executed action (Section 3.3).<a href="#section-2.3-13" class="pilcrow">¶</a></p>
 <ul class="normal ulEmpty">
-<li class="normal ulEmpty" id="section-2.3-12.1">
-            <p id="section-2.3-12.1.1"><strong>Note - proof mechanism agility.</strong> This hash-and-signature construction is a non-normative example. Implementations may realize PoR and
-advancement integrity with other mechanisms - signed hash chains, Merkle proofs, accumulators, recursive or zero-knowledge proofs,
-hardware-backed attestations - including ones that do not disclose the evidence in the clear, provided they preserve the normative
-semantics: binding to exactly one predecessor, profile-defined freshness or challenge continuity, non-expansion of authority, and
-integrity of the concrete advancement.<a href="#section-2.3-12.1.1" class="pilcrow">¶</a></p>
-<p id="section-2.3-12.1.2">Carrying the attestation in the clear is a property of this minimal profile only. <strong>Selective disclosure</strong> — revealing just the attributes
-the execution contract requires — is out of scope here and is a separate implementation concern, but it is recommended for production
-profiles that handle sensitive attributes (Section 6.4).<a href="#section-2.3-12.1.2" class="pilcrow">¶</a></p>
+<li class="normal ulEmpty" id="section-2.3-14.1">
+            <p id="section-2.3-14.1.1"><strong>Note - proof mechanism agility.</strong> Future or separate profiles may realize PoR and advancement integrity with mechanisms other than the
+current Profile 0.2 typed SD-JWT evidence, including signed hash chains, Merkle proofs, accumulators, recursive or zero-knowledge proofs,
+or hardware-backed attestations, provided they preserve the normative semantics: binding to exactly one predecessor, profile-defined
+freshness or challenge continuity, non-expansion of authority, and integrity of the concrete advancement.<a href="#section-2.3-14.1.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
 </section>
@@ -2116,9 +2086,10 @@ workload MUST NOT assign its numeric index. The settlement verifier validates pr
 materialized/effective <code>execution_contract</code> section. Existing execution-contract constraints are not removed, replaced, or weakened; accepted
 constraints accumulate with logical AND.<a href="#section-2.4-15" class="pilcrow">¶</a></p>
 <p id="section-2.4-16">When one PIC Continuity Transition COSE proposes multiple execution-contract additions, the settlement verifier validates the proposed
-additions, denormalizes any collection-valued logical proposal material into individual canonical <code>[key, value]</code> additions when applicable,
-sorts accepted additions lexicographically by canonical key using Unicode code point order, assigns the next section-local numeric indexes in
-that sorted order, and then materializes the additions. Input array order MUST NOT determine materialized index assignment. The workload is
+additions and denormalizes any collection-valued logical proposal material into individual canonical <code>[key, value]</code> additions when applicable.
+After denormalization, more than one accepted addition with the same canonical key MUST be rejected. The settlement verifier then sorts the
+remaining accepted additions lexicographically by canonical key using Unicode code point order, assigns the next section-local numeric indexes
+in that sorted order, and materializes the additions. Input array order MUST NOT determine materialized index assignment. The workload is
 not required to pre-sort the additions.<a href="#section-2.4-16" class="pilcrow">¶</a></p>
 <p id="section-2.4-17">Initial PIC PCA COSE canonicalization for Profile 0.2 is deterministic. Implementations denormalize the Logical Context of Authority into
 canonical tuple candidates, sort candidates within each section, and then assign section-local numeric indexes starting at <code>0</code>.<a href="#section-2.4-17" class="pilcrow">¶</a></p>
@@ -2145,7 +2116,7 @@ identity are separate domains.<a href="#section-2.4-19" class="pilcrow">¶</a></
 binding required by the profile, and the profile-defined freshness material for the next step. The profile defines the signed artifact that
 protects those values.<a href="#section-2.5-1" class="pilcrow">¶</a></p>
 <p id="section-2.5-2">In PIC Profile 0.2, a PIC Continuity Transition COSE contains <code>position</code>, a structured <code>predecessor</code> reference, <code>challenge.previous_challenge</code>,
-<code>challenge.next_challenge</code>, optional <code>attenuations</code>, and <code>proof_of_relationship</code>. It is carried only by the workload-produced candidate PIC
+<code>challenge.next_challenge</code>, optional <code>attenuations</code>, and typed <code>proof_of_relationship</code>. It is carried only by the workload-produced candidate PIC
 Continuity COSE for the current exchange. The settlement authority validates the candidate and, if the advancement is accepted, issues the
 next settled PIC Token JWT carrying a settled PIC Continuity COSE with <code>transitions = null</code>. Diagnostic JSON-like or CBOR-like views are
 illustrative unless a selected profile assigns exact encodings.<a href="#section-2.5-2" class="pilcrow">¶</a></p>
@@ -2263,47 +2234,53 @@ transported transition history.<a href="#section-3.1-3" class="pilcrow">¶</a></
             <p id="section-3.1-5.5.1">parses that Transition as untrusted input and extracts <code>proof_of_relationship</code>;<a href="#section-3.1-5.5.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-3.1-5.6">
-            <p id="section-3.1-5.6.1">parses <code>proof_of_relationship</code> as the selected Profile 0.2 SD-JWT presentation;<a href="#section-3.1-5.6.1" class="pilcrow">¶</a></p>
+            <p id="section-3.1-5.6.1">validates the <code>proof_of_relationship</code> structure;<a href="#section-3.1-5.6.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-3.1-5.7">
-            <p id="section-3.1-5.7.1">validates the SD-JWT issuer signature, issuer trust, required disclosures, claims, and schema requirements;<a href="#section-3.1-5.7.1" class="pilcrow">¶</a></p>
+            <p id="section-3.1-5.7.1">requires <code>proof_of_relationship.type = "sd-jwt"</code>;<a href="#section-3.1-5.7.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-3.1-5.8">
-            <p id="section-3.1-5.8.1">obtains or resolves the workload verification key accepted from the PoR;<a href="#section-3.1-5.8.1" class="pilcrow">¶</a></p>
+            <p id="section-3.1-5.8.1">parses <code>proof_of_relationship.evidence</code> as the exact UTF-8 bytes of the textual issuer-signed Profile 0.2 SD-JWT presentation;<a href="#section-3.1-5.8.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-3.1-5.9">
-            <p id="section-3.1-5.9.1">verifies the Transition COSE signature, candidate Continuity COSE signature, and candidate PIC Token JWT signature using that accepted
-workload key, and verifies signer consistency as required by the profile;<a href="#section-3.1-5.9.1" class="pilcrow">¶</a></p>
+            <p id="section-3.1-5.9.1">validates the SD-JWT issuer signature, issuer trust, required disclosures, claims, and schema requirements;<a href="#section-3.1-5.9.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-3.1-5.10">
-            <p id="section-3.1-5.10.1">verifies <code>root.pca</code> as the exact signed PIC PCA COSE bytes for the currently trusted checkpoint;<a href="#section-3.1-5.10.1" class="pilcrow">¶</a></p>
+            <p id="section-3.1-5.10.1">obtains or resolves the workload verification key accepted from the PoR;<a href="#section-3.1-5.10.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-3.1-5.11">
-            <p id="section-3.1-5.11.1">recomputes <code>SHA-256(exact signed root.pca PIC PCA COSE bytes)</code> and compares it with <code>root.pca_hash</code>;<a href="#section-3.1-5.11.1" class="pilcrow">¶</a></p>
+            <p id="section-3.1-5.11.1">verifies the Transition COSE signature, candidate Continuity COSE signature, and candidate PIC Token JWT signature using that accepted
+   workload key, and verifies signer consistency as required by the profile;<a href="#section-3.1-5.11.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-3.1-5.12">
-            <p id="section-3.1-5.12.1">verifies that <code>Transition.position = current PCA.position + 1</code>;<a href="#section-3.1-5.12.1" class="pilcrow">¶</a></p>
+            <p id="section-3.1-5.12.1">verifies <code>root.pca</code> as the exact signed PIC PCA COSE bytes for the currently trusted checkpoint;<a href="#section-3.1-5.12.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-3.1-5.13">
-            <p id="section-3.1-5.13.1">verifies <code>predecessor.type = "pca"</code> and <code>predecessor.hash = SHA-256(exact signed current root.pca PIC PCA COSE bytes)</code>;<a href="#section-3.1-5.13.1" class="pilcrow">¶</a></p>
+            <p id="section-3.1-5.13.1">recomputes <code>SHA-256(exact signed root.pca PIC PCA COSE bytes)</code> and compares it with <code>root.pca_hash</code>;<a href="#section-3.1-5.13.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-3.1-5.14">
-            <p id="section-3.1-5.14.1">verifies that <code>Transition.challenge.previous_challenge = current PCA.challenge.next_challenge</code> and validates <code>challenge.next_challenge</code>;<a href="#section-3.1-5.14.1" class="pilcrow">¶</a></p>
+            <p id="section-3.1-5.14.1">verifies that <code>Transition.position = current PCA.position + 1</code>;<a href="#section-3.1-5.14.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-3.1-5.15">
-            <p id="section-3.1-5.15.1">validates removal bitmaps and execution-contract additions, including deterministic ordering and section-local index assignment for
-accepted additions;<a href="#section-3.1-5.15.1" class="pilcrow">¶</a></p>
+            <p id="section-3.1-5.15.1">verifies <code>predecessor.type = "pca"</code> and <code>predecessor.hash = SHA-256(exact signed current root.pca PIC PCA COSE bytes)</code>;<a href="#section-3.1-5.15.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-3.1-5.16">
-            <p id="section-3.1-5.16.1">validates request/execution binding and executor evidence or conformance when required by the selected profile;<a href="#section-3.1-5.16.1" class="pilcrow">¶</a></p>
+            <p id="section-3.1-5.16.1">verifies that <code>Transition.challenge.previous_challenge = current PCA.challenge.next_challenge</code> and validates <code>challenge.next_challenge</code>;<a href="#section-3.1-5.16.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-3.1-5.17">
-            <p id="section-3.1-5.17.1">validates authority non-expansion, revocation, and local/profile policy;<a href="#section-3.1-5.17.1" class="pilcrow">¶</a></p>
+            <p id="section-3.1-5.17.1">validates removal bitmaps and execution-contract additions, including deterministic ordering and section-local index assignment for
+accepted additions;<a href="#section-3.1-5.17.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-3.1-5.18">
-            <p id="section-3.1-5.18.1">materializes the new authority, creates logical PCA N+1, transfers the accepted next challenge into it, serializes and signs it as a new
+            <p id="section-3.1-5.18.1">validates request/execution binding and executor evidence or conformance when required by the selected profile;<a href="#section-3.1-5.18.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-3.1-5.19">
+            <p id="section-3.1-5.19.1">validates authority non-expansion, revocation, and local/profile policy;<a href="#section-3.1-5.19.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-3.1-5.20">
+            <p id="section-3.1-5.20.1">materializes the new authority, creates logical PCA N+1, transfers the accepted next challenge into it, serializes and signs it as a new
 PIC PCA COSE checkpoint, creates a settled PIC Continuity COSE with the new <code>root.pca</code>, recomputed <code>root.pca_hash</code>, and <code>transitions =
-null</code>, and creates/signs the settled PIC Token JWT.<a href="#section-3.1-5.18.1" class="pilcrow">¶</a></p>
+null</code>, and creates/signs the settled PIC Token JWT.<a href="#section-3.1-5.20.1" class="pilcrow">¶</a></p>
 </li>
         </ol>
 <p id="section-3.1-6">If validation succeeds, the settlement authority issues the next settled PIC Token JWT. PIC-X is one realization of this settlement role.<a href="#section-3.1-6" class="pilcrow">¶</a></p>
@@ -2620,12 +2597,6 @@ https://pic-protocol.org/profiles/0.2
                 <code>https://pic-protocol.org/definitions/proposal-types/continuity-initial</code>
 </td>
             </tr>
-            <tr>
-              <td class="text-left" rowspan="1" colspan="1">Continuation Proposal type URI</td>
-              <td class="text-left" rowspan="1" colspan="1">
-                <code>https://pic-protocol.org/definitions/proposal-types/continuity</code>
-</td>
-            </tr>
           </tbody>
         </table>
 <div id="pic-token-jwt">
@@ -2697,7 +2668,9 @@ challenge:
     previous_challenge
     next_challenge
 attenuations             optional
-proof_of_relationship
+proof_of_relationship:
+    type
+    evidence
 request_digest           optional/profile-defined
 executor_evidence        optional/profile-defined
 </pre><a href="#section-5.2.4-2" class="pilcrow">¶</a>
@@ -2705,10 +2678,11 @@ executor_evidence        optional/profile-defined
 <p id="section-5.2.4-3">For current Profile 0.2, <code>predecessor.type</code> MUST be <code>"pca"</code> and <code>predecessor.hash</code> MUST equal
 <code>SHA-256(exact signed current root.pca PIC PCA COSE bytes)</code>. A future or separate profile MAY define another predecessor representation while
 preserving exactly-one-predecessor semantics.<a href="#section-5.2.4-3" class="pilcrow">¶</a></p>
-<p id="section-5.2.4-4"><code>proof_of_relationship</code> is a byte string containing the exact UTF-8 bytes of the textual issuer-signed SD-JWT presentation selected by the
-Profile 0.2 PoR schema. That schema MUST bind or identify the workload verification key used to verify the workload-signed candidate
-artifacts. Profile 0.2 does not define a universal claim path, does not require <code>cnf.jwk</code> at the PIC protocol level, and does not require a
-separate SD-JWT KB-JWT for continuity advancement.<a href="#section-5.2.4-4" class="pilcrow">¶</a></p>
+<p id="section-5.2.4-4"><code>proof_of_relationship</code> is a typed object. For current Profile 0.2, <code>proof_of_relationship.type</code> MUST be <code>"sd-jwt"</code> and
+<code>proof_of_relationship.evidence</code> MUST be a byte string containing the exact UTF-8 bytes of the textual issuer-signed SD-JWT presentation
+selected by the Profile 0.2 PoR schema. That schema MUST bind or identify the workload verification key used to verify the workload-signed
+candidate artifacts. Profile 0.2 does not define a universal claim path, does not require <code>cnf.jwk</code> at the PIC protocol level, and does not
+require a separate SD-JWT KB-JWT for continuity advancement.<a href="#section-5.2.4-4" class="pilcrow">¶</a></p>
 <p id="section-5.2.4-5">Signer roles are:<a href="#section-5.2.4-5" class="pilcrow">¶</a></p>
 <div class="lang-text sourcecode" id="section-5.2.4-6">
 <pre>
@@ -2755,13 +2729,12 @@ requested_token_type
     https://pic-protocol.org/definitions/token-types/pic
 
 continuity_proposal
-    Initial Continuity Proposal
-
-continuity_proposal_type
+    compact UTF-8 JSON encoded with unpadded Base64url; the decoded object is
+    self-describing and has type
     https://pic-protocol.org/definitions/proposal-types/continuity-initial
 
 result
-    settled PIC Token JWT 0
+    settlement-authority-signed settled PIC Token JWT 0
 </pre><a href="#section-5.3-3" class="pilcrow">¶</a>
 </div>
 <p id="section-5.3-4">For PIC-to-PIC advancement:<a href="#section-5.3-4" class="pilcrow">¶</a></p>
@@ -2782,15 +2755,12 @@ requested_token_type
 continuity_proposal
     omitted
 
-continuity_proposal_type
-    omitted
-
 result
-    settled PIC Token JWT N+1
+    settlement-authority-signed settled PIC Token JWT N+1
 </pre><a href="#section-5.3-5" class="pilcrow">¶</a>
 </div>
-<p id="section-5.3-6"><code>https://pic-protocol.org/definitions/proposal-types/continuity</code> is the Profile 0.2 Continuation Proposal type URI. Current Profile 0.2
-PIC-to-PIC advancement omits <code>continuity_proposal</code> and <code>continuity_proposal_type</code>, so that URI is not sent in the current advancement request.<a href="#section-5.3-6" class="pilcrow">¶</a></p>
+<p id="section-5.3-6">The initialization proposal is interpreted by its internal <code>type</code> member. Current Profile 0.2 PIC-to-PIC advancement omits
+<code>continuity_proposal</code>.<a href="#section-5.3-6" class="pilcrow">¶</a></p>
 <p id="section-5.3-7">The RFC 8693 response MAY transport the returned PIC Token JWT in the <code>access_token</code> response member. That placement does not make the PIC
 Token JWT an OAuth Bearer token. For this Profile 0.2 binding, when an <code>issued_token_type</code> response member is returned for a PIC Token JWT,
 its value is <code>https://pic-protocol.org/definitions/token-types/pic</code>. When a <code>token_type</code> response member is returned for a PIC Token JWT, its

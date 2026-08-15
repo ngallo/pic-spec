@@ -1365,19 +1365,22 @@ interoperability requirements.<a href="#section-note.3-6" class="pilcrow">¶</a>
             <p id="section-toc.1-1.3.1"><a href="#section-3" class="auto internal xref">3</a>.  <a href="#name-revocation-semantics" class="internal xref">Revocation Semantics</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.1">
-                <p id="section-toc.1-1.3.2.1.1"><a href="#section-3.1" class="auto internal xref">3.1</a>.  <a href="#name-causal-suffix" class="internal xref">Causal Suffix</a></p>
+                <p id="section-toc.1-1.3.2.1.1"><a href="#section-3.1" class="auto internal xref">3.1</a>.  <a href="#name-attenuation-is-not-revocati" class="internal xref">Attenuation Is Not Revocation</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.2">
-                <p id="section-toc.1-1.3.2.2.1"><a href="#section-3.2" class="auto internal xref">3.2</a>.  <a href="#name-whole-pca" class="internal xref">Whole PCA</a></p>
+                <p id="section-toc.1-1.3.2.2.1"><a href="#section-3.2" class="auto internal xref">3.2</a>.  <a href="#name-causal-suffix" class="internal xref">Causal Suffix</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.3">
-                <p id="section-toc.1-1.3.2.3.1"><a href="#section-3.3" class="auto internal xref">3.3</a>.  <a href="#name-optional-selectors" class="internal xref">Optional Selectors</a></p>
+                <p id="section-toc.1-1.3.2.3.1"><a href="#section-3.3" class="auto internal xref">3.3</a>.  <a href="#name-whole-pca" class="internal xref">Whole PCA</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.4">
-                <p id="section-toc.1-1.3.2.4.1"><a href="#section-3.4" class="auto internal xref">3.4</a>.  <a href="#name-historical-selector-resolut" class="internal xref">Historical Selector Resolution</a></p>
+                <p id="section-toc.1-1.3.2.4.1"><a href="#section-3.4" class="auto internal xref">3.4</a>.  <a href="#name-optional-selectors" class="internal xref">Optional Selectors</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.5">
-                <p id="section-toc.1-1.3.2.5.1"><a href="#section-3.5" class="auto internal xref">3.5</a>.  <a href="#name-dynamic-restrictions" class="internal xref">Dynamic Restrictions</a></p>
+                <p id="section-toc.1-1.3.2.5.1"><a href="#section-3.5" class="auto internal xref">3.5</a>.  <a href="#name-historical-selector-resolut" class="internal xref">Historical Selector Resolution</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.6">
+                <p id="section-toc.1-1.3.2.6.1"><a href="#section-3.6" class="auto internal xref">3.6</a>.  <a href="#name-dynamic-restrictions" class="internal xref">Dynamic Restrictions</a></p>
 </li>
             </ul>
 </li>
@@ -1529,88 +1532,98 @@ AND state.position &gt;= target.fromPosition
 <a href="#section-3" class="section-number selfRef">3. </a><a href="#name-revocation-semantics" class="section-name selfRef">Revocation Semantics</a>
       </h2>
 <p id="section-3-1">This section is normative where BCP 14 language is used.<a href="#section-3-1" class="pilcrow">¶</a></p>
-<div id="causal-suffix">
+<div id="attenuation-is-not-revocation">
 <section id="section-3.1">
-        <h3 id="name-causal-suffix">
-<a href="#section-3.1" class="section-number selfRef">3.1. </a><a href="#name-causal-suffix" class="section-name selfRef">Causal Suffix</a>
+        <h3 id="name-attenuation-is-not-revocati">
+<a href="#section-3.1" class="section-number selfRef">3.1. </a><a href="#name-attenuation-is-not-revocati" class="section-name selfRef">Attenuation Is Not Revocation</a>
         </h3>
-<p id="section-3.1-1">A causal suffix cutoff invalidates the selected position and its causal future:<a href="#section-3.1-1" class="pilcrow">¶</a></p>
-<div class="lang-text sourcecode" id="section-3.1-2">
+<p id="section-3.1-1">Attenuation of a selected continuity advancement changes only the materialized authority of the accepted successor lineage. It MUST NOT be
+interpreted as revocation of the predecessor checkpoint, invalidation of that predecessor, or invalidation of another otherwise-valid sibling
+continuation from the same predecessor. Invalidating those states requires authenticated revocation state under the selected revocation profile.<a href="#section-3.1-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="causal-suffix">
+<section id="section-3.2">
+        <h3 id="name-causal-suffix">
+<a href="#section-3.2" class="section-number selfRef">3.2. </a><a href="#name-causal-suffix" class="section-name selfRef">Causal Suffix</a>
+        </h3>
+<p id="section-3.2-1">A causal suffix cutoff invalidates the selected position and its causal future:<a href="#section-3.2-1" class="pilcrow">¶</a></p>
+<div class="lang-text sourcecode" id="section-3.2-2">
 <pre>
 (PCA ID, fromPosition)
-</pre><a href="#section-3.1-2" class="pilcrow">¶</a>
+</pre><a href="#section-3.2-2" class="pilcrow">¶</a>
 </div>
-<p id="section-3.1-3">A Verifier or settlement service MUST reject a matching state when the authenticated revocation state contains an authorized suffix cutoff and:<a href="#section-3.1-3" class="pilcrow">¶</a></p>
-<div class="lang-text sourcecode" id="section-3.1-4">
+<p id="section-3.2-3">A Verifier or settlement service MUST reject a matching state when the authenticated revocation state contains an authorized suffix cutoff and:<a href="#section-3.2-3" class="pilcrow">¶</a></p>
+<div class="lang-text sourcecode" id="section-3.2-4">
 <pre>
 state.PCA_ID == target.PCA_ID
 AND state.position &gt;= target.fromPosition
-</pre><a href="#section-3.1-4" class="pilcrow">¶</a>
+</pre><a href="#section-3.2-4" class="pilcrow">¶</a>
 </div>
-<p id="section-3.1-5">The exact wire representation and any concrete revocation-profile naming for this operation are profile-defined. This document defines only
-the semantic causal cutoff.<a href="#section-3.1-5" class="pilcrow">¶</a></p>
+<p id="section-3.2-5">The exact wire representation and any concrete revocation-profile naming for this operation are profile-defined. This document defines only
+the semantic causal cutoff.<a href="#section-3.2-5" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="whole-pca">
-<section id="section-3.2">
+<section id="section-3.3">
         <h3 id="name-whole-pca">
-<a href="#section-3.2" class="section-number selfRef">3.2. </a><a href="#name-whole-pca" class="section-name selfRef">Whole PCA</a>
+<a href="#section-3.3" class="section-number selfRef">3.3. </a><a href="#name-whole-pca" class="section-name selfRef">Whole PCA</a>
         </h3>
-<p id="section-3.2-1">Whole-PCA revocation invalidates all continuity states rooted in the selected PCA ID. It is equivalent to a suffix revocation from the root
-position:<a href="#section-3.2-1" class="pilcrow">¶</a></p>
-<div class="lang-text sourcecode" id="section-3.2-2">
+<p id="section-3.3-1">Whole-PCA revocation invalidates all continuity states rooted in the selected PCA ID. It is equivalent to a suffix revocation from the root
+position:<a href="#section-3.3-1" class="pilcrow">¶</a></p>
+<div class="lang-text sourcecode" id="section-3.3-2">
 <pre>
 (PCA ID, rootPosition)
-</pre><a href="#section-3.2-2" class="pilcrow">¶</a>
+</pre><a href="#section-3.3-2" class="pilcrow">¶</a>
 </div>
 </section>
 </div>
 <div id="optional-selectors">
-<section id="section-3.3">
+<section id="section-3.4">
         <h3 id="name-optional-selectors">
-<a href="#section-3.3" class="section-number selfRef">3.3. </a><a href="#name-optional-selectors" class="section-name selfRef">Optional Selectors</a>
+<a href="#section-3.4" class="section-number selfRef">3.4. </a><a href="#name-optional-selectors" class="section-name selfRef">Optional Selectors</a>
         </h3>
-<p id="section-3.3-1">A revocation profile MAY define additional authenticated selectors, including:<a href="#section-3.3-1" class="pilcrow">¶</a></p>
+<p id="section-3.4-1">A revocation profile MAY define additional authenticated selectors, including:<a href="#section-3.4-1" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-3.3-2.1">
-            <p id="section-3.3-2.1.1">grant binding;<a href="#section-3.3-2.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-3.4-2.1">
+            <p id="section-3.4-2.1.1">grant binding;<a href="#section-3.4-2.1.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-3.3-2.2">
-            <p id="section-3.3-2.2.1">origin issuer;<a href="#section-3.3-2.2.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-3.4-2.2">
+            <p id="section-3.4-2.2.1">origin issuer;<a href="#section-3.4-2.2.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-3.3-2.3">
-            <p id="section-3.3-2.3.1">key or verification method;<a href="#section-3.3-2.3.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-3.4-2.3">
+            <p id="section-3.4-2.3.1">key or verification method;<a href="#section-3.4-2.3.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-3.3-2.4">
-            <p id="section-3.3-2.4.1">executor or delegate;<a href="#section-3.3-2.4.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-3.4-2.4">
+            <p id="section-3.4-2.4.1">executor or delegate;<a href="#section-3.4-2.4.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-3.3-2.5">
-            <p id="section-3.3-2.5.1">attestation;<a href="#section-3.3-2.5.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-3.4-2.5">
+            <p id="section-3.4-2.5.1">attestation;<a href="#section-3.4-2.5.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-3.3-2.6">
-            <p id="section-3.3-2.6.1">policy;<a href="#section-3.3-2.6.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-3.4-2.6">
+            <p id="section-3.4-2.6.1">policy;<a href="#section-3.4-2.6.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-3.3-2.7">
-            <p id="section-3.3-2.7.1">resource, tenant, or security-domain selector;<a href="#section-3.3-2.7.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-3.4-2.7">
+            <p id="section-3.4-2.7.1">resource, tenant, or security-domain selector;<a href="#section-3.4-2.7.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-3.3-2.8">
-            <p id="section-3.3-2.8.1">another explicitly profile-defined authenticated selector.<a href="#section-3.3-2.8.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-3.4-2.8">
+            <p id="section-3.4-2.8.1">another explicitly profile-defined authenticated selector.<a href="#section-3.4-2.8.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-3.3-3">These selectors are administrative or evidentiary criteria. They do not replace <code>(PCA ID, position)</code> when causal descendants must be
-invalidated.<a href="#section-3.3-3" class="pilcrow">¶</a></p>
-<p id="section-3.3-4">Possession or knowledge of a selector value MUST NOT authorize revocation. For example, knowledge of a grant identifier, PCA ID, key
-identifier, issuer identifier, or position is not a revocation credential.<a href="#section-3.3-4" class="pilcrow">¶</a></p>
+<p id="section-3.4-3">These selectors are administrative or evidentiary criteria. They do not replace <code>(PCA ID, position)</code> when causal descendants must be
+invalidated.<a href="#section-3.4-3" class="pilcrow">¶</a></p>
+<p id="section-3.4-4">Possession or knowledge of a selector value MUST NOT authorize revocation. For example, knowledge of a grant identifier, PCA ID, key
+identifier, issuer identifier, or position is not a revocation credential.<a href="#section-3.4-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="historical-selector-resolution">
-<section id="section-3.4">
+<section id="section-3.5">
         <h3 id="name-historical-selector-resolut">
-<a href="#section-3.4" class="section-number selfRef">3.4. </a><a href="#name-historical-selector-resolut" class="section-name selfRef">Historical Selector Resolution</a>
+<a href="#section-3.5" class="section-number selfRef">3.5. </a><a href="#name-historical-selector-resolut" class="section-name selfRef">Historical Selector Resolution</a>
         </h3>
-<p id="section-3.4-1">When a selector refers to historical evidence that is not present in every descendant continuity state, a profile that wants causal
-retroactive effect MUST resolve that selector to an authenticated affected position:<a href="#section-3.4-1" class="pilcrow">¶</a></p>
-<div class="lang-text sourcecode" id="section-3.4-2">
+<p id="section-3.5-1">When a selector refers to historical evidence that is not present in every descendant continuity state, a profile that wants causal
+retroactive effect MUST resolve that selector to an authenticated affected position:<a href="#section-3.5-1" class="pilcrow">¶</a></p>
+<div class="lang-text sourcecode" id="section-3.5-2">
 <pre>
 KEY / DELEGATE / ATTESTATION / ISSUER / other selector
         |
@@ -1619,29 +1632,29 @@ authenticated affected position
         |
         v
 (PCA ID, fromPosition)
-</pre><a href="#section-3.4-2" class="pilcrow">¶</a>
+</pre><a href="#section-3.5-2" class="pilcrow">¶</a>
 </div>
-<p id="section-3.4-3">The resolver MUST authenticate the selector occurrence, the PCA ID, the position, the integrity of the evidence used for resolution, and the
-authority to materialize the resulting cutoff.<a href="#section-3.4-3" class="pilcrow">¶</a></p>
-<p id="section-3.4-4">A bare assertion that a selector occurred at a position MUST NOT be sufficient. A valid position witness MAY be an authenticated settled
+<p id="section-3.5-3">The resolver MUST authenticate the selector occurrence, the PCA ID, the position, the integrity of the evidence used for resolution, and the
+authority to materialize the resulting cutoff.<a href="#section-3.5-3" class="pilcrow">¶</a></p>
+<p id="section-3.5-4">A bare assertion that a selector occurred at a position MUST NOT be sufficient. A valid position witness MAY be an authenticated settled
 continuity artifact, an authenticated transition extract, an authenticated historical-index record, a checkpoint, a Merkle inclusion proof, a
-succinct proof, or another profile-defined authenticated witness.<a href="#section-3.4-4" class="pilcrow">¶</a></p>
-<p id="section-3.4-5">For a compromised-key revocation, a position witness authenticated only by the compromised key MUST NOT be sufficient evidence that the
+succinct proof, or another profile-defined authenticated witness.<a href="#section-3.5-4" class="pilcrow">¶</a></p>
+<p id="section-3.5-5">For a compromised-key revocation, a position witness authenticated only by the compromised key MUST NOT be sufficient evidence that the
 position was accepted into the continuity. The revocation authority MUST require corroboration independent of the revoked key, such as an
-authenticated index, a trusted validator record, a checkpoint, or another profile-defined proof.<a href="#section-3.4-5" class="pilcrow">¶</a></p>
+authenticated index, a trusted validator record, a checkpoint, or another profile-defined proof.<a href="#section-3.5-5" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="dynamic-restrictions">
-<section id="section-3.5">
+<section id="section-3.6">
         <h3 id="name-dynamic-restrictions">
-<a href="#section-3.5" class="section-number selfRef">3.5. </a><a href="#name-dynamic-restrictions" class="section-name selfRef">Dynamic Restrictions</a>
+<a href="#section-3.6" class="section-number selfRef">3.6. </a><a href="#name-dynamic-restrictions" class="section-name selfRef">Dynamic Restrictions</a>
         </h3>
-<p id="section-3.5-1">A profile MAY define dynamic authority or execution-contract restrictions. Such restrictions are evaluated as external authenticated state
-against the presented PCA ID, position, and optional selectors.<a href="#section-3.5-1" class="pilcrow">¶</a></p>
-<p id="section-3.5-2">Dynamic restrictions MUST be monotonic: they may only make effective authority or execution conformance equally or more restrictive. They
+<p id="section-3.6-1">A profile MAY define dynamic authority or execution-contract restrictions. Such restrictions are evaluated as external authenticated state
+against the presented PCA ID, position, and optional selectors.<a href="#section-3.6-1" class="pilcrow">¶</a></p>
+<p id="section-3.6-2">Dynamic restrictions MUST be monotonic: they may only make effective authority or execution conformance equally or more restrictive. They
 MUST NOT rewrite signed PCA checkpoint artifacts, mutate historical transitions, alter predecessor uniqueness, replace Proof of Relationship,
-or expand authority.<a href="#section-3.5-2" class="pilcrow">¶</a></p>
-<p id="section-3.5-3">The profile MUST define restriction scope, composition, conflict resolution, freshness, rollback protection, and unavailable-state behavior.<a href="#section-3.5-3" class="pilcrow">¶</a></p>
+or expand authority.<a href="#section-3.6-2" class="pilcrow">¶</a></p>
+<p id="section-3.6-3">The profile MUST define restriction scope, composition, conflict resolution, freshness, rollback protection, and unavailable-state behavior.<a href="#section-3.6-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>

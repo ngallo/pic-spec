@@ -196,6 +196,12 @@ Knowledge of the PCA ID, the position, or both MUST NOT authorize revocation. Ta
 
 This section is normative where BCP 14 language is used.
 
+## Attenuation Is Not Revocation
+
+Attenuation of a selected continuity advancement changes only the materialized authority of the accepted successor lineage. It MUST NOT be
+interpreted as revocation of the predecessor checkpoint, invalidation of that predecessor, or invalidation of another otherwise-valid sibling
+continuation from the same predecessor. Invalidating those states requires authenticated revocation state under the selected revocation profile.
+
 ## Causal Suffix
 
 A causal suffix cutoff invalidates the selected position and its causal future:

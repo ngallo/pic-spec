@@ -107,7 +107,7 @@ unforgeable primitive. This document specifies the two components that realize i
   continuation of its predecessor, and the PoC, which establishes that the invariants hold along the entire received lineage. If either
   proof is invalid, the hop is rejected before any authority is exercised.
 
-PIC **does not require a central server**. Depending on deployment topology and implementer choice, a chain can be validated *fully
+PIC **does not require a central server**. Depending on deployment topology and selected profile, a chain can be validated *fully
 decentralized* — each hop carrying everything the next needs to verify it — or with the help of a trusted component such as a snapshot
 server. Section 5 describes these representations; the PIC *invariants* are the same in every case, but the concrete assurance and trust
 assumptions differ by profile (Sections 6.8, 7) — the profiles are not equivalent.
@@ -442,8 +442,16 @@ MUST NOT emit a continuity advancement. The rest of this section assumes a valid
 
 ## Proof of Relationship
 
-The **PoR** binds the current execution to exactly one predecessor. A non-root continuity advancement MUST carry or cryptographically bind
-the PoR required by the selected profile. The PoR establishes:
+The abstract **PoR** relation binds the current execution to exactly one predecessor. A non-root continuity advancement MUST carry or
+cryptographically bind the relationship evidence required by the selected profile. The selected profile MUST define the concrete checks that
+soundly witness the abstract single-hop PoR relation.
+
+A `proof_of_relationship` field, when defined by a profile, is relationship evidence. It is not by itself the complete Proof of Continuity
+and does not by itself establish semantic continuity. A transition is accepted as valid only when the required PoR relation holds and the
+separate non-expansion requirement, together with all other applicable profile checks such as predecessor binding, freshness, integrity,
+evidence or conformance, request/execution binding, revocation, and policy, also succeeds.
+
+Profile-defined PoR validation covers, as applicable:
 
 - a predecessor cryptographic reference;
 - challenge continuity or an equivalent profile-defined freshness mechanism;
@@ -451,10 +459,17 @@ the PoR required by the selected profile. The PoR establishes:
 - request or execution binding where applicable;
 - conformance evidence where the profile requires executor conformance.
 
-For PIC Profile 0.2, the PIC Continuity Transition COSE carries `proof_of_relationship` as a byte string containing the exact UTF-8 bytes of
-the selected issuer-signed SD-JWT presentation. The selected Profile 0.2 PoR schema MUST bind or identify the workload verification key; this
-specification does not define a universal claim name and does not define a separate generic `key_binding` field. The predecessor reference for
-the current centralized Profile 0.2 realization is:
+For PIC Profile 0.2, the PIC Continuity Transition COSE carries `proof_of_relationship` as a typed object:
+
+~~~text
+proof_of_relationship.type = "sd-jwt"
+proof_of_relationship.evidence = exact UTF-8 bytes of the textual issuer-signed
+                                 Profile 0.2 SD-JWT presentation
+~~~
+
+The `type` value controls parsing and validation of `evidence`. The selected Profile 0.2 PoR schema MUST bind or identify the workload
+verification key; this specification does not define a universal claim name and does not define a separate generic `key_binding` field. The
+predecessor reference for the current centralized Profile 0.2 realization is:
 
 ~~~text
 predecessor.type = "pca"
@@ -464,45 +479,6 @@ predecessor.hash = SHA-256(exact signed current root.pca PIC PCA COSE bytes)
 The first transition consumes the bootstrap challenge from the current PIC PCA COSE checkpoint's `challenge.next_challenge`. Later transitions
 use the `challenge.next_challenge` value carried by the current signed PIC PCA COSE checkpoint. The hash input is the exact signed PIC PCA
 COSE artifact bytes, not a decoded payload, diagnostic notation, JSON representation, Base64url text, or reserialized structure.
-
-Continuing the running scenario, the backup service performing `BACKUP` produces the following PoR payload:
-
-~~~json
-{
-  "type": "PIC-PoR-v0",
-  "predecessorReference": "profile-defined cryptographic reference",
-  "continuationResponse": {
-    "predecessorChallenge": "base64url... (from the predecessor's continuation)",
-    "executorNonce": "base64url-random-256-bit-value"
-  },
-  "executor": "did:example:workloads:eu:backup-service",
-  "request": {
-    "operation": "BACKUP",
-    "target": "eu-1/tenant-42/dataset/backups",
-    "securityDomain": "tenant-42",
-    "requestDigest": "sha256:...",
-    "payloadDigest": "sha256:..."
-  },
-  "executorAttestation": {
-    "subject": "did:example:workloads:eu:backup-service",
-    "attributes": {
-      "role": "backup-service",
-      "compliance": ["GDPR"],
-      "accountableParty": "Example Corp",
-      "serviceAgreements": [
-        "https://legal.example.com/agreements/dpa-2026-001"
-      ],
-      "environment": "production",
-      "region": "eu-1",
-      "availabilityZone": "eu-1a",
-      "executionModel": "deterministic"
-    },
-    "issuedAt": "2026-07-17T10:00:00Z",
-    "expiresAt": "2026-08-17T10:00:00Z",
-    "issuer": "did:example:org-authority"
-  }
-}
-~~~
 
 The Prover MUST check its own PoR before proceeding: if the predecessor reference does not match the predecessor continuity state, if the
 challenge or equivalent freshness evidence does not satisfy the selected profile, or if profile-required executor or contract evidence is
@@ -523,15 +499,10 @@ commitment, that binding fixes the concrete action accepted under that profile (
 are defined by the selected profile or by a separate specification. The core keeps only the profile-conditional requirement that authenticated
 request/execution commitments, when defined and relied upon, match the accepted or executed action (Section 3.3).
 
-> **Note - proof mechanism agility.** This hash-and-signature construction is a non-normative example. Implementations may realize PoR and
-> advancement integrity with other mechanisms - signed hash chains, Merkle proofs, accumulators, recursive or zero-knowledge proofs,
-> hardware-backed attestations - including ones that do not disclose the evidence in the clear, provided they preserve the normative
-> semantics: binding to exactly one predecessor, profile-defined freshness or challenge continuity, non-expansion of authority, and
-> integrity of the concrete advancement.
->
-> Carrying the attestation in the clear is a property of this minimal profile only. **Selective disclosure** — revealing just the attributes
-> the execution contract requires — is out of scope here and is a separate implementation concern, but it is recommended for production
-> profiles that handle sensitive attributes (Section 6.4).
+> **Note - proof mechanism agility.** Future or separate profiles may realize PoR and advancement integrity with mechanisms other than the
+> current Profile 0.2 typed SD-JWT evidence, including signed hash chains, Merkle proofs, accumulators, recursive or zero-knowledge proofs,
+> or hardware-backed attestations, provided they preserve the normative semantics: binding to exactly one predecessor, profile-defined
+> freshness or challenge continuity, non-expansion of authority, and integrity of the concrete advancement.
 
 ## Invariant Monotonicity
 
@@ -604,9 +575,10 @@ materialized/effective `execution_contract` section. Existing execution-contract
 constraints accumulate with logical AND.
 
 When one PIC Continuity Transition COSE proposes multiple execution-contract additions, the settlement verifier validates the proposed
-additions, denormalizes any collection-valued logical proposal material into individual canonical `[key, value]` additions when applicable,
-sorts accepted additions lexicographically by canonical key using Unicode code point order, assigns the next section-local numeric indexes in
-that sorted order, and then materializes the additions. Input array order MUST NOT determine materialized index assignment. The workload is
+additions and denormalizes any collection-valued logical proposal material into individual canonical `[key, value]` additions when applicable.
+After denormalization, more than one accepted addition with the same canonical key MUST be rejected. The settlement verifier then sorts the
+remaining accepted additions lexicographically by canonical key using Unicode code point order, assigns the next section-local numeric indexes
+in that sorted order, and materializes the additions. Input array order MUST NOT determine materialized index assignment. The workload is
 not required to pre-sort the additions.
 
 Initial PIC PCA COSE canonicalization for Profile 0.2 is deterministic. Implementations denormalize the Logical Context of Authority into
@@ -633,7 +605,7 @@ binding required by the profile, and the profile-defined freshness material for 
 protects those values.
 
 In PIC Profile 0.2, a PIC Continuity Transition COSE contains `position`, a structured `predecessor` reference, `challenge.previous_challenge`,
-`challenge.next_challenge`, optional `attenuations`, and `proof_of_relationship`. It is carried only by the workload-produced candidate PIC
+`challenge.next_challenge`, optional `attenuations`, and typed `proof_of_relationship`. It is carried only by the workload-produced candidate PIC
 Continuity COSE for the current exchange. The settlement authority validates the candidate and, if the advancement is accepted, issues the
 next settled PIC Token JWT carrying a settled PIC Continuity COSE with `transitions = null`. Diagnostic JSON-like or CBOR-like views are
 illustrative unless a selected profile assigns exact encodings.
@@ -702,21 +674,23 @@ When a trusted settlement authority processes a Profile 0.2 advancement candidat
    `transitions`;
 4. requires `transitions` to contain exactly one PIC Continuity Transition COSE;
 5. parses that Transition as untrusted input and extracts `proof_of_relationship`;
-6. parses `proof_of_relationship` as the selected Profile 0.2 SD-JWT presentation;
-7. validates the SD-JWT issuer signature, issuer trust, required disclosures, claims, and schema requirements;
-8. obtains or resolves the workload verification key accepted from the PoR;
-9. verifies the Transition COSE signature, candidate Continuity COSE signature, and candidate PIC Token JWT signature using that accepted
+6. validates the `proof_of_relationship` structure;
+7. requires `proof_of_relationship.type = "sd-jwt"`;
+8. parses `proof_of_relationship.evidence` as the exact UTF-8 bytes of the textual issuer-signed Profile 0.2 SD-JWT presentation;
+9. validates the SD-JWT issuer signature, issuer trust, required disclosures, claims, and schema requirements;
+10. obtains or resolves the workload verification key accepted from the PoR;
+11. verifies the Transition COSE signature, candidate Continuity COSE signature, and candidate PIC Token JWT signature using that accepted
    workload key, and verifies signer consistency as required by the profile;
-10. verifies `root.pca` as the exact signed PIC PCA COSE bytes for the currently trusted checkpoint;
-11. recomputes `SHA-256(exact signed root.pca PIC PCA COSE bytes)` and compares it with `root.pca_hash`;
-12. verifies that `Transition.position = current PCA.position + 1`;
-13. verifies `predecessor.type = "pca"` and `predecessor.hash = SHA-256(exact signed current root.pca PIC PCA COSE bytes)`;
-14. verifies that `Transition.challenge.previous_challenge = current PCA.challenge.next_challenge` and validates `challenge.next_challenge`;
-15. validates removal bitmaps and execution-contract additions, including deterministic ordering and section-local index assignment for
+12. verifies `root.pca` as the exact signed PIC PCA COSE bytes for the currently trusted checkpoint;
+13. recomputes `SHA-256(exact signed root.pca PIC PCA COSE bytes)` and compares it with `root.pca_hash`;
+14. verifies that `Transition.position = current PCA.position + 1`;
+15. verifies `predecessor.type = "pca"` and `predecessor.hash = SHA-256(exact signed current root.pca PIC PCA COSE bytes)`;
+16. verifies that `Transition.challenge.previous_challenge = current PCA.challenge.next_challenge` and validates `challenge.next_challenge`;
+17. validates removal bitmaps and execution-contract additions, including deterministic ordering and section-local index assignment for
     accepted additions;
-16. validates request/execution binding and executor evidence or conformance when required by the selected profile;
-17. validates authority non-expansion, revocation, and local/profile policy;
-18. materializes the new authority, creates logical PCA N+1, transfers the accepted next challenge into it, serializes and signs it as a new
+18. validates request/execution binding and executor evidence or conformance when required by the selected profile;
+19. validates authority non-expansion, revocation, and local/profile policy;
+20. materializes the new authority, creates logical PCA N+1, transfers the accepted next challenge into it, serializes and signs it as a new
     PIC PCA COSE checkpoint, creates a settled PIC Continuity COSE with the new `root.pca`, recomputed `root.pca_hash`, and `transitions =
     null`, and creates/signs the settled PIC Token JWT.
 
@@ -927,7 +901,6 @@ Profile 0.2 also uses the following stable semantic definition URIs:
 | --- | --- |
 | PIC Token type URI | `https://pic-protocol.org/definitions/token-types/pic` |
 | Initial Continuity Proposal type URI | `https://pic-protocol.org/definitions/proposal-types/continuity-initial` |
-| Continuation Proposal type URI | `https://pic-protocol.org/definitions/proposal-types/continuity` |
 
 ### PIC Token JWT
 
@@ -986,7 +959,9 @@ challenge:
     previous_challenge
     next_challenge
 attenuations             optional
-proof_of_relationship
+proof_of_relationship:
+    type
+    evidence
 request_digest           optional/profile-defined
 executor_evidence        optional/profile-defined
 ~~~
@@ -995,10 +970,11 @@ For current Profile 0.2, `predecessor.type` MUST be `"pca"` and `predecessor.has
 `SHA-256(exact signed current root.pca PIC PCA COSE bytes)`. A future or separate profile MAY define another predecessor representation while
 preserving exactly-one-predecessor semantics.
 
-`proof_of_relationship` is a byte string containing the exact UTF-8 bytes of the textual issuer-signed SD-JWT presentation selected by the
-Profile 0.2 PoR schema. That schema MUST bind or identify the workload verification key used to verify the workload-signed candidate
-artifacts. Profile 0.2 does not define a universal claim path, does not require `cnf.jwk` at the PIC protocol level, and does not require a
-separate SD-JWT KB-JWT for continuity advancement.
+`proof_of_relationship` is a typed object. For current Profile 0.2, `proof_of_relationship.type` MUST be `"sd-jwt"` and
+`proof_of_relationship.evidence` MUST be a byte string containing the exact UTF-8 bytes of the textual issuer-signed SD-JWT presentation
+selected by the Profile 0.2 PoR schema. That schema MUST bind or identify the workload verification key used to verify the workload-signed
+candidate artifacts. Profile 0.2 does not define a universal claim path, does not require `cnf.jwk` at the PIC protocol level, and does not
+require a separate SD-JWT KB-JWT for continuity advancement.
 
 Signer roles are:
 
@@ -1041,13 +1017,12 @@ requested_token_type
     https://pic-protocol.org/definitions/token-types/pic
 
 continuity_proposal
-    Initial Continuity Proposal
-
-continuity_proposal_type
+    compact UTF-8 JSON encoded with unpadded Base64url; the decoded object is
+    self-describing and has type
     https://pic-protocol.org/definitions/proposal-types/continuity-initial
 
 result
-    settled PIC Token JWT 0
+    settlement-authority-signed settled PIC Token JWT 0
 ~~~
 
 For PIC-to-PIC advancement:
@@ -1068,15 +1043,12 @@ requested_token_type
 continuity_proposal
     omitted
 
-continuity_proposal_type
-    omitted
-
 result
-    settled PIC Token JWT N+1
+    settlement-authority-signed settled PIC Token JWT N+1
 ~~~
 
-`https://pic-protocol.org/definitions/proposal-types/continuity` is the Profile 0.2 Continuation Proposal type URI. Current Profile 0.2
-PIC-to-PIC advancement omits `continuity_proposal` and `continuity_proposal_type`, so that URI is not sent in the current advancement request.
+The initialization proposal is interpreted by its internal `type` member. Current Profile 0.2 PIC-to-PIC advancement omits
+`continuity_proposal`.
 
 The RFC 8693 response MAY transport the returned PIC Token JWT in the `access_token` response member. That placement does not make the PIC
 Token JWT an OAuth Bearer token. For this Profile 0.2 binding, when an `issued_token_type` response member is returned for a PIC Token JWT,
